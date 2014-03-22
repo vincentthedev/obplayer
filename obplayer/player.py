@@ -29,33 +29,24 @@ import os
 import time
 
 import gtk
+import gobject
 
+import thread
 import threading
 
-#
-#
-# Class to manage output of playing of data.
-#
+
 class ObPlayer:
 
-    #
-    # Initialize audio/video.  Creates instance of OBConfig, establishes gstreamer pipeline based on output specified in config.
-    #
     def __init__(self):
         self.media_stop_timestamp = 0  # keep track of when media is supposed to play for (required for 'is_playing').
         self.media_mode = None
         self.player = None
 	self.now_playing = None
 
-    def player_init(self, media):
+	self.media_actual_start = 0
+	self.stats_seek_time = 0
 
-	# nothing to do if we're playing an image, unless this is the initial init.
-        if self.player and media['media_type'] == 'image':
-            return
-
-        if self.player:
-            self.player.set_state(gst.STATE_NULL)
-            self.sync_state()
+    def player_init(self):
 
         self.player = gst.element_factory_make('playbin2', 'player')
 
@@ -94,28 +85,32 @@ class ObPlayer:
             self.player.set_property('vis-plugin', self.audiovis)
 
         self.bus = self.player.get_bus()
-        #self.bus.set_sync_handler(self.sync_handler)
 	self.bus.add_signal_watch()
 	self.bus.enable_sync_message_emission()
 	self.bus.connect("sync-message::element", self.sync_handler)
 
+	# NOTE this was possibly another way of making a video output??
+        #self.sink = gst.element_factory_make('xvimagesink')
+        #self.sink.set_property('force-aspect-ratio', True)
+	#self.player.set_property('video-sink', self.sink)
+
 	# wait for state change.
-        if self.sync_state() == False:
-            obplayer.Log.log('ObPlayer.init wait for state change (sync_state()) failed (after stop).', 'error')
+        if self.wait_sync() == False:
+            obplayer.Log.log('ObPlayer.init wait for state change (wait_sync()) failed (after stop).', 'error')
 
-
-    def change_media_mode(self,mode):
+    # TODO this function should be moved to Gui, but make sure you don't need self.media_mode, and also see if it's possible to clean up the Gui.  Image displaying isn't working
+    def change_media_mode(self, mode):
 	if obplayer.Main.headless:
 	    return
 
 	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audiovis') == 0):
-	    #obplayer.Gui.gui_gst_area_viewport.hide()
-	    #obplayer.Gui.gui_drawing_area_viewport.show()
+	    obplayer.Gui.gui_gst_area_viewport.hide()
+	    obplayer.Gui.gui_drawing_area_viewport.show()
 	    pass
 
 	else:
-	    #obplayer.Gui.gui_drawing_area_viewport.hide()
-	    #obplayer.Gui.gui_gst_area_viewport.show()
+	    obplayer.Gui.gui_drawing_area_viewport.hide()
+	    obplayer.Gui.gui_gst_area_viewport.show()
 	    pass
 
 	self.media_mode = mode
@@ -129,21 +124,25 @@ class ObPlayer:
     #
     def play(self, media, offset=0, context='show', emerg_id=''):
 
-        self.player_init(media)
+        if media['media_type'] != 'image':
+            self.player.set_state(gst.STATE_NULL)
+            self.wait_sync()
 
 	# self.media_stop_timestamp = 0; # reset the image stop timestamp (required for 'is_playing').
-	#
+
+	# TODO can this file stuff be moved somewhere common so everyone can access it?
 	# file location specified explicitly
         if media['file_location'][0] == '/':
             media_filename = media['file_location'] + '/' + media['filename']
         else:
-
 	    # file location specified as 2-character directory code.
             media_filename = obplayer.Config.setting('remote_media') + '/' + media['file_location'][0] + '/' + media['file_location'][1] + '/' + media['filename']
 
 	# see if the file exists.  if not, return false...
         if os.path.exists(media_filename) == False:
             return False
+
+	self.now_playing = media
 
 	# write entry into play log.
         if offset == 0:
@@ -160,11 +159,10 @@ class ObPlayer:
             self.stop('all')
 
 	# wait for state change.  could also watch for state change message in bus (non-locking)
-        if self.sync_state() == False:
-            obplayer.Log.log('ObPlayer.play wait for state change (sync_state()) failed (after stop).', 'error')
+        if self.wait_sync() == False:
+            obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after stop).', 'error')
 
         if media['media_type'] == 'audio' or media['media_type'] == 'video':
-	    self.now_playing = media
 
 	    if media['media_type'] == 'audio':
 		self.change_media_mode('audio')
@@ -176,43 +174,54 @@ class ObPlayer:
             self.player.set_state(gst.STATE_READY)
 
 	    # wait for state change.  could also watch for state change message in bus (non-locking)
-            if self.sync_state() == False:
-                obplayer.Log.log('ObPlayer.play wait for state change (sync_state()) failed (after setting state to ready).', 'error')
+            if self.wait_sync() == False:
+                obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to ready).', 'error')
 
             self.player.set_property('uri', 'file://' + media_filename)
 
             self.player.set_state(gst.STATE_PAUSED)
 	    # wait for state change.  could also watch for state change message in bus (non-locking)
-            if self.sync_state() == False:
-                obplayer.Log.log('ObPlayer.play wait for state change (sync_state()) failed (after setting state to paused).', 'error')
+            if self.wait_sync() == False:
+                obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to paused).', 'error')
 
             if obplayer.Config.setting('gst_init_callback'):
                 os.system(obplayer.Config.setting('gst_init_callback'))
 
+	    # TODO this is a test of whether this speeds things up
+	    seek_start = time.time()
             if offset != 0:
+            #if offset > 0.25:
                 if self.player.seek_simple(gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, offset * gst.SECOND) == False:
                     obplayer.Log.log('unable to seek on this track', 'error')
+	    self.stats_seek_time = time.time() - seek_start
+	    #print "Time To Seek: " + str(self.stats_seek_time) + " Offset: " + str(offset)
+
+	    if offset > 0:
+		obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
 
             self.player.set_state(gst.STATE_PLAYING)
 
 	    # wait for state change.  could also watch for state change message in bus (non-locking)
-            if self.sync_state() == False:
-                obplayer.Log.log('ObPlayer.play wait for state change (sync_state()) failed (after setting state to playing).', 'error')
+            if self.wait_sync() == False:
+                obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to playing).', 'error')
 
+	# TODO is this not needed now?
 	# remote image from display if applicable.
-	# self.Gui.drawing_area_image_update();
+	#obplayer.Gui.drawing_area_image_update();
+
+        self.media_stop_timestamp = max(self.media_stop_timestamp, time.time() + media['duration'] - offset)  # keep track of when this is supposed to play until. (required to check 'is playing').
+	self.media_actual_start = time.time()
+	#print "Actual start at " + str(self.media_actual_start) + " Media Stop: " + str(self.media_stop_timestamp)
 
         if media['order_num']:
             track_num = ' ' + str(media['order_num'] + 1)
         else:
             track_num = ''
 
-        self.media_stop_timestamp = max(self.media_stop_timestamp, time.time() + media['duration'] - offset)  # keep track of when this is supposed to play until. (required to check 'is playing').
+        obplayer.Log.log('now playing track' + str(track_num) + ': ' + unicode(media['artist']).encode('ascii', 'replace') + ' - '
+		    + unicode(media['title']).encode('ascii', 'replace') + ' (id: ' + str(media['media_id'])
+		    + ' file: ' + unicode(media['filename']).encode('ascii', 'replace') + ')', 'player')
 
-        obplayer.Log.log('now playing track' + str(track_num) + ': ' + unicode(media['artist']).encode('ascii', 'replace') + ' - ' + unicode(media['title']).encode('ascii', 'replace') + ' (id: '
-                     + str(media['media_id']) + ' file: ' + unicode(media['filename']).encode('ascii', 'replace') + ')', 'player')
-        if offset > 0:
-            obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
 
 	#
 	# empty out the bus (not using it at the moment anyway).
@@ -225,6 +234,8 @@ class ObPlayer:
     # Stop playing audio.
     #
     def stop(self, mode='all'):
+	#if self.now_playing != None:
+	    #print "Actual Play Time: " + str(time.time() - self.media_actual_start) + " Recorded Duration: " + str(self.now_playing['duration'])
         if mode == 'av' or mode == 'all':
 	    # print 'stopping av';
             self.player.set_state(gst.STATE_NULL)
@@ -237,8 +248,8 @@ class ObPlayer:
         self.player.set_state(gst.STATE_NULL)
 
 	# wait for state change.  could also watch for state change message in bus (non-locking)
-        if self.sync_state() == False:
-            obplayer.Log.log('ObPlayer.quit wait for state change (sync_state()) failed (after setting state to null).', 'error')
+        if self.wait_sync() == False:
+            obplayer.Log.log('ObPlayer.quit wait for state change (wait_sync()) failed (after setting state to null).', 'error')
 
     # sync handler (assigns video sink to drawing area)
     def sync_handler(self, bus, message):
@@ -247,17 +258,19 @@ class ObPlayer:
             return gst.BUS_PASS
 
         if message.structure.get_name() == 'prepare-xwindow-id':
-            message.src.set_property('force-aspect-ratio', True)
-	    #print threading.current_thread()
-	    #gtk.gdk.threads_enter()
-	    #message.src.set_xwindow_id(obplayer.Gui.gui_gst_area.window.xid);
-	    #gtk.gdk.threads_leave()
+	    gobject.idle_add(self.set_window_cb, message.src)
 
-	# pass to async queue.
         return gst.BUS_PASS
 
+    def set_window_cb(self, sink):
+	#gtk.gdk.display_get_default().sync()
+	#message.src.set_xwindow_id(obplayer.Gui.gui_gst_area.window.xid);
+	if not obplayer.Main.headless:
+	    sink.set_xwindow_id(obplayer.Gui.gui_gst_area.window.xid);
+        sink.set_property('force-aspect-ratio', True)
+
     # wait for state change, up to 5 seconds.
-    def sync_state(self):
+    def wait_sync(self):
         statechange = self.player.get_state(timeout=5 * gst.SECOND)[0]
         if statechange == gst.STATE_CHANGE_SUCCESS:
             return True

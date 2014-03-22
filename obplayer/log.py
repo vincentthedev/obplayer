@@ -39,12 +39,16 @@ class ObLog:
     def __init__(self):
 	self.datadir = obplayer.ObData.get_datadir()
 	self.logbuffer = []
+	self.debug = False
 
 	# open log file to write to.
         self.logdate = False
         self.logfile = False
 
 	self.lock = thread.allocate_lock()
+
+    def set_debug(self, flag):
+	self.debug = flag
 
     #
     # Given message, outputs time + message to stdout.
@@ -69,6 +73,9 @@ class ObLog:
 	self.logbuffer.append(mstring)
 	if len(self.logbuffer) > MAX_BACKLOG:
 	    self.logbuffer.pop(0)
+
+	if self.debug:
+	    print mstring
 
 	self.lock.release()
 

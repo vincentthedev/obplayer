@@ -33,6 +33,7 @@ class ObGui:
 
     def create_window(self):
 
+	# TODO can you pass these arguments from Main??
         if obplayer.Main.headless:
             return
         else:
@@ -58,6 +59,7 @@ class ObGui:
         self.gui_toolbar = builder.get_object('toolbar')
         self.gui_statusbar = builder.get_object('statusbar')
 
+	"""
 	# SUMMARY AND LOG
         self.gui_infotabs = builder.get_object('infotabs')
         self.gui_summary_text = builder.get_object('summary_text')
@@ -108,6 +110,7 @@ class ObGui:
         self.summary_iter['show_name'] = self.summary_store.append(('Show Name', ''))
         self.summary_iter['show_description'] = self.summary_store.append(('Show Description', ''))
         self.summary_iter['sync_status'] = self.summary_store.append(('Sync Status', ''))
+	"""
 
 	# DRAWING AREA
         self.gui_drawing_area = builder.get_object('drawingarea_slideshow')
@@ -148,99 +151,14 @@ class ObGui:
 
 	# go fullscreen?
         if obplayer.Main.args.fullscreen:
-            self.fullscreen_toggle(None)
+	    self.fullscreen_toggle(None)
 
 	# show main window.
 	if obplayer.Main.headless == False:
-	   self.gui_window.show();
+	    self.gui_window.show()
 
-    def set_media_summary_item(self, name, value):
-        if obplayer.Main.headless:
-            return
-
-        self.summary_store.set_value(self.summary_iter[name], 1, value)
-
-    def set_media_summary(self, media, track):
-        if obplayer.Main.headless:
-            return
-
-        gobject.idle_add(self.set_media_summary_idleadd, media, track)
-
-    def set_media_summary_idleadd(self, media, track):
-        if obplayer.Main.headless:
-            return
-
-	# figure out what we're setting
-        if media['media_type'] == 'image':
-            mode = 'image'
-        else:
-            mode = 'av'
-
-        if str(media['media_id']) == '0':
-            media_id = ''
-        else:
-            media_id = media['media_id']
-
-        self.set_media_summary_item(mode + '_id', str(media_id))
-        self.set_media_summary_item(mode + '_artist', media['artist'])
-        self.set_media_summary_item(mode + '_title', media['title'])
-        self.set_media_summary_item(mode + '_duration', str(media['duration']))
-        self.set_media_summary_item(mode + '_track', str(track))
-
-    def set_show_summary(self, show_id, name, description):
-        if obplayer.Main.headless:
-            return
-
-        gobject.idle_add(self.set_show_summary_idleadd, show_id, name, description)
-
-    def set_show_summary_idleadd(self, show_id, name, description):
-        if obplayer.Main.headless:
-            return
-
-        if str(show_id) == '0':
-            show_id = ''
-
-        self.set_media_summary_item('show_id', str(show_id))
-        self.set_media_summary_item('show_name', name)
-        self.set_media_summary_item('show_description', description)
-
-    def reset_media_summary(self, mode):
-        if obplayer.Main.headless:
-            return
-
-        gobject.idle_add(self.reset_media_summary_idleadd, mode)
-
-    def reset_media_summary_idleadd(self, mode):
-        if obplayer.Main.headless:
-            return
-
-        if mode == 'av' or mode == 'all':
-            self.set_media_summary_item('av_id', '')
-            self.set_media_summary_item('av_artist', '')
-            self.set_media_summary_item('av_title', '')
-            self.set_media_summary_item('av_duration', '')
-            self.set_media_summary_item('av_track', '')
-
-        if mode == 'image' or mode == 'all':
-            self.set_media_summary_item('image_id', '')
-            self.set_media_summary_item('image_artist', '')
-            self.set_media_summary_item('image_title', '')
-            self.set_media_summary_item('image_duration', '')
-            self.set_media_summary_item('image_track', '')
-
-    def reset_show_summary(self):
-        if obplayer.Main.headless:
-            return
-
-        gobject.idle_add(self.reset_show_summary_idleadd)
-
-    def reset_show_summary_idleadd(self):
-        if obplayer.Main.headless:
-            return
-
-        self.set_media_summary_item('show_id', '')
-        self.set_media_summary_item('show_name', '')
-        self.set_media_summary_item('show_description', '')
+    def application_shutdown(self, widget):
+        obplayer.Main.application_shutdown(widget)
 
     def pointer_position_watch(self, widget, event):
         if obplayer.Main.headless:
@@ -270,14 +188,14 @@ class ObGui:
             self.gui_window.fullscreen()
             self.gui_window_fullscreen = True
             self.gui_toolbar.hide()
-            self.gui_infotabs.hide()
+            #self.gui_infotabs.hide()
             self.fullscreen_hide_pointer_id = gobject.timeout_add(1000, self.fullscreen_hide_pointer)
         else:
 
             self.gui_window.unfullscreen()
             self.gui_window_fullscreen = False
             self.gui_toolbar.show()
-            self.gui_infotabs.show()
+            #self.gui_infotabs.show()
             self.fullscreen_show_pointer()
 
     def fullscreen_hide_pointer(self):
@@ -413,6 +331,97 @@ class ObGui:
             self.drawing_area_transition_mode = 'in'
             gobject.timeout_add(50, self.drawing_area_transition_timer, 'fade')
 
+    """
+    def set_media_summary_item(self, name, value):
+        if obplayer.Main.headless:
+            return
+
+        self.summary_store.set_value(self.summary_iter[name], 1, value)
+
+    def set_media_summary(self, media, track):
+        if obplayer.Main.headless:
+            return
+
+        gobject.idle_add(self.set_media_summary_idleadd, media, track)
+
+    def set_media_summary_idleadd(self, media, track):
+        if obplayer.Main.headless:
+            return
+
+	# figure out what we're setting
+        if media['media_type'] == 'image':
+            mode = 'image'
+        else:
+            mode = 'av'
+
+        if str(media['media_id']) == '0':
+            media_id = ''
+        else:
+            media_id = media['media_id']
+
+        self.set_media_summary_item(mode + '_id', str(media_id))
+        self.set_media_summary_item(mode + '_artist', media['artist'])
+        self.set_media_summary_item(mode + '_title', media['title'])
+        self.set_media_summary_item(mode + '_duration', str(media['duration']))
+        self.set_media_summary_item(mode + '_track', str(track))
+
+    def set_show_summary(self, show_id, name, description):
+        if obplayer.Main.headless:
+            return
+
+        gobject.idle_add(self.set_show_summary_idleadd, show_id, name, description)
+
+    def set_show_summary_idleadd(self, show_id, name, description):
+        if obplayer.Main.headless:
+            return
+
+        if str(show_id) == '0':
+            show_id = ''
+
+        self.set_media_summary_item('show_id', str(show_id))
+        self.set_media_summary_item('show_name', name)
+        self.set_media_summary_item('show_description', description)
+
+    def reset_media_summary(self, mode):
+        if obplayer.Main.headless:
+            return
+
+        gobject.idle_add(self.reset_media_summary_idleadd, mode)
+
+    def reset_media_summary_idleadd(self, mode):
+        if obplayer.Main.headless:
+            return
+
+        if mode == 'av' or mode == 'all':
+            self.set_media_summary_item('av_id', '')
+            self.set_media_summary_item('av_artist', '')
+            self.set_media_summary_item('av_title', '')
+            self.set_media_summary_item('av_duration', '')
+            self.set_media_summary_item('av_track', '')
+
+        if mode == 'image' or mode == 'all':
+            self.set_media_summary_item('image_id', '')
+            self.set_media_summary_item('image_artist', '')
+            self.set_media_summary_item('image_title', '')
+            self.set_media_summary_item('image_duration', '')
+            self.set_media_summary_item('image_track', '')
+
+    def reset_show_summary(self):
+        if obplayer.Main.headless:
+            return
+
+        gobject.idle_add(self.reset_show_summary_idleadd)
+
+    def reset_show_summary_idleadd(self):
+        if obplayer.Main.headless:
+            return
+
+        self.set_media_summary_item('show_id', '')
+        self.set_media_summary_item('show_name', '')
+        self.set_media_summary_item('show_description', '')
+    """
+
+    """
     def set_sync_status(self, message):
         if obplayer.Main.headless:
             return
@@ -476,8 +485,7 @@ class ObGui:
         self.gui_log_textview.scroll_to_iter(self.gui_log_text.get_end_iter(), 0.0)
 
         return False
+    """
 
-    def application_shutdown(self, widget):
-        obplayer.Main.application_shutdown(widget)
 
 

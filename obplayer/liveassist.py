@@ -64,19 +64,19 @@ class ObLiveAssist(HTTPServer):
 	    return playlist
 
 	elif path == '/info/liveassist_groups':
-	    groups = obplayer.Scheduler.get_liveassist_groups()
+	    groups = obplayer.Scheduler.get_current_groups()
 	    return groups
 
 	elif path == '/info/play_status':
             return obplayer.Scheduler.get_now_playing()
 
 	elif path == '/command/play':
-	    if obplayer.Scheduler.play() == True:
+	    if obplayer.Scheduler.unpause_show() == True:
 		return '{"status": True}'
 	    return { 'status' : False }
 
 	elif path == '/command/pause':
-	    if obplayer.Scheduler.pause() == True:
+	    if obplayer.Scheduler.pause_show() == True:
 		return '{"status": True}'
 	    return { 'status' : False }
 

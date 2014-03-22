@@ -266,12 +266,12 @@ class ObConfigData(ObData):
         self.add_setting('audiovis', '1', 'bool')
         self.add_setting('audio_output', 'auto', 'text')
         self.add_setting('alsa_device', 'default', 'text')
-        self.add_setting('http_admin_enable', '0', 'bool')
+        self.add_setting('http_admin_enable', '1', 'bool')
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('http_admin_port', '23233', 'int')
-        self.add_setting('http_admin_username', '', 'text')
-        self.add_setting('http_admin_password', '', 'text')
+        self.add_setting('http_admin_username', 'admin', 'text')
+        self.add_setting('http_admin_password', 'admin', 'text')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
@@ -630,9 +630,9 @@ class ObRemoteData(ObData):
     #
     # Given the present time, return the next show.  Returned as associative array/dictionary.
     #
-    def get_next_show(self, present_timestamp):
+    def get_next_show_times(self, present_timestamp):
 
-        rows = self.query('SELECT * from shows where datetime > ' + str(present_timestamp) + ' order by datetime limit 1')
+        rows = self.query('SELECT datetime,duration from shows where datetime > ' + str(present_timestamp) + ' order by datetime limit 1')
 
         for (rindex, row) in enumerate(rows):
 
