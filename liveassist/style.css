@@ -1,0 +1,310 @@
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+
+body
+{
+  padding: 0;
+  margin: 0;
+
+  background-color: #333;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  color: #fff;
+
+  overflow: hidden;
+}
+
+#header
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+
+  border-bottom: 1px solid #999;
+  height: 60px;
+  line-height: 60px;
+  overflow: hidden;
+
+  background-color: #333;
+  z-index: 100;
+}
+
+#header-show_name
+{
+  float: left;
+  width: 100%;
+  height: 100%;
+  font-size: 1.6em;
+  padding-left: 12px;
+}
+
+#main-playlist
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+  padding: 12px;
+  border-top: 60px solid rgba(0,0,0,0);
+  border-bottom: 140px solid rgba(0,0,0,0);
+}
+
+  #main-playlist .ui-resizable-handle
+  {
+    background-color: #555;    
+  }
+
+  #main-playlist-tracks
+  {
+    max-width: 630px;
+    margin: 0 auto;
+  }
+
+  #main-playlist .track
+  {
+    margin-left: 30px;
+    border: 1px solid #000;
+    border-bottom: none;
+    padding: 15px 65px 15px 15px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #main-playlist .track:last-child
+  {
+    border-bottom: 1px solid #000;
+  }
+
+  #main-playlist .track .status
+  {
+    position: absolute;
+    top: 15px;
+    left: -30px;
+    width: 30px;
+    height: 30px;
+  }
+
+  #main-buttons .button .status
+  {
+    position: absolute;
+    top: 37px;
+    left: -30px;
+    width: 30px;
+    height: 30px;
+  }
+
+  #main-playlist .track[data-status=playing] .status, #main-buttons .button[data-status=playing] .status
+  {
+    background-image: url('svg/play.svg');
+    background-size: 15px 15px;
+    background-repeat: no-repeat;
+  }
+
+  #main-playlist .track[data-status=paused] .status
+  {
+    top: 12px;
+    left: -35px;
+    background-image: url('svg/pause.svg');
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+  }
+
+  #main-playlist .track[data-type=audio], #main-buttons .button[data-type=audio]
+  {
+    background: #669;
+  }
+
+
+  #main-playlist .track[data-type=video], #main-buttons .button[data-type=video]
+  {
+    background: #696;
+  }
+
+  #main-playlist .track[data-type=image], #main-buttons .button[data-type=image]
+  {
+    background: #966;
+  }
+
+  #main-playlist .track[data-type=breakpoint]
+  {
+    background: #996;
+    text-align: center;
+    padding-right: 15px;
+    font-style: italic;
+  }
+
+  #main-playlist .duration
+  {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+
+#main-buttons
+{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  overflow: auto;
+  max-height: 100%;
+  padding: 12px;
+  border-top: 60px solid rgba(0,0,0,0);
+  border-bottom: 140px solid rgba(0,0,0,0);
+  text-align: center;
+}
+
+  #main-buttons .column
+  {
+    float: left;
+    width: 240px;
+    padding-left: 40px;
+    list-style-type: none;
+  }
+
+  #main-buttons .heading
+  {
+    height: 70px;
+    line-height: 70px;
+    font-size: 1.2em;
+    overflow: hidden;
+    margin-bottom: 15px;
+  }
+
+  #main-buttons .button
+  {
+    height: 90px;
+    line-height: 90px;
+    font-size: 1em;
+    border: 1px solid #000;
+    border-bottom: none;
+    position: relative;
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  #main-buttons .button:last-child
+  {
+    border-bottom: 1px solid #000;
+  }
+
+  #main-buttons .button span:last-child
+  {
+    max-width:100%;
+    overflow: hidden;
+  }
+
+  #main-buttons span
+  {
+    display: inline-block;
+    line-height: normal;
+    vertical-align: middle;    
+  }
+
+#supfooter
+{
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  height: 70px;
+  border-top: 1px solid #999;
+  width: 100%; 
+
+  background-color: #333;
+  z-index: 100;   
+}
+
+  #supfooter > *
+  {
+    float: left;
+    height: 70px;
+    border-right: 1px solid #999;
+    padding: 3px;
+  }
+
+  #supfooter > *:last-child
+  {
+    border-right: none;
+  }
+
+  #supfooter-status
+  {
+    width: 25%;
+  }
+
+  #supfooter-controls
+  {
+    width: 25%;
+  }
+
+  #supfooter-track_position
+  {
+    width: 50%;
+  }
+
+  #supfooter .label
+  {
+    font-size: 0.8em
+  }
+
+  #supfooter > * > span:last-child
+  {
+    display: block;
+    text-align: center;
+    font-size: 1.6em;
+    padding-top: 8px;
+  }
+
+  #control-track_position
+  {
+    margin: 15px 20px;
+  }
+
+#footer
+{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-top: 1px solid #999;
+  width: 100%;
+
+  background-color: #333;
+  z-index: 100;
+}
+
+#footer > *
+{
+  float: left;
+  width: 25%;
+  height: 70px;
+  border-right: 1px solid #999;
+  padding: 3px;
+}
+
+#footer > *:last-child
+{
+  border-right: none;
+}
+
+#footer .label
+{
+  font-size: 0.8em
+}
+
+#footer > * > span:last-child
+{
+  display: block;
+  text-align: center;
+  font-size: 1.6em;
+  padding-top: 8px;
+}
+
+

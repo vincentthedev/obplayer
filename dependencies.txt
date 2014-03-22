@@ -1,0 +1,28 @@
+Dependencies for OpenBroadcaster Remote.  This list may be incomplete.
+
+Dependencies are Debian/Ubuntu package names.
+
+- ntp
+- python
+- python-argparse
+- python-pycurl
+- python-openssl
+- python-apsw
+- python-gobject
+- python-gst0.10
+- python-gtk2
+- python-magic
+
+- gstreamer0.10-plugins-base
+- gstreamer0.10-plugins-good
+- gstreamer0.10-plugins-bad
+- gstreamer0.10-plugins-ugly
+
+- ubuntu-restricted-addons
+- ubuntu-restricted-extras 
+
+Include if sharing multiple OpenBroadcaster remotes with a local media library 
+
+- cifs-utils
+- smbfs
+

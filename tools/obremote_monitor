@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+# OpenBroadcaster off-the-air Recorder
+
+import sys, os
+
+# workaround for gstreamer stealing -h (help) argument.
+# thanks to: http://29a.ch/2009/2/14/pygst-messing-with-sys-argv
+argv = sys.argv;
+sys.argv = [];
+import gst
+sys.argv = argv;
+del argv;
+
+import time
+import argparse
+
+class ObRecorder:
+
+	def __init__(self):
+
+		parser = argparse.ArgumentParser(prog="obremote_monitor",formatter_class=argparse.ArgumentDefaultsHelpFormatter,description="Record off-the-air audio, encode to ogg, and save to destination directory (one file per hour).");
+		parser.add_argument('-D','--alsa-device',type=str,help='Name of the ALSA input device.',default='default');
+		parser.add_argument('-R','--sample-rate',type=str,help='Output sample rate in hz.',default='22050');
+		parser.add_argument('-C','--channels',type=str,help='Number of channels.  1 for mono, 2 for stereo.',default='1');
+		parser.add_argument('dest',help='File destination directory.',type=str);
+
+		self.args = parser.parse_args();
+
+		if(os.access(self.args.dest,os.W_OK)==False):
+			print 'Destination directory does not exist, or write permission denied.';
+			exit(1);
+
+		# set our date, so we can start writing to new file when the date changes.
+		date = time.strftime('%Y-%m-%d-%H');
+		self.start();
+
+		# main loop
+		while True:
+
+			time.sleep(1);
+
+			if(date!=time.strftime('%Y-%m-%d-%H')):
+				date=time.strftime('%Y-%m-%d-%H');
+				self.stop();
+				self.start();		
+
+
+	def start(self):
+		# determine filename...
+		outfile = self.args.dest+'/'+time.strftime('%Y-%m-%d_%H:%M:%S')+'.ogg';
+
+		self.pipeline = gst.parse_launch("alsasrc device="+self.args.alsa_device+" ! audioconvert ! audioresample ! audio/x-raw-float, rate="+self.args.sample_rate+", channels="+self.args.channels+" ! queue ! vorbisenc quality=0.0 ! oggmux ! queue ! filesink location="+outfile);
+		self.pipeline.set_state(gst.STATE_PLAYING);
+
+	def stop(self):
+		self.pipeline.set_state(gst.STATE_NULL);
+		del self.pipeline;
+
+
+record = ObRecorder();

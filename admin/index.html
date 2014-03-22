@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpenBroadcaster Remote - Web Admin</title>
+    <link href="/common.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="/jquery.min.js"></script>
+    <script type="text/javascript" src="/common.js"></script>
+  </head>
+
+  <body>
+
+    <h1>OpenBroadcaster Remote Web Admin</h1>
+
+    <div id="tabs">
+      <div class="tab selected" data-content="home">Home</div>
+      <div class="tab" data-content="basic">Basic</div>
+      <div class="tab" data-content="sync">Sync/Media</div>
+      <div class="tab" data-content="audio">Audio/Visualization</div>
+      <div class="tab" data-content="http">HTTP(S) Admin</div>
+      <div class="tab" data-content="liveassist">Live Assist</div>
+      <div class="tab" data-content="log">Log</div>
+
+      <div id="commands">
+        <input id="command_quit" type="button" value="Quit/Restart" onclick="Site.quit();">
+        <input id="command_fullscreen" type="button" value="Fullscreen (<% obplayer.HTTPAdmin.fullscreen_status() %>)" onclick="Site.fullscreen();">
+      </div>
+
+      <div style="clear: both;"></div>
+    </div>
+
+
+  
+    <div id="content">
+
+      <div id="notice" style="display: none;"></div>
+      <div id="error" style="display: none;"></div>
+
+      <div id="content-home">
+
+<h2>Current Configuration</h2>
+
+<table>
+	<tr>
+		<td>Version:</td>
+		<td>v<% obplayer.Main.version %></td>
+	</tr>
+	<tr class="padding">
+		<td>Device ID:</td>
+		<td><% obplayer.Config.setting('device_id') %></td>
+	</tr>
+	<tr>
+		<td>Device Password:</td>
+		<td>(hidden)</td>
+	</tr>
+	<tr>
+		<td>Sync URL:</td>
+		<td><% obplayer.Config.setting('sync_url') %></td>
+	</tr>
+	<tr>
+		<td>Sync Amount (buffer):</td>
+		<td><% obplayer.Config.setting('buffer') %> hours</td>
+	</tr>
+	<tr class="padding">
+		<td>Remote Media Location:</td>
+		<td><% obplayer.Config.setting('remote_media') %></td>
+	</tr>
+	<tr>
+		<td>Show Lock-in Time:</td>
+		<td><% obplayer.Config.setting('showlock') %> minutes</td>
+	</tr>
+	<tr>
+		<td>Media Sync Frequency:</td>
+		<td><% obplayer.Config.setting('syncfreq') %> minutes</td>
+	</tr>
+	<tr>
+		<td>Emergency Sync Frequency:</td>
+		<td><% obplayer.Config.setting('syncfreq_emerg') %></td>
+	</tr>
+	<tr>
+		<td>Log Sync Frequency:</td>
+		<td><% obplayer.Config.setting('syncfreq_log') %></td>
+	</tr>
+	<tr>
+		<td>Media Sync Mode:</td>
+		<td id="sync_mode_value"><% obplayer.Config.setting('syncmode') %></td>
+	</tr>
+  <tr class="backup_media">
+    <td>Backup Downloaded Media:</td>
+    <td><% obplayer.Config.setting('copy_media_to_backup') %></td>
+  </tr>
+  <tr>
+    <td>Fallback Media:</td>
+    <td><% obplayer.Config.setting('fallback_media') %></td>
+  </tr>
+	<tr class="local_media_location">
+		<td>Local Media Location:</td>
+		<td><% obplayer.Config.setting('local_media') %></td>
+	</tr>
+	<tr class="local_media_location">
+		<td>Local Uploads (Unapproved) Location:</td>
+		<td><% obplayer.Config.setting('local_uploads') %></td>
+	</tr>
+	<tr class="local_media_location">
+		<td>Local Archive (Deleted) Location:</td>
+		<td><% obplayer.Config.setting('local_archive') %></td>
+	</tr>
+	<tr class="padding">
+		<td>Audio Visualization Enabled?:</td>
+		<td><% obplayer.Config.setting('audiovis') %></td>
+	</tr>
+	<tr>
+		<td>Audio Output Mode:</td>
+		<td><% obplayer.Config.setting('audio_output') %></td>
+	</tr>
+	<tr>
+		<td>ALSA Device (if using ALSA):</td>
+		<td><% obplayer.Config.setting('alsa_device') %></td>
+	</tr>
+	<tr class="padding">
+		<td>HTTP Admin Enabled?:</td>
+		<td><% obplayer.Config.setting('http_admin_enable') %></td>
+	</tr>
+	<tr>
+		<td>HTTPS Enabled?:</td>
+		<td id="https_setting"><% obplayer.Config.setting('http_admin_secure') %></td>
+	</tr>
+	<tr class="ssl_certificate">
+		<td>SSL Certificate:</td>
+		<td><% obplayer.Config.setting('http_admin_sslcert') %></td>
+	</tr>
+	<tr>
+		<td>HTTP Admin Port:</td>
+		<td><% obplayer.Config.setting('http_admin_port') %></td>
+	</tr>
+	<tr>
+		<td>HTTP Admin Username:</td>
+		<td><% obplayer.Config.setting('http_admin_username') %></td>
+	</tr>
+	<tr>
+		<td>HTTP Admin Password:</td>
+		<td>(hidden)</td>
+	</tr>
+
+	<tr class="padding">
+		<td>Live Assist Enabled?:</td>
+		<td><% obplayer.Config.setting('live_assist_enable') %></td>
+	</tr>
+	<tr>
+		<td>Live Assist HTTP Port:</td>
+		<td><% obplayer.Config.setting('live_assist_port') %></td>
+	</tr>
+</table>
+
+      </div>
+      <div style="display: none;" id="content-basic">
+
+        <h2>Basic Settings</h2>
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Device ID</td>
+              <td><input type="text" name="device_id" value="<% obplayer.Config.setting('device_id',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Device Password</td>
+              <td><input type="password" name="device_password" value="<% obplayer.Config.setting('device_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Sync URL</td>
+              <td><input type="text" name="sync_url" value="<% obplayer.Config.setting('sync_url',True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('basic');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div style="display: none;" id="content-sync">
+
+        <h2>Sync/Media Settings</h2>
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Sync Buffer</td>
+              <td><input type="text" name="buffer" value="<% obplayer.Config.setting('buffer', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Show Lock</td>
+              <td><input type="text" name="showlock" value="<% obplayer.Config.setting('showlock', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Media Sync Freq</td>
+              <td><input type="text" name="syncfreq" value="<% obplayer.Config.setting('syncfreq', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Emergency Sync Freq</td>
+              <td><input type="text" name="syncfreq_emerg" value="<% obplayer.Config.setting('syncfreq_emerg', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Playlog Sync Freq</td>
+              <td><input type="text" name="syncfreq_log" value="<% obplayer.Config.setting('syncfreq_log', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Media Sync Mode</td>
+              <td><select id="sync_media_mode" name="syncmode">
+                <option value="remote"<% obplayer.HTTPAdmin.form_item_selected('syncmode', 'remote') %>>remote</option>
+                <option value="backup"<% obplayer.HTTPAdmin.form_item_selected('syncmode', 'backup') %>>backup</option>
+                <option value="local"<% obplayer.HTTPAdmin.form_item_selected('syncmode', 'local') %>>local</option>
+              </select></td>
+            </tr>
+            <tr class="sync_display_adjust sync_backup">
+              <td>Backup Downloaded Media</td>
+              <td><input type="checkbox" name="copy_media_to_backup" value="1"<% obplayer.HTTPAdmin.form_item_checked('copy_media_to_backup') %>></td>
+            </tr>
+            <tr>
+              <td>Fallback Media</td>
+              <td><input type="text" name="fallback_media" value="<% obplayer.Config.setting('fallback_media',True) %>"></td>
+            </tr>
+            <tr class="sync_display_adjust sync_backup sync_local">
+              <td>Local Media (approved)</td>
+              <td><input type="text" name="local_media" value="<% obplayer.Config.setting('local_media',True) %>"></td>
+            </tr>
+            <tr class="sync_display_adjust sync_backup sync_local">
+              <td>Local Media (unapproved)</td>
+              <td><input type="text" name="local_uploads" value="<% obplayer.Config.setting('local_uploads',True) %>"></td>
+            </tr>
+            <tr class="sync_display_adjust sync_backup sync_local">
+              <td>Local Media (archived)</td>
+              <td><input type="text" name="local_archive" value="<% obplayer.Config.setting('local_archive',True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('sync');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div style="display: none;" id="content-audio">
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Media Mode</td>
+              <td><select id="audio_output_select" name="audio_output">
+                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('audio_output','auto') %>>Auto Detect</option>
+                  <option value="alsa"<% obplayer.HTTPAdmin.form_item_selected('audio_output','alsa') %>>ALSA</option>
+                  <option value="esd"<% obplayer.HTTPAdmin.form_item_selected('audio_output','esd') %>>Esound</option>
+                  <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('audio_output','jack') %>>JACK</option>
+                  <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('audio_output','oss') %>>OSS</option>
+                  <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('audio_output','pulse') %>>Pulse Audio</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('audio_output','test') %>>No Output</option>
+                </select></td>
+            </tr>
+            <tr id="alsa_device_row">
+              <td>ALSA Device Name</td>
+              <td><input type="text" name="alsa_device" value="<% obplayer.Config.setting('alsa_device',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Enable Audio Visualization</td>
+              <td><input type="checkbox" name="audiovis" value="1"<% obplayer.HTTPAdmin.form_item_checked('audiovis') %>></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div style="display: none;" id="content-http">
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Enable Web Admin</td>
+              <td><input type="checkbox" name="http_admin_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_admin_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Enable SSL</td>
+              <td><input id="http_admin_secure" type="checkbox" name="http_admin_secure" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_admin_secure') %>></td>
+            </tr>
+            <tr>
+              <td>Web Admin Port</td>
+              <td><input type="text" name="http_admin_port" value="<% obplayer.Config.setting('http_admin_port',True) %>"></td>
+            </tr>
+            <tr id="http_admin_sslcert_row">
+              <td>SSL Certificate File</td>
+              <td><input type="text" name="http_admin_sslcert" value="<% obplayer.Config.setting('http_admin_sslcert',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Username</td>
+              <td><input type="text" name="http_admin_username" value="<% obplayer.Config.setting('http_admin_username',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Password</td>
+              <td><input type="password" name="http_admin_password" value="<% obplayer.Config.setting('http_admin_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('http');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div style="display: none;" id="content-liveassist">
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Enable Live Assist</td>
+              <td><input type="checkbox" name="live_assist_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('live_assist_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Live Assist HTTP Port</td>
+              <td><input type="text" name="live_assist_port" value="<% obplayer.Config.setting('live_assist_port', True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('liveassist');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div style="display: none;" id="content-log">
+        <% '<br>\n'.join(obplayer.Log.get_log()) %>
+      </div>
+
+    </div>
+
+    <p style="font-size: 0.9em; padding-top: 1em;">OpenBroadcaster Remote is released under Affero GPL v3 and may be downloaded at <a href="http://www.openbroadcaster.com/">openbroadcaster.com</a>.  View <a href="http://www.gnu.org/licenses/agpl.html">license</a>.</p>
+
+  </body>
+</html>

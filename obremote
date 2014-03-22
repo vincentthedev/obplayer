@@ -1,0 +1,14 @@
+#!/bin/bash
+
+running_check=`ps -aef |grep "python [o]bplayer.py" | wc -l`
+
+if [ "$running_check" -eq "1" ]
+then
+	echo OpenBroadcaster Remote already running.
+	exit;
+fi
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+
+python obplayer.py $@
