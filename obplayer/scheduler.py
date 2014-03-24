@@ -85,6 +85,8 @@ class ObShow (object):
     def __init__(self, datetime):
 	self.paused = False
 	self.pause_position = 0
+	self.auto_advance = True
+
 	self.image_end_time = 0
 	self.av_end_time = 0
 	self.media_start_time = 0
@@ -124,7 +126,7 @@ class ObShow (object):
 		obplayer.Log.log('starting live assist show', 'scheduler')
 	    else:
 		obplayer.Log.log('starting live assist show paused', 'scheduler')
-		self.paused = True
+		self.auto_advance = False
 	else:
 	    # find the track that should play at the present time
 	    self.playlist.seek_current(present_time - self.show_data['start_time'])
@@ -157,9 +159,7 @@ class ObShow (object):
 	    return False
 
 	if self.show_data['type'] == 'live_assist':
-	    # this will either play the current track at the start, or if we've just unpaused, we will start at the last position
-	    self.play_media(media, self.pause_position, present_time)
-	    self.pause_position = 0
+	    self.play_media(media, 0, present_time)
 	else:
 	    offset = present_time - self.show_data['start_time'] - media['offset']
 	    #print str(self.playlist.pos) + " " + media['title'] + " Offset: " + str(offset) + " " + str(present_time - self.show_data['start_time']) + " " + str(media['offset'])
@@ -174,7 +174,7 @@ class ObShow (object):
 	if media['media_type'] == 'breakpoint':
 	    obplayer.Log.log('stopping on breakpoint at position ' + str(self.playlist.pos), 'scheduler')
 	    self.playlist.increment()
-	    self.paused = True
+	    self.auto_advance = False
 	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], '', '', self.show_data['name'])
 
 	else:
@@ -197,6 +197,7 @@ class ObShow (object):
 
     def playlist_seek(self, track_num, seek):
 	self.playlist.set(track_num)
+	self.auto_advance = True
 	if not self.playlist.is_finished():
 	    media = self.playlist.current()
 	    self.play_media(media, media['duration'] * (seek / 100), time.time())
@@ -214,16 +215,16 @@ class ObShow (object):
 
 	media = group[group_item_num]
 	self.play_media(media, media['duration'] * (seek / 100), time.time())
-	self.paused = True	# by setting pause here, the media will play to the end but the scheduler will not advance to the next track
+	self.auto_advance = False
 	return True
 
     def increment(self):
-	if self.paused:
+	if self.is_paused():
 	    return False
 	self.playlist.increment()
 
     def pause(self):
-	if not self.paused or self.media_end_time:
+	if not self.paused:
 	    self.paused = True
 	    self.pause_position = time.time() - self.media_start_time
 	    self.stop_current()
@@ -231,15 +232,14 @@ class ObShow (object):
     def unpause(self):
 	if self.paused:
 	    self.paused = False
-	    # If we were playing a track when we paused, then continue it, otherwise play the next 
-	    if self.now_playing:
-		self.play_media(self.now_playing, self.pause_position, time.time())
-	    else:
-		self.play_current(time.time())
+	    self.play_media(self.now_playing, self.pause_position, time.time())
 	    self.pause_position = 0
+	elif not self.auto_advance:
+	    self.auto_advance = True
+	    self.play_current(time.time())
 
     def is_paused(self):
-	return self.paused
+	return self.paused or not self.auto_advance
 
 
 class ObScheduler:
