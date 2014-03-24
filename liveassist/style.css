@@ -333,7 +333,7 @@ body
     animation-timing-function: linear;
     animation-iteration-count: infinite;
 
-    color: #f44;
+    color: #ff4;
 }
 
 @-moz-keyframes blinker {  

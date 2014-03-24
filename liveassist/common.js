@@ -369,7 +369,7 @@ LA.tick = function()
     $('#info-track_time').text(LA.friendlyDuration(time)+'/'+LA.friendlyDuration(duration));
     $('#info-track_remaining').text(LA.friendlyDuration(remaining));
 
-    if(duration>20 && (remaining<20 || time/duration<0.05)) $('#info-track_remaining').addClass('attention');
+    if(duration>20 && (remaining<20 || remaining/duration<0.05)) $('#info-track_remaining').addClass('attention');
     else $('#info-track_remaining').removeClass('attention');
 
     var slider_val = time*100/duration;
