@@ -233,12 +233,14 @@ LA.updateStatus = function()
       if(response.status=='playing')
       {
         $('#info-status').text('Playing');
+        $('#info-status').attr('data-status','playing');
         LA.playing = true;
       }
 
       else
       {
         $('#info-status').text('Paused');
+        $('#info-status').attr('data-status','paused');
         LA.playing = false;
       }
 
@@ -354,22 +356,29 @@ LA.tick = function()
   {
 
     if(LA.currentPlayMode == 'playlist') 
-      var duration = $('#track-'+LA.currentTrackNumber).attr('data-duration');
+      var duration = parseFloat($('#track-'+LA.currentTrackNumber).attr('data-duration'));
 
     else
-      var duration = $('#group-'+LA.currentGroupNumber+'-item-'+LA.currentTrackNumber).attr('data-duration');
+      var duration = parseFloat($('#group-'+LA.currentGroupNumber+'-item-'+LA.currentTrackNumber).attr('data-duration'));
 
     var time = Date.now()/1000 - LA.currentTrackStart;
+    var remaining = Math.max(duration-time,0);
 
     if(time>duration) time=duration;
 
     $('#info-track_time').text(LA.friendlyDuration(time)+'/'+LA.friendlyDuration(duration));
+    $('#info-track_remaining').text(LA.friendlyDuration(remaining));
+
+    if(duration>20 && (remaining<20 || time/duration<0.05)) $('#info-track_remaining').addClass('attention');
+    else $('#info-track_remaining').removeClass('attention');
 
     var slider_val = time*100/duration;
   }
   else 
   {
     $('#info-track_time').text('00:00/00:00');
+    $('#info-track_remaining').text('00:00');
+    $('#info-track_remaining').removeClass('attention');
     var slider_val = 0;
   }
 
@@ -385,6 +394,8 @@ LA.tick = function()
 // convert seconds to friendly duration
 LA.friendlyDuration = function(secs)
 {
+
+  secs = Math.floor(secs);
 
   var hours = Math.floor(secs/60/60);
   secs -= hours*60*60;
