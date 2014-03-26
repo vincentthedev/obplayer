@@ -260,7 +260,6 @@ class ObShow (object):
 	return self.paused or not self.auto_advance
 
     def position(self):
-	print "Position... Start: " + str(self.media_start_time) + " End: " + str(self.media_end_time)
 	if not self.media_end_time:
 	    if self.now_playing == None:
 		return 0
@@ -371,7 +370,7 @@ class ObScheduler:
 
 	    # media update time.
 	    if self.present_show.media_end_time > 0 and present_time >= self.present_show.media_end_time and present_time >= self.emerg_broadcast_until:
-		print "Updating At: " + str(present_time)
+		#print "Updating At: " + str(present_time)
 		self.present_show.play_next(present_time)
 		#print "Seek Time: " + str(obplayer.Player.stats_seek_time)
 		#if self.present_show.now_playing:
@@ -504,7 +503,6 @@ class ObScheduler:
 	    data['position'] = 0
 	    data['track'] = -1
 
-	print data
 	return data
 
  
