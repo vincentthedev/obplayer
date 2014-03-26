@@ -155,7 +155,7 @@ class ObShow (object):
 	self.play_current(present_time)
 
     def play_next(self, present_time):
-	if self.is_paused():
+	if self.is_paused() or self.playlist.is_finished():
 	    self.stop_current()
 	    return False
 
@@ -166,8 +166,6 @@ class ObShow (object):
 	    # in case downloading time is too long, we might still need to advance to the next track.
 	    self.playlist.advance_to_current(present_time - self.show_data['start_time'])
 
-	if self.playlist.is_finished():
-	    return False
 	return self.play_current(present_time)
 
     def play_current(self, present_time):
@@ -260,6 +258,14 @@ class ObShow (object):
 
     def is_paused(self):
 	return self.paused or not self.auto_advance
+
+    def position(self):
+	print "Position... Start: " + str(self.media_start_time) + " End: " + str(self.media_end_time)
+	if not self.media_end_time:
+	    if self.now_playing == None:
+		return 0
+	    return self.now_playing['duration']
+	return time.time() - self.media_start_time
 
 
 class ObScheduler:
@@ -365,7 +371,7 @@ class ObScheduler:
 
 	    # media update time.
 	    if self.present_show.media_end_time > 0 and present_time >= self.present_show.media_end_time and present_time >= self.emerg_broadcast_until:
-		#print "Updating At: " + str(present_time)
+		print "Updating At: " + str(present_time)
 		self.present_show.play_next(present_time)
 		#print "Seek Time: " + str(obplayer.Player.stats_seek_time)
 		#if self.present_show.now_playing:
@@ -484,7 +490,7 @@ class ObScheduler:
 
 	    data['artist'] = now_playing['artist']
 	    data['title'] = now_playing['title']
-	    data['position'] = time.time() - self.present_show.media_start_time
+	    data['position'] = self.present_show.position()
 
 	    if 'group_id' in now_playing:
 		data['mode'] = 'group'
@@ -498,6 +504,7 @@ class ObScheduler:
 	    data['position'] = 0
 	    data['track'] = -1
 
+	print data
 	return data
 
  
