@@ -163,10 +163,6 @@ class MainApp:
         if obplayer.Config.setting('http_admin_enable'):
 	    HTTPAdminTask().start()
 
-	# run our live assist web server.
-        if obplayer.Config.setting('live_assist_enable'):
-	    LiveAssistTask().start()
-
 	# determine our version from the VERSION file.  if we can do that, report the version to the server.
         if os.path.exists('VERSION'):
             self.version = open('VERSION').read().strip()
@@ -176,6 +172,11 @@ class MainApp:
         if self.args.reset:
 	    obplayer.Sync.sync_shows(True)
 	    obplayer.Sync.sync_emergency_broadcasts()
+	    obplayer.Sync.sync_media()
+
+	# run our live assist web server.
+        if obplayer.Config.setting('live_assist_enable'):
+	    LiveAssistTask().start()
 
 	# Start scheduler thread
 	SchedulerTask().start()
