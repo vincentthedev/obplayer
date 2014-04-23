@@ -250,8 +250,11 @@ class ObShow (object):
     def unpause(self):
 	if self.paused:
 	    self.paused = False
-	    self.play_media(self.now_playing, self.pause_position, time.time())
-	    self.pause_position = 0
+	    if self.now_playing is None:
+		self.play_current(time.time())
+	    else:
+		self.play_media(self.now_playing, self.pause_position, time.time())
+		self.pause_position = 0
 	elif not self.auto_advance:
 	    self.auto_advance = True
 	    self.play_current(time.time())
