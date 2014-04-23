@@ -304,7 +304,6 @@ class ObGui:
     def drawing_area_image_update(self, filename=False):
         if obplayer.Main.headless:
             return
-
         gobject.idle_add(self.drawing_area_image_update_idleadd, filename)
 
     def drawing_area_image_update_idleadd(self, filename=False):
@@ -315,16 +314,16 @@ class ObGui:
             self.next_pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, self.gui_drawing_area.allocation.width, self.gui_drawing_area.allocation.height)
             self.next_pixbuf_original = self.next_pixbuf
             self.next_pixbuf = self.pixbuf_resize_to_drawing_area(self.next_pixbuf_original)
-        else:
 
+        else:
             self.next_pixbuf = False
             self.next_pixbuf_original = False
 
         if self.pixbuf != False:
             self.drawing_area_transition_mode = 'out'
             gobject.timeout_add(50, self.drawing_area_transition_timer, 'fade')
-        else:
 
+        else:
             self.gui_drawing_area_alpha = 0
             self.pixbuf = self.next_pixbuf
             self.pixbuf_original = self.next_pixbuf_original

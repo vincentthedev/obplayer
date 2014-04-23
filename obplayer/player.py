@@ -106,12 +106,10 @@ class ObPlayer:
 	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audiovis') == 0):
 	    obplayer.Gui.gui_gst_area_viewport.hide()
 	    obplayer.Gui.gui_drawing_area_viewport.show()
-	    pass
 
 	else:
 	    obplayer.Gui.gui_drawing_area_viewport.hide()
 	    obplayer.Gui.gui_gst_area_viewport.show()
-	    pass
 
 	self.media_mode = mode
 
@@ -205,9 +203,10 @@ class ObPlayer:
             if self.wait_sync() == False:
                 obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to playing).', 'error')
 
-	# TODO is this not needed now?
-	# remote image from display if applicable.
-	#obplayer.Gui.drawing_area_image_update();
+	elif media['media_type'] == 'image':
+	    # remote image from display if applicable.
+	    self.change_media_mode('image')
+	    obplayer.Gui.drawing_area_image_update(media_filename)
 
         self.media_stop_timestamp = max(self.media_stop_timestamp, time.time() + media['duration'] - offset)  # keep track of when this is supposed to play until. (required to check 'is playing').
 	self.media_actual_start = time.time()
