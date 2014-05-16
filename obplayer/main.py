@@ -30,7 +30,7 @@ import sys
 import os
 
 import gobject
-import gtk
+#import gtk
 
 import argparse
 
@@ -187,14 +187,15 @@ class MainApp:
 	SyncEmergTask().start()
 	SyncMediaTask().start()
 
-	#self.loop = gobject.MainLoop()
-        #self.loop.run()
-	gtk.main()
+	self.loop = gobject.MainLoop()
+        self.loop.run()
+	#gtk.main()
 
 	self.application_shutdown(False)
 
     def sigint_handler(self, signal, frame):
-	gtk.main_quit()
+	#gtk.main_quit()
+	self.loop.quit()
         #self.application_shutdown(False)
 
     def application_shutdown(self, widget):
