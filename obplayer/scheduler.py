@@ -390,7 +390,7 @@ class ObScheduler:
     def next_update(self):
         next_update = 0
 
-        if self.present_show.media_end_time > 0 and (next_update == 0 or self.present_show.media_end_time < next_update):
+        if self.present_show and self.present_show.media_end_time > 0 and (next_update == 0 or self.present_show.media_end_time < next_update):
             next_update = self.present_show.media_end_time
 
         if self.show_update_time > 0 and (next_update == 0 or self.show_update_time < next_update):

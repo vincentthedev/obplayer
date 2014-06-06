@@ -46,7 +46,7 @@ class ObFallbackPlayer:
         self.media_types.append('audio/mpeg')
         self.media_types.append('audio/ogg')
 
-	# TODO we're always headless new so we never play images or video??
+        # TODO we're always headless new so we never play images or video??
         #if obplayer.Main.headless == False:
         self.image_types.append('image/jpeg')
         self.image_types.append('image/png')
@@ -75,8 +75,8 @@ class ObFallbackPlayer:
                 if filetype in self.image_types:
                     self.media.append([filename, 'image', self.image_duration])
 
-	#
-	# shuffle the list. (should really just do this after all discoverers are complete...)
+        #
+        # shuffle the list. (should really just do this after all discoverers are complete...)
         random.shuffle(self.media)
 
     def mediainfo_discovered(self, d, is_media, filename):
@@ -92,16 +92,16 @@ class ObFallbackPlayer:
             media_type = 'audio'
             duration = d.audiolength / gst.MSECOND
 
-	# we discovered some more fallback media, add to our media list.
+        # we discovered some more fallback media, add to our media list.
         self.media.append([filename, media_type, duration / 1000.0])
 
-	# shuffle the list. (should really just do this after all discoverers are complete...)
+        # shuffle the list. (should really just do this after all discoverers are complete...)
         random.shuffle(self.media)
 
     # check to see whether we need to play some fallback media.
     def run(self):
 
-	# early return if we're playing something already, have no fallback media, or scheduler is about to do something.
+        # early return if we're playing something already, have no fallback media, or scheduler is about to do something.
         if obplayer.Player.is_playing() or len(self.media) == 0 or obplayer.Scheduler.next_update() - time.time() < 5:
             return True
 
@@ -109,7 +109,7 @@ class ObFallbackPlayer:
             self.play_index = 0
             random.shuffle(self.media)  # shuffle again to create a new order for next time.
 
-	# nothing playing? well let's play something.
+        # nothing playing? well let's play something.
         media = {'media_id': 0, 'artist': u'unknown', 'file_location': unicode(obplayer.Config.setting('fallback_media')), 'start_time': 0.0, 'title': unicode(self.media[self.play_index][0]),
                  'filename': unicode(self.media[self.play_index][0]), 'duration': self.media[self.play_index][2], 'order_num': 0, 'media_type': unicode(self.media[self.play_index][1]),
                  'type': unicode(self.media[self.play_index][1])}

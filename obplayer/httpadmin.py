@@ -68,14 +68,18 @@ class ObHTTPAdmin(HTTPServer):
             return ''
 
     def fullscreen_status(self):
-	return 'Off'
+	if(obplayer.Gui.gui_window_fullscreen):
+		return 'On'
+	else:
+		return 'Off'
 
     def command_restart(self):
 	os.kill(os.getpid(), signal.SIGINT)
 	return { 'status' : True }
 
     def command_fstoggle(self):
-	return { 'status' : True, 'fullscreen' : 'Off' }  # + str(not self.Gui.gui_window_fullscreen).lower() + ' }'
+	obplayer.Gui.fullscreen_toggle(None)
+	return { 'status' : True, 'fullscreen' : obplayer.Gui.gui_window_fullscreen }  # + str(not self.Gui.gui_window_fullscreen).lower() + ' }'
 
     def handle_post(self, path, postvars):
         error = None
