@@ -138,6 +138,7 @@ class ObPlayer:
 
 	# see if the file exists.  if not, return false...
         if os.path.exists(media_filename) == False:
+            obplayer.Log.log('ObPlayer.play: File ' + media_filename + ' does not exist. Skipping playback', 'error')
             return False
 
 	self.now_playing = media

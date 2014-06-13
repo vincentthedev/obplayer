@@ -252,7 +252,7 @@ class ObConfigData(ObData):
         self.add_setting('device_id', '1', 'int')
         self.add_setting('device_password', 'password', 'text')
         self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
-        self.add_setting('buffer', '1', 'int')
+        self.add_setting('buffer', '24', 'int')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
         self.add_setting('showlock', '20', 'int')
         self.add_setting('syncfreq', '2', 'int')
