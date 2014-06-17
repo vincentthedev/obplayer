@@ -1,11 +1,13 @@
 Openbroadcaster - Remote Installation Instructions
 
-1. See dependencies.txt for remote dependencies.
+1. See dependencies.txt for remote dependencies
 
-2. Run bash "obremote" or bash "obremote_loop -f".
+2. Run bash "obremote" or bash "obremote_loop -f". "bash obremote-h" for help
 
-3. Within the remote GUI, access the settings and fill out setting information
-as required.
+3. Http admin panel http://<IP_of_ Remote_Device>:23233 default user = admin default password = admin
 
-4. Restart the remote.
+4. Configure tabbed menus
 
+5. Restart the remote
+
+More info at http://wiki.openbroadcaster.com/
