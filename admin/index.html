@@ -263,6 +263,10 @@
               <td><input type="checkbox" name="audiovis" value="1"<% obplayer.HTTPAdmin.form_item_checked('audiovis') %>></td>
             </tr>
             <tr>
+              <td>Gstreamer Init Callback</td>
+              <td><input type="text" name="gst_init_callback" value="<% obplayer.Config.setting('gst_init_callback',False) %>"></td>
+            </tr>
+            <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
             </tr>
           </tbody>

@@ -266,6 +266,7 @@ class ObConfigData(ObData):
         self.add_setting('audiovis', '1', 'bool')
         self.add_setting('audio_output', 'auto', 'text')
         self.add_setting('alsa_device', 'default', 'text')
+        self.add_setting('gst_init_callback', '', 'text')
         self.add_setting('http_admin_enable', '1', 'bool')
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
