@@ -7,7 +7,7 @@ Site.fullscreen = function()
 
   $.get('/command/fstoggle',{},function(response)
   {
-    $('#command_fullscreen').val('Fullscreen ('+(response.fullscreen ? 'On' : 'Off')+')');
+    $('#command_fullscreen').val('Fullscreen ('+response.fullscreen+')');
   },'json');
 }
 
