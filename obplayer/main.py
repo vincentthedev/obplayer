@@ -131,6 +131,8 @@ class MainApp:
         parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and emergency broadcast databases', default=False)
         parser.add_argument('-H', '--headless', action='store_true', help='run headless (audio only)', default=False)
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
+        #parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=False)
+        parser.add_argument('--disable-http', action='store_true', help='disables the http admin', default=False)
 
         self.args = parser.parse_args()
         self.headless = self.args.headless
@@ -160,7 +162,7 @@ class MainApp:
             obplayer.RemoteData.empty_table('emergency_broadcasts')
 
 	# run our admin web server.
-        if obplayer.Config.setting('http_admin_enable'):
+        if self.args.disable_http is False:
 	    HTTPAdminTask().start()
 
 	# determine our version from the VERSION file.  if we can do that, report the version to the server.
