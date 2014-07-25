@@ -92,6 +92,9 @@ $(document).ready(function()
   {
     if($('#audio_output_select').val()=='alsa') $('#alsa_device_row').show();
     else $('#alsa_device_row').hide();
+
+    if($('#audio_output_select').val()=='jack') $('#jack_port_name_row').show();
+    else $('#jack_port_name_row').hide();
   });
   $('#audio_output_select').change();
 

@@ -63,6 +63,8 @@ class ObPlayer:
         elif audio_output == 'jack':
             self.sc_sink = gst.element_factory_make('jackaudiosink', 'sc_sink')
             self.sc_sink.set_property('connect', 0)  # don't autoconnect ports.
+	    name = obplayer.Config.setting('jack_port_name')
+            self.sc_sink.set_property('client-name', name if name else 'obplayer')
 
         elif audio_output == 'oss':
             self.sc_sink = gst.element_factory_make('osssink', 'sc_sink')
