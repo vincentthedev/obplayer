@@ -32,9 +32,11 @@ import re
 class ObData:
 
     @staticmethod
-    def get_datadir():
+    def get_datadir(basedir=None):
 	# if ~/.openbroadcaster doesn't exist, we need to create it.
-        datadir = os.path.expanduser('~/.openbroadcaster')
+	if basedir is None:
+	    basedir = '~/.openbroadcaster'
+        datadir = os.path.expanduser(basedir)
 
         if os.access(datadir, os.F_OK) == False:
             os.mkdir(datadir)
@@ -116,9 +118,9 @@ class ObData:
 
 class ObConfigData(ObData):
 
-    def __init__(self):
+    def __init__(self, basedir=None):
 
-	self.datadir = ObData.get_datadir()
+	self.datadir = ObData.get_datadir(basedir)
         self.con = apsw.Connection(self.datadir + '/settings.db')
         self.cur = self.con.cursor()
 
@@ -321,9 +323,9 @@ class ObConfigData(ObData):
 
 class ObRemoteData(ObData):
 
-    def __init__(self):
+    def __init__(self, basedir=None):
 
-	self.datadir = ObData.get_datadir()
+	self.datadir = ObData.get_datadir(basedir)
 
 	# our main database, stored in memory.
         self.con = apsw.Connection(':memory:')
@@ -765,9 +767,9 @@ class ObRemoteData(ObData):
 
 class ObPlaylogData(ObData):
 
-    def __init__(self):
+    def __init__(self, basedir=None):
 
-	self.datadir = ObData.get_datadir()
+	self.datadir = ObData.get_datadir(basedir)
 
         self.con = apsw.Connection(self.datadir + '/playlog.db')
         self.cur = self.con.cursor()

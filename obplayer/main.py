@@ -69,18 +69,22 @@ class SchedulerTask (Task):
 
 class HTTPAdminTask (Task):
     def run(self):
+	obplayer.HTTPAdmin = obplayer.ObHTTPAdmin()
         obplayer.HTTPAdmin.serve_forever()
 
     def stop(self):
-	obplayer.HTTPAdmin.shutdown()
+	if obplayer.HTTPAdmin:
+	    obplayer.HTTPAdmin.shutdown()
 
 
 class LiveAssistTask (Task):
     def run(self):
+	obplayer.LiveAssist = obplayer.ObLiveAssist()
         obplayer.LiveAssist.serve_forever()
 
     def stop(self):
-	obplayer.LiveAssist.shutdown()
+	if obplayer.LiveAssist:
+	    obplayer.LiveAssist.shutdown()
 
 
 class VersionUpdateTask (Task):
@@ -118,11 +122,14 @@ class SyncMediaTask (Task):
 
 
 
-class MainApp:
+class ObMainApp:
 
     def __init__(self):
+	# we can use this to speed up (or slow down) our timer for debugging.
+        self.timer_scale = 1
 
         self.quit = False
+        self.sync_run_state = False
 	self.stopflag = threading.Event()
 
         parser = argparse.ArgumentParser(prog='obremote', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Remote')
@@ -131,18 +138,26 @@ class MainApp:
         parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and emergency broadcast databases', default=False)
         parser.add_argument('-H', '--headless', action='store_true', help='run headless (audio only)', default=False)
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
-        #parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=False)
+        parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ None ])
         parser.add_argument('--disable-http', action='store_true', help='disables the http admin', default=False)
 
         self.args = parser.parse_args()
         self.headless = self.args.headless
 
+	obplayer.Log = obplayer.ObLog()
 	obplayer.Log.set_debug(self.args.debug)
 
-	# we can use this to speed up (or slow down) our timer for debugging.
-        self.timer_scale = 1
+	obplayer.Config = obplayer.ObConfigData(self.args.configdir[0])
+	obplayer.RemoteData = obplayer.ObRemoteData(self.args.configdir[0])
+	obplayer.PlaylogData = obplayer.ObPlaylogData(self.args.configdir[0])
 
-        self.sync_run_state = False
+	obplayer.Sync = obplayer.ObSync()
+	obplayer.Player = obplayer.ObPlayer()
+	obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
+	obplayer.Scheduler = obplayer.ObScheduler()
+
+	obplayer.Gui = obplayer.ObGui()
+	obplayer.Main = self
 
     def start(self):
 

@@ -43,22 +43,24 @@ from obplayer.main import *
 sys.argv = argv
 del argv
 
-Log = ObLog()
-Sync = ObSync()
-Config = ObConfigData()
-RemoteData = ObRemoteData()
-PlaylogData = ObPlaylogData()
-Player = ObPlayer()
-FallbackPlayer = ObFallbackPlayer()
-Scheduler = ObScheduler()
-HTTPAdmin = ObHTTPAdmin()
-LiveAssist = ObLiveAssist()
-Gui = ObGui()
+Log = None
+
+Config = None
+RemoteData = None
+PlaylogData = None
+
+Sync = None
+Player = None
+FallbackPlayer = None
+Scheduler = None
+
+Gui = None
 Main = None
 
-def main():
-    global Main
+HTTPAdmin = None
+LiveAssist = None
 
-    Main = MainApp()
-    Main.start()
+def main():
+    main = ObMainApp()
+    main.start()
 
