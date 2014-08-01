@@ -195,7 +195,7 @@ class ObPlayer:
                 if self.player.seek_simple(gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, offset * gst.SECOND) == False:
                     obplayer.Log.log('unable to seek on this track', 'error')
 	    self.stats_seek_time = time.time() - seek_start
-	    #print "Time To Seek: " + str(self.stats_seek_time) + " Offset: " + str(offset)
+	    #obplayer.Log.log("Time To Seek: " + str(self.stats_seek_time) + " Offset: " + str(offset), 'timing')
 
 	    if offset > 0:
 		obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
@@ -213,7 +213,7 @@ class ObPlayer:
 
         self.media_stop_timestamp = max(self.media_stop_timestamp, time.time() + media['duration'] - offset)  # keep track of when this is supposed to play until. (required to check 'is playing').
 	self.media_actual_start = time.time()
-	#print "Actual start at " + str(self.media_actual_start) + " Media Stop: " + str(self.media_stop_timestamp)
+	obplayer.Log.log("Playing media... Actual Start: " + str(self.media_actual_start) + " | Expected Stop: " + str(self.media_stop_timestamp) + " | Duration: " + str(media['duration']), 'timing')
 
         if media['order_num']:
             track_num = ' ' + str(media['order_num'] + 1)
@@ -236,11 +236,11 @@ class ObPlayer:
     # Stop playing audio.
     #
     def stop(self, mode='all'):
-	#if self.now_playing != None:
-	    #print "Actual Play Time: " + str(time.time() - self.media_actual_start) + " Recorded Duration: " + str(self.now_playing['duration'])
         if mode == 'av' or mode == 'all':
-	    # print 'stopping av';
+	    #print 'stopping av';
             self.player.set_state(gst.STATE_NULL)
+	    if self.now_playing:
+		obplayer.Log.log("Stopping media... At: " + str(time.time()) + " | Actual Play Length: " + str(time.time() - self.media_actual_start), 'timing')
 	    self.now_playing = None
 
     #

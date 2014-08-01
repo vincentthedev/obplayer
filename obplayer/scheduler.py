@@ -366,20 +366,18 @@ class ObScheduler:
 
 	    # media stop time (av)
 	    if self.present_show.av_end_time != 0 and present_time >= self.present_show.av_end_time:
-		#print ">>Stopping"
 		self.present_show.av_end_time = 0
 		obplayer.Player.stop('av')
 		# REMOVE self.Gui.reset_media_summary('av')
 
 	    # media update time.
 	    if self.present_show.media_end_time > 0 and present_time >= self.present_show.media_end_time and present_time >= self.emerg_broadcast_until:
-		#print "Updating At: " + str(present_time)
+		obplayer.Log.log("Scheduler Updating: " + str(present_time), 'timing')
 		self.present_show.play_next(present_time)
 		#print "Seek Time: " + str(obplayer.Player.stats_seek_time)
-		#if self.present_show.now_playing:
-		    #print "Scheduler Duration: " + str(self.present_show.media_end_time - self.present_show.media_start_time)
-		#print "Time To Start: " + str(obplayer.Player.media_actual_start - present_time)
-		#print "Next update at " + str(self.present_show.media_end_time)
+		if self.present_show.now_playing:
+		    obplayer.Log.log("Scheduled Duration: " + str(self.present_show.media_end_time - self.present_show.media_start_time) + " | Start Lag: " + str(obplayer.Player.media_actual_start - present_time), 'timing')
+		obplayer.Log.log("Next Updated Scheduled For: " + str(self.present_show.media_end_time), 'timing')
 
 	self.lock.release()
         return True
