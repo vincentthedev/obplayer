@@ -228,13 +228,10 @@ class ObConfigData(ObData):
         if settingName == 'local_uploads' and settings['syncmode'] != 'remote' and os.access(settingValue, os.F_OK) == False:
             return 'The local media (unapproved) directory you have specified does not exist.'
 
-        if settingName == 'http_admin_enable' and settingValue == 1 and (settings['http_admin_username'] == '' or settings['http_admin_password'] == ''):
-            return 'To use the web admin, a username and password are required.'
-
-        if settingName == 'http_admin_secure' and settings['http_admin_enable'] and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
+        if settingName == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'To use the web admin with SSL, a valid certiciate file is required.'
 
-	if settingName == 'live_assist_port' and settings['http_admin_enable'] and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
+	if settingName == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
 	    return 'Live Assist and HTTP Admin cannot use the same port.'
 
         return None
