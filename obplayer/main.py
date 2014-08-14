@@ -153,7 +153,7 @@ class ObMainApp:
 
 	obplayer.Sync = obplayer.ObSync()
 	obplayer.Player = obplayer.ObPlayer()
-	obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
+	#obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
 	obplayer.Scheduler = obplayer.ObScheduler()
 
 	obplayer.Gui = obplayer.ObGui()
@@ -163,6 +163,8 @@ class ObMainApp:
 
 	gobject.threads_init()
 	signal.signal(signal.SIGINT, self.sigint_handler)
+
+	obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
 
 	obplayer.Gui.create_window()
         obplayer.Player.player_init()
