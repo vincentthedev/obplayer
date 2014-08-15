@@ -180,10 +180,12 @@ class ObPlayer:
 
             self.player.set_property('uri', 'file://' + media_filename)
 
+	    pause_start = time.time()
             self.player.set_state(gst.STATE_PAUSED)
 	    # wait for state change.  could also watch for state change message in bus (non-locking)
             if self.wait_sync() == False:
                 obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to paused).', 'error')
+	    pause_end = time.time()
 
             if obplayer.Config.setting('gst_init_callback'):
                 os.system(obplayer.Config.setting('gst_init_callback'))
@@ -200,11 +202,15 @@ class ObPlayer:
 	    if offset > 0:
 		obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
 
+	    play_start = time.time()
             self.player.set_state(gst.STATE_PLAYING)
 
 	    # wait for state change.  could also watch for state change message in bus (non-locking)
             if self.wait_sync() == False:
                 obplayer.Log.log('ObPlayer.play wait for state change (wait_sync()) failed (after setting state to playing).', 'error')
+	    play_end = time.time()
+
+	    obplayer.Log.log("Pause Delay: " + str(pause_end - pause_start) + " | Seek Delay: " + str(self.stats_seek_time) + " | Play Delay: " + str(play_end - play_start), 'timing')
 
 	elif media['media_type'] == 'image':
 	    # remote image from display if applicable.
