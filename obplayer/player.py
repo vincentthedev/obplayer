@@ -108,6 +108,10 @@ class ObPlayer:
 	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audiovis') == 0):
 	    obplayer.Gui.gui_gst_area_viewport.hide()
 	    obplayer.Gui.gui_drawing_area_viewport.show()
+	    # HACK if the image area is not currently visible, then clear what was previous displayed on the image area
+	    if not obplayer.Gui.gui_drawing_area_viewport.is_visible():
+		obplayer.Gui.pixbuf = False
+		obplayer.Gui.pixbuf_original = False
 
 	else:
 	    obplayer.Gui.gui_drawing_area_viewport.hide()
