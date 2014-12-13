@@ -22,24 +22,12 @@
 
 from __future__ import absolute_import 
 
-from obplayer.task import ObThread
-from obplayer.log import *
-from obplayer.data import *
-from obplayer.main import ObMainApp
-from obplayer.gui import *
-from obplayer.player import *
+from obplayer.alerts.alert import ObAlert, parse_alert_file
+from obplayer.alerts.processor import ObAlertProcessor
 
-Log = None
+Processor = None
 
-Config = None
-RemoteData = None
-PlaylogData = None
-
-Player = None
-
-Gui = None
-Main = None
-
-def main():
-    ObMainApp().start()
+def init():
+    global Processor
+    Processor = ObAlertProcessor()
 

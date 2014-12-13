@@ -1,6 +1,0 @@
-<svg height="270" width="480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g class="svgbutton">
-    <circle stroke="white" fill="transparent" fill-opacity="0" stroke-width="12" cx="240" cy="135" r="40"/>
-    <path class="pause" stroke-width="12" stroke="white" d="M 230 120 v 30 m 16 -30 v 30"/>
-  </g>
-</svg>

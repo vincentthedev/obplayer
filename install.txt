@@ -1,6 +1,6 @@
-Openbroadcaster - Remote Installation Instructions
+Openbroadcaster - Player Installation Instructions
 
-1. See dependencies.txt for remote dependencies
+1. See dependencies.txt for player dependencies
 
 2. Run bash "obremote" or bash "obremote_loop -f". "bash obremote-h" for help
 
@@ -8,6 +8,6 @@ Openbroadcaster - Remote Installation Instructions
 
 4. Configure tabbed menus
 
-5. Restart the remote
+5. Restart the player
 
 More info at http://wiki.openbroadcaster.com/

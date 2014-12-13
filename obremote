@@ -1,10 +1,10 @@
 #!/bin/bash
 
-running_check=`ps -aef |grep "python [o]bplayer.py" | wc -l`
+running_check=`ps -aef | grep "python [o]bplayer.py" | wc -l`
 
-if [ "$running_check" -eq "1" ]
+if [ "$running_check" -ge "1" ]
 then
-	echo OpenBroadcaster Remote already running.
+	echo OpenBroadcaster Player already running.
 	exit;
 fi
 

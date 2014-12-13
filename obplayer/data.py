@@ -119,6 +119,12 @@ class ObData:
 class ObConfigData(ObData):
 
     def __init__(self, basedir=None):
+	# we can use this to speed up (or slow down) our timer for debugging.
+	self.timer_scale = 1
+
+	self.headless = False
+	self.args = None
+	self.version = ''
 
 	self.datadir = ObData.get_datadir(basedir)
         self.con = apsw.Connection(self.datadir + '/settings.db')
@@ -275,6 +281,8 @@ class ObConfigData(ObData):
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
+	self.add_setting('alerts_enable', '0', 'bool')
+	self.add_setting('alerts_geocode', '0', 'int')
 
     def add_setting(self, name, value, datatype=None):
 
@@ -736,7 +744,12 @@ class ObRemoteData(ObData):
 
                 if former_data != None:
 
-                    data['last_play'] = self.emergency_broadcasts[str(data['id'])]['last_play']
+		    # TODO why are we fetching former data and then using this other record of data...
+		    old = self.emergency_broadcasts[str(data['id'])]
+		    if 'last_play' in old:
+			data['last_play'] = old['last_play']
+		    else:
+			data['last_play'] = 0
                     check_next_play = data['last_play'] + data['frequency']
 
                     if check_next_play >= present_time:

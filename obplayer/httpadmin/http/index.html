@@ -16,6 +16,7 @@
       <div class="tab" data-content="basic">Basic</div>
       <div class="tab" data-content="sync">Sync/Media</div>
       <div class="tab" data-content="audio">Audio/Visualization</div>
+      <div class="tab" data-content="alerts">Emergency Alerts</div>
       <div class="tab" data-content="http">HTTP(S) Admin</div>
       <div class="tab" data-content="liveassist">Live Assist</div>
       <div class="tab" data-content="log">Log</div>
@@ -42,7 +43,7 @@
 <table>
 	<tr>
 		<td>Version:</td>
-		<td>v<% obplayer.Main.version %></td>
+		<td>v<% obplayer.Config.version %></td>
 	</tr>
 	<tr class="padding">
 		<td>Device ID:</td>
@@ -276,6 +277,25 @@
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div style="display: none;" id="content-alerts">
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Enable National Emergency Alerts</td>
+              <td><input type="checkbox" name="alerts_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Location Geocode</td>
+              <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('alerts');" value="Save"></td>
             </tr>
           </tbody>
         </table>

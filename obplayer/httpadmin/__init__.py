@@ -22,24 +22,21 @@
 
 from __future__ import absolute_import 
 
-from obplayer.task import ObThread
-from obplayer.log import *
-from obplayer.data import *
-from obplayer.main import ObMainApp
-from obplayer.gui import *
-from obplayer.player import *
+from obplayer.httpadmin.httpadmin import obplayer, ObHTTPAdmin
 
-Log = None
+HTTPAdmin = None
 
-Config = None
-RemoteData = None
-PlaylogData = None
+class HTTPAdminThread (obplayer.ObThread):
+    def run(self):
+	obplayer.HTTPAdmin = ObHTTPAdmin()
+	obplayer.HTTPAdmin.serve_forever()
 
-Player = None
+    def stop(self):
+	if obplayer.HTTPAdmin:
+	    obplayer.HTTPAdmin.shutdown()
 
-Gui = None
-Main = None
-
-def main():
-    ObMainApp().start()
+def init():
+    # run our admin web server.
+    if obplayer.Config.args.disable_http is False:
+	HTTPAdminThread().start()
 

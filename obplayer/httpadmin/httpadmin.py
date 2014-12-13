@@ -29,13 +29,13 @@ import signal
 
 from OpenSSL import SSL
 from BaseHTTPServer import HTTPServer
-from httpserver import ObHTTPRequestHandler
+from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
 class ObHTTPAdmin(HTTPServer):
 
     def __init__(self):
-	self.root = 'admin'
+	self.root = 'obplayer/httpadmin/http'
 
         self.username = obplayer.Config.setting('http_admin_username')
         self.password = obplayer.Config.setting('http_admin_password')
@@ -53,7 +53,8 @@ class ObHTTPAdmin(HTTPServer):
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'http')
 
     def log(self, message):
-        obplayer.Log.log(message, 'admin')
+	if not "GET /logs.html" in message:
+            obplayer.Log.log(message, 'admin')
 
     def form_item_selected(self, setting, value):
         if obplayer.Config.setting(setting, True) == value:
@@ -68,7 +69,7 @@ class ObHTTPAdmin(HTTPServer):
             return ''
 
     def fullscreen_status(self):
-	if obplayer.Main.headless:
+	if obplayer.Config.headless:
 	    return 'N/A'
 	elif obplayer.Gui.gui_window_fullscreen:
 	    return 'On'
@@ -80,7 +81,7 @@ class ObHTTPAdmin(HTTPServer):
 	return { 'status' : True }
 
     def command_fstoggle(self):
-	if obplayer.Main.headless:
+	if obplayer.Config.headless:
 	    return { 'status' : False, 'fullscreen' : 'N/A' }
 	else:
 	    obplayer.Gui.fullscreen_toggle(None)

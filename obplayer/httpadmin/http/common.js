@@ -64,6 +64,14 @@ Site.saveSuccess = function(response)
   else $('#error').text(response.error).show();
 }
 
+Site.logUpdate = function(response)
+{
+  $.get('/logs.html',{},function(response)
+  {
+    $('#content-log').html(response);
+  },'html');
+}
+
 $(document).ready(function()
 {
 
@@ -104,5 +112,7 @@ $(document).ready(function()
     else $('#http_admin_sslcert_row').hide();
   });
   $('#http_admin_secure').change();
+
+  Site.logInterval = setInterval(Site.logUpdate, 5000);
 
 });

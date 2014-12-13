@@ -22,24 +22,20 @@
 
 from __future__ import absolute_import 
 
-from obplayer.task import ObThread
-from obplayer.log import *
-from obplayer.data import *
-from obplayer.main import ObMainApp
-from obplayer.gui import *
-from obplayer.player import *
+from obplayer.liveassist.liveassist import *
 
-Log = None
+LiveAssist = None
 
-Config = None
-RemoteData = None
-PlaylogData = None
+class LiveAssistThread (obplayer.ObThread):
+    def run(self):
+	obplayer.LiveAssist = ObLiveAssist()
+        obplayer.LiveAssist.serve_forever()
 
-Player = None
+    def stop(self):
+	if obplayer.LiveAssist:
+	    obplayer.LiveAssist.shutdown()
 
-Gui = None
-Main = None
-
-def main():
-    ObMainApp().start()
+def init():
+    if obplayer.Config.setting('live_assist_enable'):
+	LiveAssistThread().start()
 

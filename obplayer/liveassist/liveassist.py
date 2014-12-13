@@ -30,13 +30,13 @@ import time
 import json
 
 from BaseHTTPServer import HTTPServer
-from httpserver import ObHTTPRequestHandler
+from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
 class ObLiveAssist(HTTPServer):
 
     def __init__(self):
-	self.root = 'liveassist'
+	self.root = 'obplayer/liveassist/http'
 	self.username = None
 
         server_address = ('', obplayer.Config.setting('live_assist_port'))  # (address, port)

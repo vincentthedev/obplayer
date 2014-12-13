@@ -25,7 +25,7 @@ import obplayer
 import time
 import thread
 
-MAX_BACKLOG = 200
+MAX_BACKLOG = 2000
 
 #
 # OpenBroadcaster Logging Class
@@ -54,7 +54,7 @@ class ObLog:
     # Given message, outputs time + message to stdout.
     # mtypes = error, emerg, audio, image, sync
     #
-    def log(self, message, mtype=None):
+    def log(self, message, mtype='error'):
 
         mstring = '[' + time.strftime('%b %d %Y %H:%M:%S', time.gmtime()) + ' UTC] [' + mtype + '] ' + message
 

@@ -75,6 +75,11 @@ class ObPlaylist (object):
 	    return True
 	return False
 
+    def next_start(self):
+	if self.pos + 1 >= len(self.playlist):
+	    return None
+	return self.playlist[self.pos + 1]['offset']
+
     def seek_current(self, present_offset):
 	for i in range(0, len(self.playlist) - 1):
 	    if self.playlist[i + 1]['offset'] > present_offset:
@@ -82,11 +87,22 @@ class ObPlaylist (object):
 		return
 	self.pos = len(self.playlist) - 1
 
+    """
     def advance_to_current(self, present_offset):
 	if self.pos + 1 < len(self.playlist) and present_offset >= self.playlist[self.pos + 1]['offset']:
 	    self.pos += 1
 	    return True
 	return False
+    """
+
+    def advance_to_current(self, present_offset):
+	print "Present Offset: " + str(present_offset)
+	print "Old Pos: " + str(self.pos)
+	self.pos += 1
+	while self.pos + 1 < len(self.playlist) and present_offset >= self.playlist[self.pos + 1]['offset']:
+	    print "PL Offset: " + str(self.playlist[self.pos]['offset'])
+	    self.pos += 1
+	print "New Pos: " + str(self.pos)
 
 
 class ObShow (object):
@@ -95,11 +111,10 @@ class ObShow (object):
 	self.pause_position = 0
 	self.auto_advance = True
 
-	self.image_end_time = 0
-	self.av_end_time = 0
 	self.media_start_time = 0
-	self.media_end_time = 0
+	self.av_end_time = 0
 	self.now_playing = None
+	self.next_media_update = 0
 
 	self.show_data = None
 	self.playlist = None
@@ -111,6 +126,7 @@ class ObShow (object):
 	if not data:
 	    return None
 
+	# TODO we could possibly have a list of possible show types
 	self = ObShow()
 	self.show_data = data
 	self.playlist = ObPlaylist(self.show_data['id'])
@@ -156,17 +172,58 @@ class ObShow (object):
 
     def play_next(self, present_time):
 	if self.is_paused() or self.playlist.is_finished():
-	    self.stop_current()
+	    self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
 	    return False
 
-	self.increment()
+	if self.show_data['type'] == 'live_assist':
+	    if self.ctrl.has_requests():
+		print "Player already has a request so just return"
+		return False
+	    # TODO can you insert a break if the previous track failed to play?
+	    self.playlist.increment()
+	    return self.play_current(present_time)
 
+	else:
+	    print str(self.ctrl.get_requests_endtime()) + " " + str(self.next_media_update)
+	    if self.ctrl.has_requests() and self.ctrl.get_requests_endtime() <= self.next_media_update:
+		print "Player already has a request so just return"
+		return False
+
+	    if present_time > self.next_media_update - 5:
+		self.playlist.advance_to_current(present_time - self.start_time())
+		if not self.playlist.is_finished():
+		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
+		    # over again until the next track, which isn't good
+		    print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
+		    return self.play_current(present_time)
+	    self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
+
+	    """
+	    # TODO this doesn't handle overlapping media properly... it wont pass the has_requests test
+	    media = self.playlist.current()
+	    end_time = self.start_time() + media['offset'] + media['duration']
+	    if present_time < end_time - 5:
+		self.ctrl.add_request(media_type='break', end_time=end_time)
+	    else:
+		self.playlist.advance_to_current(present_time - self.start_time())
+		if self.playlist.is_finished():
+		    self.ctrl.add_request(media_type='break', end_time=self.end_time())
+		else:
+		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
+		    # over again until the next track, which isn't good
+		    print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
+		    return self.play_current(present_time)
+	    """
+
+	"""
 	if self.show_data['type'] != 'live_assist':
 	    # this will keep trying to play until the media checks out as valid (in the case of presently downloading)
 	    # in case downloading time is too long, we might still need to advance to the next track.
 	    self.playlist.advance_to_current(present_time - self.show_data['start_time'])
+	"""
 
-	return self.play_current(present_time)
 
     def play_current(self, present_time):
 	if self.is_paused():
@@ -182,10 +239,13 @@ class ObShow (object):
 	    offset = present_time - self.show_data['start_time'] - media['offset']
 	    #print str(self.playlist.pos) + " " + media['title'] + " Offset: " + str(offset) + " " + str(present_time - self.show_data['start_time']) + " " + str(media['offset'])
 	    self.play_media(media, offset, present_time)
+	    next_start = self.playlist.next_start()
+	    self.next_media_update = self.start_time() + next_start if next_start else self.end_time()
+	    if self.next_media_update < self.ctrl.get_next_update():
+		self.ctrl.set_next_update(self.next_media_update)
 	return True
 
     def play_media(self, media, offset, present_time):
-	self.stop_current()
 	self.now_playing = media
 	self.media_start_time = present_time - offset
 
@@ -195,29 +255,41 @@ class ObShow (object):
 	    self.auto_advance = False
 	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], '', '', self.show_data['name'])
 
-	else:
-	    obplayer.Player.play(media, offset)
+	    self.ctrl.add_request(
+		start_time = self.media_start_time,
+		media_type = 'break',
+		end_time = self.end_time()
+	    )
 
-	    if media['media_type'] == 'image':
-		self.image_end_time = self.media_start_time + media['duration']
-	    else:
+	else:
+	    self.ctrl.add_request(
+		start_time = self.media_start_time,
+		media_type = media['media_type'],
+		file_location = media['file_location'],
+		filename = media['filename'],
+		media_id = media['media_id'],
+		order_num = media['order_num'],
+		artist = media['artist'],
+		title = media['title'],
+		duration = media['duration']
+	    )
+
+	    if media['media_type'] != 'image':
 		self.av_end_time = self.media_start_time + media['duration']
 
-	    self.media_end_time = self.media_start_time + media['duration']
-	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], media['media_id'], self.media_end_time, self.show_data['name'])
+	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], media['media_id'], self.media_start_time + media['duration'], self.show_data['name'])
 
     def stop_current(self):
-	# TODO maybe this shouldn't check anything and check in Player.stop to see if already stopped
 	if self.av_end_time > 0:
-	    obplayer.Player.stop()
+	    self.ctrl.stop_requests()
 	    self.av_end_time = 0
-	self.media_end_time = 0
 
     def playlist_seek(self, track_num, seek):
 	self.playlist.set(track_num)
 	self.auto_advance = True
 	if not self.playlist.is_finished():
 	    media = self.playlist.current()
+	    self.ctrl.stop_requests()
 	    self.play_media(media, media['duration'] * (seek / 100), time.time())
 
     def play_group_item(self, group_num, group_item_num, seek):
@@ -232,24 +304,22 @@ class ObShow (object):
 	    return False
 
 	media = group[group_item_num]
+	self.ctrl.stop_requests()
 	self.play_media(media, media['duration'] * (seek / 100), time.time())
 	self.auto_advance = False
 	return True
-
-    def increment(self):
-	if self.is_paused():
-	    return False
-	self.playlist.increment()
 
     def pause(self):
 	if not self.paused:
 	    self.paused = True
 	    self.pause_position = time.time() - self.media_start_time
-	    self.stop_current()
+	    self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
 
     def unpause(self):
 	if self.paused:
 	    self.paused = False
+	    self.ctrl.stop_requests()
 	    if self.now_playing is None:
 		self.play_current(time.time())
 	    else:
@@ -257,13 +327,14 @@ class ObShow (object):
 		self.pause_position = 0
 	elif not self.auto_advance:
 	    self.auto_advance = True
+	    self.ctrl.stop_requests()
 	    self.play_current(time.time())
 
     def is_paused(self):
 	return self.paused or not self.auto_advance
 
     def position(self):
-	if not self.media_end_time:
+	if not self.av_end_time:
 	    if self.now_playing == None:
 		return 0
 	    return self.now_playing['duration']
@@ -271,133 +342,88 @@ class ObShow (object):
 
 
 class ObScheduler:
-
     def __init__(self):
-        self.show_update_time = 0
-        self.emerg_update_time = 0
+	self.lock = thread.allocate_lock()
 
-        self.emerg_broadcasts = False
-        self.emerg_broadcast_until = 0
+	self.ctrl = obplayer.Player.create_controller('scheduler', 50, default_play_mode='overlay_self')
+	self.ctrl.set_request_callback(self.do_player_request)
+	self.ctrl.set_update_callback(self.do_player_update)
 
 	self.present_show = None
+	self.next_show_update = 0
 
-	self.lock = thread.allocate_lock()
+    def do_player_request(self, ctrl, present_time):
+	print "Do Request for Scheduler"
+
+	self.check_show(present_time)
+
+	if self.present_show is not None:
+	    print "Scheduling Next"
+	    self.present_show.play_next(present_time)
+	    #self.present_show.check_play(present_time)
+
+    def do_player_update(self, ctrl, present_time):
+	self.check_show(present_time)
+
+	if self.present_show and present_time > self.present_show.next_media_update:
+	    self.present_show.play_next(present_time)
+
+	if self.present_show and self.present_show.next_media_update > self.next_show_update:
+	    self.ctrl.set_next_update(self.present_show.next_media_update)
+	else:
+	    self.ctrl.set_next_update(self.next_show_update)
+
+    def check_show(self, present_time):
+	if self.present_show is None or present_time > self.next_show_update:
+	    self.present_show = ObShow.find_show(present_time)
+	    next_show_times = obplayer.RemoteData.get_next_show_times(present_time)
+
+	    # no show, try again in 1min30secs.  (we add the 30 seconds to let the emergency broadcaster update come through first, if applicable.
+	    if self.present_show is None:
+		obplayer.Log.log('no show found.', 'scheduler')
+
+		# update now_playing data.
+		obplayer.Sync.now_playing_update('', '', '', '', '')
+
+		# if next show starting in less than 90s, we need to update sooner.
+		self.next_show_update = present_time + 90
+		if next_show_times and self.next_show_update > next_show_times['start_time']:
+		    self.next_show_update = next_show_times['start_time']
+
+	    else:
+		self.present_show.ctrl = self.ctrl
+		obplayer.Log.log('loading show ' + str(self.present_show.show_id()), 'scheduler')
+
+		# update now_playing data
+		obplayer.Sync.now_playing_update(self.present_show.show_id(), self.present_show.end_time(), '', '', self.present_show.name())
+		# TODO get rid of this?? ^^^  why would i get rid of this, old me?
+
+		# figure out show update time. (lower of next show start time, present show end time).
+		self.next_show_update = self.present_show.end_time()
+		if next_show_times and self.next_show_update > next_show_times['start_time']:
+		    self.next_show_update = next_show_times['start_time']
+
+		self.present_show.start_show(present_time)
+
+		if self.present_show.playlist.is_finished():
+		    if next_show_times != None:
+			obplayer.Log.log('this show over. waiting for next show to start in ' + str(self.next_show_start - present_time) + ' seconds', 'scheduler')
+		    else:
+			obplayer.Log.log('this show over. next show not found. will retry after next update.')
+
+	    # TODO this might not be right still, because we might have to use update for the next_media_update time too
+
+	    if self.next_show_update < self.ctrl.get_next_update():
+		self.ctrl.set_next_update(self.next_show_update)
 
     # update show update time after show sync. (if next show starting sooner than previously set, we need to update!)
     # this is already subject to the 'show lock' cutoff time.
     def update_show_update_time(self):
         next_show_times = obplayer.RemoteData.get_next_show_times(time.time())
-        if next_show_times and next_show_times['start_time'] < self.show_update_time:
-            self.show_update_time = next_show_times['start_time']
-
-    def schedule_loop(self):
-
-        present_time = time.time()
-	self.lock.acquire()
-
-	# run through emergency broadcasts and play if it's time. don't play while syncing emerg since it might be changing data or downloading new data.
-        if obplayer.RemoteData.emergency_broadcasts != False and self.emerg_broadcast_until <= present_time and obplayer.Sync.emerg_sync_running == False:
-            for (bindex, broadcast) in obplayer.RemoteData.emergency_broadcasts.iteritems():
-                if broadcast['next_play'] <= present_time:
-
-                    if obplayer.Sync.check_media(broadcast):
-
-			# REMOVE self.Gui.set_media_summary(broadcast, 'emergency broadcast')
-
-                        obplayer.Log.log('play emergency broadcast', 'emerg')
-                        obplayer.RemoteData.emergency_broadcasts[bindex]['next_play'] = present_time + broadcast['duration'] + broadcast['frequency']
-                        obplayer.RemoteData.emergency_broadcasts[bindex]['last_play'] = present_time
-                        broadcast['order_num'] = False
-
-                        obplayer.Player.play(broadcast, 0, 'emerg', broadcast['id'])
-                        self.emerg_broadcast_until = time.time() + broadcast['duration'] + 3
-
-			# we set this so the show will resume.
-                        self.show_update_time = present_time
-                        break
-
-        if present_time >= self.show_update_time and present_time >= self.emerg_broadcast_until:
-
-            self.present_show = ObShow.find_show(present_time)
-            next_show_times = obplayer.RemoteData.get_next_show_times(present_time)
-
-	    # no show, try again in 1min30secs.  (we add the 30 seconds to let the emergency broadcaster update come through first, if applicable.
-            if self.present_show == None:
-
-                self.show_update_time = present_time + 90
-
-		# if next show starting in less than 90s, we need to update sooner.
-                if next_show_times != None and self.show_update_time > next_show_times['start_time']:
-                    self.show_update_time = next_show_times['start_time']
-
-                obplayer.Log.log('no show found.', 'scheduler')
-
-		# update now_playing data.
-                obplayer.Sync.now_playing_update('', '', '', '', '')
-
-            else:
-		# we have a show, let's load it...
-                obplayer.Log.log('loading show ' + str(self.present_show.show_id()), 'scheduler')
-
-		# update now_playing data
-                obplayer.Sync.now_playing_update(self.present_show.show_id(), self.present_show.end_time(), '', '', self.present_show.name())
-		# TODO get rid of this?? ^^^
-
-		# figure out show update time. (lower of next show start time, present show end time).
-                if next_show_times != None and next_show_times['start_time'] < self.present_show.end_time():
-                    self.show_update_time = next_show_times['start_time']
-                else:
-                    self.show_update_time = self.present_show.end_time()
-
-		self.present_show.start_show(present_time)
-
-                if self.present_show.playlist.is_finished():
-		    if next_show_times != None:
-			obplayer.Log.log('this show over. waiting for next show to start in ' + str(next_show_times['start_time'] - present_time) + ' seconds', 'scheduler')
-		    else:
-			obplayer.Log.log('this show over. next show not found. will retry after next update.')
-
-	if self.present_show != None:
-	    # media stop time (image)
-	    if self.present_show.image_end_time != 0 and present_time >= self.present_show.image_end_time:
-		self.present_show.image_end_time = 0
-		obplayer.Player.stop('image')
-		# REMOVE self.Gui.reset_media_summary('image')
-
-	    # media stop time (av)
-	    if self.present_show.av_end_time != 0 and present_time >= self.present_show.av_end_time:
-		self.present_show.av_end_time = 0
-		obplayer.Player.stop('av')
-		# REMOVE self.Gui.reset_media_summary('av')
-
-	    # media update time.
-	    if self.present_show.media_end_time > 0 and present_time >= self.present_show.media_end_time and present_time >= self.emerg_broadcast_until:
-		obplayer.Log.log("Scheduler Updating: " + str(present_time), 'timing')
-		self.present_show.play_next(present_time)
-		#print "Seek Time: " + str(obplayer.Player.stats_seek_time)
-		if self.present_show.now_playing:
-		    obplayer.Log.log("Scheduled Duration: " + str(self.present_show.media_end_time - self.present_show.media_start_time) + " | Start Lag: " + str(obplayer.Player.media_actual_start - present_time), 'timing')
-		obplayer.Log.log("Next Updated Scheduled For: " + str(self.present_show.media_end_time), 'timing')
-
-	self.lock.release()
-        return True
-
-    # next update (timestamp) - show update or media update. this will be when the scheduler will next trigger a 'play' command to the player
-    # this is used by the fallback player to determine whether it's worthwhile playing some fallback media. if scheduler is about to do something, forget about it.
-    # this also avoids race conditions between the fallback player and scheduler (though that would probably be pretty unlikely).
-    def next_update(self):
-        next_update = 0
-
-        if self.present_show and self.present_show.media_end_time > 0 and (next_update == 0 or self.present_show.media_end_time < next_update):
-            next_update = self.present_show.media_end_time
-
-        if self.show_update_time > 0 and (next_update == 0 or self.show_update_time < next_update):
-            next_update = self.show_update_time
-
-        if self.emerg_update_time > 0 and (next_update == 0 or self.emerg_update_time < next_update):
-            next_update = self.emerg_update_time
-
-        return next_update
+        if next_show_times and next_show_times['start_time'] < self.next_show_update:
+            self.next_show_update = next_show_times['start_time']
+	    if self.next_show_update < self.ctrl.get_next_update():
+		self.ctrl.set_next_update(self.next_show_update)
 
     def get_show_name(self):
 	if self.present_show == None:
@@ -432,36 +458,32 @@ class ObScheduler:
 	if self.present_show == None:
 	    return False
 
-	self.lock.acquire()
-	self.present_show.playlist_seek(track_num, seek)
-	self.lock.release()
+	with self.lock:
+	    self.present_show.playlist_seek(track_num, seek)
 	return True
 
     def play_group_item(self, group_num, group_item_num, seek):
 	if self.present_show == None:
 	    return False
 
-	self.lock.acquire()
-	self.present_show.play_group_item(group_num, group_item_num, seek)
-	self.lock.release()
+	with self.lock:
+	    self.present_show.play_group_item(group_num, group_item_num, seek)
 	return True
 
     def unpause_show(self):
 	if self.present_show == None:
 	    return False
 
-	self.lock.acquire()
-	self.present_show.unpause()
-	self.lock.release()
+	with self.lock:
+	    self.present_show.unpause()
 	return True
 
     def pause_show(self):
 	if self.present_show == None:
 	    return False
 
-	self.lock.acquire()
-	self.present_show.pause()
-	self.lock.release()
+	with self.lock:
+	    self.present_show.pause()
 	return True
 
     def find_group_item_pos(self, group_id):
@@ -479,8 +501,9 @@ class ObScheduler:
     def get_now_playing(self):
 	data = { }
 
-	status = obplayer.Player.status()
-	if status == False:
+	#status = obplayer.Player.status()
+	status = self.ctrl.request_is_playing()
+	if status == True:
 	    data['status'] = 'playing'
 	else:
 	    data['status'] = 'stopped'

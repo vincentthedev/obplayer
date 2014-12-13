@@ -107,19 +107,20 @@ def xml_get_media_item(node):
 class ObSync:
 
     def __init__(self):
+	self.quit = False
         self.emerg_sync_running = False
 
     def curl_progress(self, download_t, download_d, upload_t, upload_d):
-        if obplayer.Main.quit:
+        if self.quit:
             return True
 
     def version_update(self):
-        obplayer.Log.log('reporting version to server: ' + obplayer.Main.version, 'sync')
+        obplayer.Log.log('reporting version to server: ' + obplayer.Config.version, 'sync')
 
         postfields = {}
         postfields['id'] = obplayer.Config.setting('device_id')
         postfields['pw'] = obplayer.Config.setting('device_password')
-        postfields['version'] = obplayer.Main.version
+        postfields['version'] = obplayer.Config.version
 
         curl = pycurl.Curl()
 
@@ -159,7 +160,7 @@ class ObSync:
         schedule_xml = self.sync_request('schedule')
 
 	# trying to quit?
-        if obplayer.Main.quit:
+        if self.quit:
             return
 
         try:
@@ -247,7 +248,7 @@ class ObSync:
         broadcasts_xml = self.sync_request('emerg')
 
 	# trying to quit?
-        if obplayer.Main.quit:
+        if self.quit:
             return
 
         try:
@@ -329,7 +330,7 @@ class ObSync:
         status_xml = self.sync_request('playlog_status')
 
 	# trying to quit? sync request was cancelled.
-        if obplayer.Main.quit:
+        if self.quit:
             return
 
         try:
@@ -399,7 +400,7 @@ class ObSync:
         response_xml = self.sync_request('playlog_post', postxml)
 
 	# trying to quit? sync requestes was cancelled.
-        if obplayer.Main.quit:
+        if self.quit:
             return
 
         try:
@@ -712,7 +713,7 @@ class ObSync:
             curl.close()
 
 	    # trying to quit? don't copy to backup because we probably aborted the transfer.
-            if obplayer.Main.quit:
+            if self.quit:
                 return
 
 	    # if file download complete and we're on 'backup' mode, copy the downloaded file to our backup repository to keep it up to date.

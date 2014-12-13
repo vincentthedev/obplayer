@@ -22,24 +22,12 @@
 
 from __future__ import absolute_import 
 
-from obplayer.task import ObThread
-from obplayer.log import *
-from obplayer.data import *
-from obplayer.main import ObMainApp
-from obplayer.gui import *
-from obplayer.player import *
+from obplayer.fallback.fallback_player import ObFallbackPlayer
 
-Log = None
+FallbackPlayer = None
 
-Config = None
-RemoteData = None
-PlaylogData = None
+def init():
+    global FallbackPlayer
+    FallbackPlayer = ObFallbackPlayer()
 
-Player = None
-
-Gui = None
-Main = None
-
-def main():
-    ObMainApp().start()
 

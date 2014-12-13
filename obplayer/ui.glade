@@ -12,9 +12,10 @@
     <property name="icon_name">audio-volume-high</property>
     <signal name="destroy" handler="application_shutdown" swapped="no"/>
     <child>
-      <object class="GtkVBox" id="vbox1">
+      <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkToolbar" id="toolbar">
             <property name="visible">True</property>
@@ -26,7 +27,7 @@
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Fullscreen</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-fullscreen</property>
+                <property name="icon_name">gtk-fullscreen</property>
                 <signal name="clicked" handler="fullscreen_toggle" swapped="no"/>
               </object>
               <packing>
@@ -40,7 +41,7 @@
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Quit</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-quit</property>
+                <property name="icon_name">gtk-quit</property>
                 <signal name="clicked" handler="application_shutdown" swapped="no"/>
               </object>
               <packing>
@@ -56,13 +57,15 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVPaned" id="vpaned1">
+          <object class="GtkPaned" id="vpaned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkVBox" id="vbox2">
+              <object class="GtkBox" id="vbox2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkViewport" id="drawingarea_slideshow_viewport">
                     <property name="visible">True</property>
