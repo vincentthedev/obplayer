@@ -87,21 +87,13 @@ class ObPlaylist (object):
 		return
 	self.pos = len(self.playlist) - 1
 
-    """
-    def advance_to_current(self, present_offset):
-	if self.pos + 1 < len(self.playlist) and present_offset >= self.playlist[self.pos + 1]['offset']:
-	    self.pos += 1
-	    return True
-	return False
-    """
-
     def advance_to_current(self, present_offset):
 	print "Present Offset: " + str(present_offset)
 	print "Old Pos: " + str(self.pos)
-	self.pos += 1
-	while self.pos + 1 < len(self.playlist) and present_offset >= self.playlist[self.pos + 1]['offset']:
-	    print "PL Offset: " + str(self.playlist[self.pos]['offset'])
-	    self.pos += 1
+	for i in xrange(self.pos + 1, len(self.playlist)):
+	    if present_offset >= self.playlist[i]['offset'] and present_offset <= self.playlist[i]['offset'] + self.playlist[i]['duration']:
+		self.pos = i
+		break
 	print "New Pos: " + str(self.pos)
 
 
@@ -185,37 +177,19 @@ class ObShow (object):
 	    return self.play_current(present_time)
 
 	else:
-	    print str(self.ctrl.get_requests_endtime()) + " " + str(self.next_media_update)
-	    if self.ctrl.has_requests() and self.ctrl.get_requests_endtime() <= self.next_media_update:
-		print "Player already has a request so just return"
-		return False
-
-	    if present_time > self.next_media_update - 5:
+	    if present_time >= self.next_media_update - 5:
 		self.playlist.advance_to_current(present_time - self.start_time())
 		if not self.playlist.is_finished():
 		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
 		    # over again until the next track, which isn't good
 		    print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
 		    return self.play_current(present_time)
+
+	    if self.ctrl.has_requests():
+		print "Player already has a request so just return"
+		return False
 	    self.ctrl.stop_requests()
 	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
-
-	    """
-	    # TODO this doesn't handle overlapping media properly... it wont pass the has_requests test
-	    media = self.playlist.current()
-	    end_time = self.start_time() + media['offset'] + media['duration']
-	    if present_time < end_time - 5:
-		self.ctrl.add_request(media_type='break', end_time=end_time)
-	    else:
-		self.playlist.advance_to_current(present_time - self.start_time())
-		if self.playlist.is_finished():
-		    self.ctrl.add_request(media_type='break', end_time=self.end_time())
-		else:
-		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
-		    # over again until the next track, which isn't good
-		    print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
-		    return self.play_current(present_time)
-	    """
 
 	"""
 	if self.show_data['type'] != 'live_assist':
@@ -223,7 +197,6 @@ class ObShow (object):
 	    # in case downloading time is too long, we might still need to advance to the next track.
 	    self.playlist.advance_to_current(present_time - self.show_data['start_time'])
 	"""
-
 
     def play_current(self, present_time):
 	if self.is_paused():
