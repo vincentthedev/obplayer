@@ -92,19 +92,19 @@ class ObHTTPAdmin(HTTPServer):
 
 	# run through each setting and make sure it's valid. if not, complain.
         for key in postvars:
-            settingName = key
-            settingValue = postvars[key][0]
+            setting_name = key
+            setting_value = postvars[key][0]
 
-            error = obplayer.Config.validateSetting(settingName, settingValue)
+            error = obplayer.Config.validate_setting(setting_name, setting_value)
 
             if error != None:
                 return { 'status' : False, 'error' : error }
 
 	# we didn't get an errors on validate, so update each setting now.
         for key in postvars:
-            settingName = key
-            settingValue = postvars[key][0]
-            obplayer.Config.set(settingName, settingValue)
+            setting_name = key
+            setting_nalue = postvars[key][0]
+            obplayer.Config.set(setting_name, setting_value)
 
         return { 'status' : True }
 

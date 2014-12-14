@@ -40,9 +40,6 @@ class ObAlertFetcher (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'ObAlertFetcher')
 	self.daemon = True
 
-	self.ctrl = obplayer.Player.create_controller('alerts', 100)
-	#self.ctrl.do_player_request = self.do_player_request
-
 	self.processor = processor
 	self.socket = None
 	self.buffer = ""
@@ -179,6 +176,10 @@ class ObAlertProcessor (object):
         #self.archive_hosts = obplayer.Config.setting('alerts_archive_host')
         self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
+        self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
+
+	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlay_all')
+	#self.ctrl.do_player_request = self.do_player_request
 
 	self.thread = obplayer.ObThread('ObAlertProcessor', target=self.run)
 	self.thread.daemon = True
@@ -232,8 +233,7 @@ class ObAlertProcessor (object):
 	    print "---- END OF ACTIVE ----"
 
 	if alert.status == 'actual' and alert.scope == 'public':
-	    #if alert.has_geocode(self.target_geocode):
-	    if alert.has_geocode(''):
+	    if alert.has_geocode(self.target_geocode):
 		self.set_alert_active(alert)
 		print "Active Alert:"
 		alert.print_data()
@@ -269,6 +269,7 @@ class ObAlertProcessor (object):
 	next_expired_check = time.time() + 30
 	next_alert_check = 0
 
+	time.sleep(2)
 	while not self.thread.stopflag.wait(1):
 	    try:
 		present_time = time.time()
@@ -281,21 +282,22 @@ class ObAlertProcessor (object):
 		    with self.dispatch_lock:
 			self.handle_dispatch(alert)
 
-		elif present_time > next_expired_check:
+		if present_time > next_expired_check:
 		    next_expired_check = present_time + 30
 		    for alert in self.active_alerts.itervalues():
 			if alert.is_expired():
 			    self.set_alert_inactive(alert)
 
-		with self.lock:
-		    for alert in self.active_alerts.itervalues():
-			if present_time > alert.next_play:
+		if present_time > next_alert_check:
+		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.active_alerts),), 'alerts')
+		    with self.lock:
+			for alert in self.active_alerts.itervalues():
 			    alert_media = alert.get_media_info()
 			    if alert_media:
-				alert_media['play_mode'] = 'overlay_all'
+				self.ctrl.add_request(media_type='audio', file_location="/media/work/Projects/Openbroadcaster/Remote2/obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
 				alert_media['duration'] += 2
 				self.ctrl.add_request(**alert_media)
-				alert.next_play = self.ctrl.get_requests_endtime() + 120
+		    next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
 
 	    except:
 		obplayer.Log.log('exception in ObAlertProcessor thread', 'error')

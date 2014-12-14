@@ -155,10 +155,10 @@ class ObConfigData(ObData):
 	# they don't take effect until restart, but we want to keep track of them for subsequent edits.
         self.settings_edit_cache = self.settings_cache.copy()
 
-    def validateSettings(self, settings):
+    def validate_settings(self, settings):
 
-        for (settingName, settingValue) in settings.iteritems():
-            error = self.validateSetting(settingName, settingValue, settings)
+        for (setting_name, setting_value) in settings.iteritems():
+            error = self.validate_setting(setting_name, setting_value, settings)
             if error:
                 return error
 
@@ -170,16 +170,16 @@ class ObConfigData(ObData):
         else:
             return False
 
-    def validateSetting(self, settingName, settingValue, settings=None):
+    def validate_setting(self, setting_name, setting_value, settings=None):
 
 	# if we don't have a batch of settings we're checking, use our settings cache.
         if settings == None:
             settings = self.settings_cache
 
         try:
-            self.settings_cache[settingName]
+            self.settings_cache[setting_name]
         except:
-            error = 'One or more setting names were not valid.' + settingName
+            error = 'One or more setting names were not valid.' + setting_name
             return error
 
 	# disabled for now - this was locking the UI while waiting to timeout (if network problems)
@@ -188,28 +188,28 @@ class ObConfigData(ObData):
 	# except IOError:
 	# error = 'The SYNC URL you have provided does not appear to be valid.';
 
-        if settingName == 'device_id' and self.is_int(settingValue) == False:
+        if setting_name == 'device_id' and self.is_int(setting_value) == False:
             return 'The device ID is not valid.'
 
-        if settingName == 'buffer' and self.is_int(settingValue) == False:
+        if setting_name == 'buffer' and self.is_int(setting_value) == False:
             return 'The sync buffer is not valid.'
 
-        if settingName == 'showlock' and self.is_int(settingValue) == False:
+        if setting_name == 'showlock' and self.is_int(setting_value) == False:
             return 'The show lock is not valid.'
 
-        if settingName == 'syncfreq' and self.is_int(settingValue) == False:
+        if setting_name == 'syncfreq' and self.is_int(setting_value) == False:
             return 'The show sync frequency is not valid.'
 
-        if settingName == 'syncfreq_emerg' and self.is_int(settingValue) == False:
+        if setting_name == 'syncfreq_emerg' and self.is_int(setting_value) == False:
             return 'The emergency sync frequency is not valid.'
 
-        if settingName == 'syncfreq_playlog' and self.is_int(settingValue) == False:
+        if setting_name == 'syncfreq_playlog' and self.is_int(setting_value) == False:
             return 'The playlog sync frequency is not valid.'
 
-        if settingName == 'http_admin_port' and self.is_int(settingValue) == False:
+        if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
             return 'The web admin port is not valid.'
 
-        if settingName == 'device_password' and settingValue == '':
+        if setting_name == 'device_password' and setting_value == '':
             return 'A device password is required.'
 
 	url_regex = re.compile(
@@ -219,33 +219,33 @@ class ObConfigData(ObData):
 		r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
 		r'(?::\d+)?' # optional port
 		r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-        if settingName == 'sync_url' and url_regex.match(settingValue) == None:
+        if setting_name == 'sync_url' and url_regex.match(setting_value) == None:
             return 'The sync URL does not appear to be valid.'
 
-        if settingName == 'fallback_media' and os.access(settingValue, os.F_OK) == False:
+        if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
-        if settingName == 'local_media' and settings['syncmode'] != 'remote' and os.access(settingValue, os.F_OK) == False:
+        if setting_name == 'local_media' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (approved) directory you have specified does not exist.'
 
-        if settingName == 'local_archive' and settings['syncmode'] != 'remote' and os.access(settingValue, os.F_OK) == False:
+        if setting_name == 'local_archive' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (archived) directory you have specified does not exist.'
 
-        if settingName == 'local_uploads' and settings['syncmode'] != 'remote' and os.access(settingValue, os.F_OK) == False:
+        if setting_name == 'local_uploads' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (unapproved) directory you have specified does not exist.'
 
-        if settingName == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
+        if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'To use the web admin with SSL, a valid certiciate file is required.'
 
-	if settingName == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
+	if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
 	    return 'Live Assist and HTTP Admin cannot use the same port.'
 
         return None
 
-    def set(self, settingName, settingValue):
+    def set(self, setting_name, setting_value):
 
         settings = {}
-        settings[settingName] = settingValue
+        settings[setting_name] = setting_value
         self.save_settings(settings)
 
     def create_table(self):
@@ -258,6 +258,7 @@ class ObConfigData(ObData):
         self.add_setting('device_password', 'password', 'text')
         self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
         self.add_setting('buffer', '24', 'int')
+	self.add_setting('modules', 'httpadmin, alerts, scheduler, fallback', 'string')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
         self.add_setting('showlock', '20', 'int')
         self.add_setting('syncfreq', '2', 'int')
@@ -273,16 +274,17 @@ class ObConfigData(ObData):
         self.add_setting('alsa_device', 'default', 'text')
         self.add_setting('jack_port_name', '', 'text')
         self.add_setting('gst_init_callback', '', 'text')
-        self.add_setting('http_admin_secure', '0', 'bool')
-        self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
         self.add_setting('http_admin_password', 'admin', 'text')
+        self.add_setting('http_admin_secure', '0', 'bool')
+        self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
 	self.add_setting('alerts_enable', '0', 'bool')
-	self.add_setting('alerts_geocode', '0', 'int')
+	self.add_setting('alerts_geocode', '59', 'text')
+	self.add_setting('alerts_repeat_time', '120', 'int')
 
     def add_setting(self, name, value, datatype=None):
 

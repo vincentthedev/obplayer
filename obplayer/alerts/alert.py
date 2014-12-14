@@ -173,15 +173,12 @@ class ObAlert (object):
 	mediainfo = d.discover_uri("file:///%s/%s" % (location, filename))
 
 	self.media_info = {
-	    'file_location' : location,
-	    'filename' : filename,
-	    'media_id' : -1,
+	    'media_type' : 'audio',
 	    'artist' : 'Emergency Alert',
 	    'title' : str(self.identifier),
-	    'media_type' : 'audio',
-	    'duration' : mediainfo.get_duration() / float(Gst.SECOND),
-	    'order_num' : -1
-	    #'frequency' : 120
+	    'file_location' : location,
+	    'filename' : filename,
+	    'duration' : mediainfo.get_duration() / float(Gst.SECOND)
 	}
 	return True
 
