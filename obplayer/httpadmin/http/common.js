@@ -68,7 +68,25 @@ Site.logUpdate = function(response)
 {
   $.get('/logs.html',{},function(response)
   {
-    $('#content-log').html(response);
+    var debug = $('#log-debug').is(':checked');
+    var lines = response.split('\n');
+    for(var i=0; i<lines.length; i++)
+    {
+      if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[data\\\]')>0) lines[i] = '<span style="color: #333333;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[emerg\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[scheduler\\\]')>0) lines[i] = '<span style="color: #005555;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[sync\\\]')>0) lines[i] = '<span style="color: #000055;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[admin\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\\[live\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
+      else if(lines[i].search('\\[debug\\]')>0)
+      {
+        if(debug) lines[i] = '<span style="color: #008000;">'+lines[i]+'</span>';
+        else lines[i] = "";
+      }
+    }
+    $('#log-data').html(lines.join('\n'));
   },'html');
 }
 
@@ -114,5 +132,7 @@ $(document).ready(function()
   $('#http_admin_secure').change();
 
   Site.logInterval = setInterval(Site.logUpdate, 5000);
+  Site.logUpdate();
+  $('#log-debug').change(Site.logUpdate);
 
 });

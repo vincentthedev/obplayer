@@ -354,7 +354,12 @@
       </div>
 
       <div style="display: none;" id="content-log">
-        <% '<br>\n'.join(obplayer.Log.get_log()) %>
+        <div>
+          <label>Show debug:</label><input type="checkbox" id="log-debug" value="1" />
+        </div><br />
+        <div id="log-data">
+          <!-- Content loaded when displayed -->
+        </div>
       </div>
 
     </div>

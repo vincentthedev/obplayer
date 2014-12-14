@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright 2012-2013 OpenBroadcaster, Inc.
+Copyright 2012-2015 OpenBroadcaster, Inc.
 
-This file is part of OpenBroadcaster Remote.
+This file is part of OpenBroadcaster Player.
 
-OpenBroadcaster Remote is free software: you can redistribute it and/or modify
+OpenBroadcaster Player is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-OpenBroadcaster Remote is distributed in the hope that it will be useful,
+OpenBroadcaster Player is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with OpenBroadcaster Remote.  If not, see <http://www.gnu.org/licenses/>.
+along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import obplayer
@@ -155,6 +155,7 @@ class ObShow (object):
 	    else:
 		obplayer.Log.log('starting live assist show paused', 'scheduler')
 		self.auto_advance = False
+		self.now_playing = self.playlist.current()
 	else:
 	    # find the track that should play at the present time
 	    self.playlist.seek_current(present_time - self.show_data['start_time'])
@@ -177,7 +178,7 @@ class ObShow (object):
 	    return self.play_current(present_time)
 
 	else:
-	    if present_time >= self.next_media_update - 5:
+	    if present_time >= self.next_media_update - 2:
 		self.playlist.advance_to_current(present_time - self.start_time())
 		if not self.playlist.is_finished():
 		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
@@ -188,6 +189,7 @@ class ObShow (object):
 	    if self.ctrl.has_requests():
 		print "Player already has a request so just return"
 		return False
+	    self.media_start_time = 0
 	    self.ctrl.stop_requests()
 	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
 
@@ -220,19 +222,17 @@ class ObShow (object):
 
     def play_media(self, media, offset, present_time):
 	self.now_playing = media
+	self.pause_position = 0
 	self.media_start_time = present_time - offset
 
 	if media['media_type'] == 'breakpoint':
 	    obplayer.Log.log('stopping on breakpoint at position ' + str(self.playlist.pos), 'scheduler')
 	    self.playlist.increment()
 	    self.auto_advance = False
+	    self.media_start_time = 0
 	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], '', '', self.show_data['name'])
 
-	    self.ctrl.add_request(
-		start_time = self.media_start_time,
-		media_type = 'break',
-		end_time = self.end_time()
-	    )
+	    self.ctrl.add_request(media_type = 'break', end_time = self.end_time())
 
 	else:
 	    self.ctrl.add_request(
@@ -261,8 +261,8 @@ class ObShow (object):
 	self.playlist.set(track_num)
 	self.auto_advance = True
 	if not self.playlist.is_finished():
-	    media = self.playlist.current()
 	    self.ctrl.stop_requests()
+	    media = self.playlist.current()
 	    self.play_media(media, media['duration'] * (seek / 100), time.time())
 
     def play_group_item(self, group_num, group_item_num, seek):
@@ -286,6 +286,7 @@ class ObShow (object):
 	if not self.paused:
 	    self.paused = True
 	    self.pause_position = time.time() - self.media_start_time
+	    self.media_start_time = 0
 	    self.ctrl.stop_requests()
 	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
 
@@ -307,10 +308,10 @@ class ObShow (object):
 	return self.paused or not self.auto_advance
 
     def position(self):
-	if not self.av_end_time:
+	if self.media_start_time == 0:
 	    if self.now_playing == None:
 		return 0
-	    return self.now_playing['duration']
+	    return self.pause_position if self.pause_position else self.now_playing['duration']
 	return time.time() - self.media_start_time
 
 
@@ -500,6 +501,7 @@ class ObScheduler:
 	    data['position'] = 0
 	    data['track'] = -1
 
+	print data
 	return data
 
  

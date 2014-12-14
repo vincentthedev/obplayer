@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright 2012-2013 OpenBroadcaster, Inc.
+Copyright 2012-2015 OpenBroadcaster, Inc.
 
-This file is part of OpenBroadcaster Remote.
+This file is part of OpenBroadcaster Player.
 
-OpenBroadcaster Remote is free software: you can redistribute it and/or modify
+OpenBroadcaster Player is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-OpenBroadcaster Remote is distributed in the hope that it will be useful,
+OpenBroadcaster Player is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with OpenBroadcaster Remote.  If not, see <http://www.gnu.org/licenses/>.
+along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import obplayer
@@ -48,7 +48,10 @@ class ObPlayer (object):
     def player_init(self):
 	self.outputs = { }
 	self.outputs['audio'] = ObAudioSinkBin()
-        self.outputs['visual'] = ObVideoSinkBin()
+	if not obplayer.Config.headless:
+            self.outputs['visual'] = ObVideoSinkBin()
+	else:
+            self.outputs['visual'] = Gst.ElementFactory.make('fakesink')
 
 	self.patches = { }
 	for output in self.outputs.keys():
@@ -84,112 +87,106 @@ class ObPlayer (object):
 	self.controllers.append(ctrl)
 	return ctrl
 
-    def repatch_outputs(self, media_class, media_type):
-	print "Repatching " + media_class + " to pipe " + str(media_type)
+    def run(self):
+	self.player_init()
+	self.request_update.set()
+	#test = time.time()
+	while not self.thread.stopflag.wait(1):
+	    present_time = time.time()
 
-	for output in self.requests.keys():
-	    if self.requests[output] is not None and self.requests[output]['media_type'] == media_type:
-		self.stop_request(output, requeue=True)
+	    """
+	    if present_time >= test + 15 and present_time < test + 16:
+		self.unpatch_output('audio')
+	    if present_time >= test + 18 and present_time < test + 19:
+		self.patch_output('audio', 'video')
+	    """
 
-	output_list = media_class.split('/')
-	for pipe in self.pipes.keys():
-	    if pipe != media_type:
-		unpatch_list = [ output for output in output_list if self.patches[output] == pipe ]
-		if len(unpatch_list) > 0:
-		    if len(unpatch_list) == len(self.pipes[pipe].mode):
-			self.pipes[pipe].stop()
-			# TODO requeue any request for which we stop the pipe
-			print "*** We should be requeuing"
-		    self.pipes[pipe].unpatch('/'.join(unpatch_list))
+	    # Stop any requests that have reached their end time and restore any outputs that may have been usurped by the now stopped request
+	    restore = False
+	    for output in self.requests.keys():
+		if self.requests[output] is not None and present_time > self.requests[output]['end_time']:
+		    self.stop_request(output)
+		    self.request_update.set()
+		    restore = True
+	    if restore:
+		print "Attempting to restore outputs"
+		self.restore_outputs()
 
-	if media_type is not None:
-	    patch_list = [ output for output in output_list if self.patches[output] != media_type ]
-	    if len(patch_list) > 0:
-		self.pipes[media_type].patch('/'.join(patch_list))
-	for output in output_list:
-	    self.patches[output] = media_type
-		
+	    # check for requests already in the queue that need to start now
+	    with self.lock:
+		lowest_priority = 100
+		for output in self.requests.keys():
+		    if self.requests[output] is not None and self.requests[output]['priority'] < lowest_priority:
+			lowest_priority = self.requests[output]['priority']
+		for ctrl in self.controllers:
+		    # TODO somehow only set the bit if the request waiting is equal to or higher than the... lowest priority?
+		    if ctrl.priority <= lowest_priority:
+			break
+		    if ctrl.check_for_start(present_time):
+			print "Found a future request that needs to start now..."
+			self.request_update.set()
 
-    def restore_outputs(self):
-	for output in self.requests.keys():
-	    if self.requests[output] is not None:
-		class_list = self.requests[output]['media_class'].split('/')
-		patch_list = [ output for output in class_list if self.requests[output] is None ]
-		if len(patch_list) > 0:
-		    patch_list.sort()
-		    self.repatch_outputs('/'.join(patch_list), self.patches[output])
-		    for class_name in patch_list:
-			self.requests[class_name] = self.requests[output]
 
-    """
-    def stop(self, mode, requeue=False):
-	print "Stopping media on output " + mode
+	    #if self.request_update.is_set() or not self.is_playing.is_set() or self.astream is None or self.vstream is None:
+	    if self.request_update.is_set(): #or (self.astream is None and self.vstream is None):
+		print "Current State (" + str(time.time()) + "): " + repr(self.request_update.is_set()) + " | " + (self.requests['audio']['filename'] if self.requests['audio'] is not None else "No astream") + " | " + (self.requests['visual']['filename'] if 'visual' in self.requests and self.requests['visual'] is not None else "No vstream")
 
-	output_list = mode.split('/')
-	for pipe in self.pipes.keys():
-	    unpatch_list = [ output for output in output_list if self.patches[output] == pipe ]
-	    if len(unpatch_list) > 0:
-		# TODO this doesn't work for the audio pipeline when audio is being stopped... since the audio pipe is hooked up to audio/visual, and you're just
-		#	stopping audio, it just unpatches the audio instead of stopping the pipeline like it should...
-		if len(unpatch_list) == len(self.pipes[pipe].mode):
-		    self.pipes[pipe].stop()
-		else:
-		    self.repatch_outputs('/'.join(unpatch_list), None)
+		# get a list of output names sorted by the priority of the currently playing request
+		priority_list = sorted([ (self.requests[output]['priority'] if self.requests[output] else 0, output) for output in self.requests.keys() ], key=lambda pair: pair[0], reverse=True)
+		#print priority_list
 
-		if requeue is True:
-		    # push the request back onto the queue. This assumes that this pipe is playing the same request
-		    req = self.requests[unpatch_list[0]]
-		    # TODO shouldn't this logic be in the controller?
-		    if req is not None and req['controller'].allow_requeue is True:
-			req['controller'].insert_request(req)
-	for output in output_list:
-	    self.requests[output] = None
-    """
+		req = None
+		while len(priority_list) > 0:
+		    print "Trying to fill in outputs: " + repr(priority_list)
+		    output_list = [ pair[1] for pair in priority_list ]
 
-    def stop_request(self, output, requeue=False):
-	if self.requests[output] == None:
-	    return
+		    # if we are playing a request that only allows overlaying with itself, then we only check that controller for requests, otherwise we check all controllers
+		    if req is not None and req['play_mode'] == 'overlay_self':
+			req = req['controller'].get_request(present_time, output_list, query=True)
+		    else:
+			req = self.get_request(present_time, priority_list[0][0], output_list, query=True)
 
-	req = self.requests[output]
-	print "Stopping request: " + req['media_type'] + ": " + req['filename']
-	request_pipe = self.pipes[req['media_type']]
-	request_pipe.stop()
+		    if req:
+			print "Request Found: " + req['media_type'] + ": " + req['filename']
+			self.execute_request(req, output_limit=output_list)
+		    else:
+			req = self.requests[priority_list[0][1]]
 
-	# push the request back onto the queue. This assumes that this pipe is playing the same request
-	if requeue is True:
-	    req['controller'].requeue_request(req)
+		    if req is not None:
+			# if the current request is to be played exclusively, then exit the loop
+			if req['play_mode'] == 'exclusive':
+			    break
 
-	for name in self.requests.keys():
-	    if self.requests[name] == req:
-		self.requests[name] = None
+			# eliminate all outputs from the list that the currently playing request is using (they cannot be overidden by a lower priority request)
+			class_list = req['media_class'].split('/')
+			priority_list = [ pair for pair in priority_list if pair[1] not in class_list ]
+		    else:
+			break
+
+		print "Current State (" + str(time.time()) + "): " + repr(self.request_update.is_set()) + " | " + (self.requests['audio']['filename'] if self.requests['audio'] is not None else "No astream") + " | " + (self.requests['visual']['filename'] if 'visual' in self.requests and self.requests['visual'] is not None else "No vstream")
+
+		# if the updated flag was set, then clear it
+		if self.request_update.is_set():
+		    self.request_update.clear()
+
+	    # call the update functions
+	    with self.lock:
+		for ctrl in self.controllers:
+		    if ctrl.next_update and present_time > ctrl.next_update:
+			ctrl.next_update = 0
+			ctrl.do_player_update(ctrl, present_time)
+
+	self.player_quit()
 
     def get_request(self, present_time, priority, media_class, query=False):
 	with self.lock:
 	    for ctrl in self.controllers:
-		# TODO should this be >=, so newer requests will replace older requests
-		if ctrl.priority >= priority:
-		    req = ctrl.get_request(present_time, media_class, query=True)
-		    if req is not None:
-			return req
-		else:
+		if ctrl.priority < priority:
 		    break
+		req = ctrl.get_request(present_time, media_class, query=True)
+		if req is not None:
+		    return req
 	return None
-
-    def get_controller_requests(self, ctrl):
-	return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
-
-    def controller_request_is_playing(self, ctrl):
-	for output in self.get_controller_requests(ctrl):
-	    request_pipe = self.pipes[self.requests[output]['media_type']]
-	    if request_pipe.is_playing():
-		return True
-	return False
-
-    def stop_controller_requests(self, ctrl):
-	#with self.lock:
-	for output in self.requests.keys():
-	    if self.requests[output] != None and self.requests[output]['controller'] == ctrl:
-		self.stop_request(output)
 
     def execute_request(self, req, output_limit=None):
 	if req['play_mode'] == 'exclusive':
@@ -251,97 +248,6 @@ class ObPlayer (object):
 		    + unicode(req['title']).encode('ascii', 'replace') + ' (id: ' + str(req['media_id'])
 		    + ' file: ' + unicode(req['filename']).encode('ascii', 'replace') + ')', 'player')
 
-    def run(self):
-	self.player_init()
-	self.request_update.set()
-	#test = time.time()
-	while not self.thread.stopflag.wait(1):
-	    present_time = time.time()
-
-	    """
-	    if present_time >= test + 15 and present_time < test + 16:
-		self.unpatch_output('audio')
-	    if present_time >= test + 18 and present_time < test + 19:
-		self.patch_output('audio', 'video')
-	    """
-
-	    # Stop any requests that have reached their end time and restore any outputs that may have been usurped by the now stopped request
-	    restore = False
-	    for output in self.requests.keys():
-		if self.requests[output] is not None and present_time > self.requests[output]['end_time']:
-		    self.stop_request(output)
-		    self.request_update.set()
-		    restore = True
-	    if restore:
-		print "Attempting to restore outputs"
-		self.restore_outputs()
-
-	    # check for requests already in the queue that need to start now
-	    with self.lock:
-		lowest_priority = 100
-		for output in self.requests.keys():
-		    if self.requests[output] is not None and self.requests[output]['priority'] < lowest_priority:
-			lowest_priority = self.requests[output]['priority']
-		for ctrl in self.controllers:
-		    # TODO somehow only set the bit if the request waiting is equal to or higher than the... lowest priority?
-		    if ctrl.priority <= lowest_priority:
-			break
-		    if ctrl.check_for_start(present_time):
-			print "Found a future request that needs to start now..."
-			self.request_update.set()
-
-
-	    #if self.request_update.is_set() or not self.is_playing.is_set() or self.astream is None or self.vstream is None:
-	    if self.request_update.is_set(): #or (self.astream is None and self.vstream is None):
-		print "Current State (" + str(time.time()) + "): " + repr(self.request_update.is_set()) + " | " + (self.requests['audio']['filename'] if self.requests['audio'] is not None else "No astream") + " | " + (self.requests['visual']['filename'] if self.requests['visual'] is not None else "No vstream")
-
-		# get a list of output names sorted by the priority of the currently playing request
-		priority_list = sorted([ (self.requests[output]['priority'] if self.requests[output] else 0, output) for output in self.requests.keys() ], key=lambda pair: pair[0], reverse=True)
-		#print priority_list
-
-		req = None
-		while len(priority_list) > 0:
-		    print "Trying to fill in outputs: " + repr(priority_list)
-		    output_list = [ pair[1] for pair in priority_list ]
-
-		    # if we are playing a request that only allows overlaying with itself, then we only check that controller for requests, otherwise we check all controllers
-		    if req is not None and req['play_mode'] == 'overlay_self':
-			req = req['controller'].get_request(present_time, output_list, query=True)
-		    else:
-			req = self.get_request(present_time, priority_list[0][0], output_list, query=True)
-
-		    if req:
-			print "Request Found: " + req['media_type'] + ": " + req['filename']
-			self.execute_request(req, output_limit=output_list)
-		    else:
-			req = self.requests[priority_list[0][1]]
-
-		    if req is not None:
-			# if the current request is to be played exclusively, then exit the loop
-			if req['play_mode'] == 'exclusive':
-			    break
-
-			# eliminate all outputs from the list that the currently playing request is using (they cannot be overidden by a lower priority request)
-			class_list = req['media_class'].split('/')
-			priority_list = [ pair for pair in priority_list if pair[1] not in class_list ]
-		    else:
-			break
-
-		print "Current State (" + str(time.time()) + "): " + repr(self.request_update.is_set()) + " | " + (self.requests['audio']['filename'] if self.requests['audio'] is not None else "No astream") + " | " + (self.requests['visual']['filename'] if self.requests['visual'] is not None else "No vstream")
-
-		# if the updated flag was set, then clear it
-		if self.request_update.is_set():
-		    self.request_update.clear()
-
-	    # call the update functions
-	    with self.lock:
-		for ctrl in self.controllers:
-		    if ctrl.next_update and present_time > ctrl.next_update:
-			ctrl.next_update = 0
-			ctrl.do_player_update(ctrl, present_time)
-
-	self.player_quit()
-
     def get_media_path(self, req):
         if req['file_location'][0] == '/':
             media_filename = req['file_location'] + '/' + req['filename']
@@ -355,6 +261,59 @@ class ObPlayer (object):
             return None
 	return media_filename
 
+    def stop_request(self, output, requeue=False):
+	if self.requests[output] == None:
+	    return
+
+	req = self.requests[output]
+	print "Stopping request: " + req['media_type'] + ": " + req['filename']
+	request_pipe = self.pipes[req['media_type']]
+	request_pipe.stop()
+
+	# push the request back onto the queue. This assumes that this pipe is playing the same request
+	if requeue is True:
+	    req['controller'].requeue_request(req)
+
+	for name in self.requests.keys():
+	    if self.requests[name] == req:
+		self.requests[name] = None
+
+    def repatch_outputs(self, media_class, media_type):
+	print "Repatching " + media_class + " to pipe " + str(media_type)
+
+	for output in self.requests.keys():
+	    if self.requests[output] is not None and self.requests[output]['media_type'] == media_type:
+		self.stop_request(output, requeue=True)
+
+	output_list = media_class.split('/')
+	for pipe in self.pipes.keys():
+	    if pipe != media_type:
+		unpatch_list = [ output for output in output_list if self.patches[output] == pipe ]
+		if len(unpatch_list) > 0:
+		    if len(unpatch_list) == len(self.pipes[pipe].mode):
+			self.pipes[pipe].stop()
+			# TODO requeue any request for which we stop the pipe
+			print "*** We should be requeuing"
+		    self.pipes[pipe].unpatch('/'.join(unpatch_list))
+
+	if media_type is not None:
+	    patch_list = [ output for output in output_list if self.patches[output] != media_type ]
+	    if len(patch_list) > 0:
+		self.pipes[media_type].patch('/'.join(patch_list))
+	for output in output_list:
+	    self.patches[output] = media_type
+		
+    def restore_outputs(self):
+	for output in self.requests.keys():
+	    if self.requests[output] is not None:
+		class_list = self.requests[output]['media_class'].split('/')
+		patch_list = [ output for output in class_list if self.requests[output] is None ]
+		if len(patch_list) > 0:
+		    patch_list.sort()
+		    self.repatch_outputs('/'.join(patch_list), self.patches[output])
+		    for class_name in patch_list:
+			self.requests[class_name] = self.requests[output]
+
 
     """
     # get the status (state) of the pipline (debug)
@@ -366,6 +325,22 @@ class ObPlayer (object):
         else:
             return str(self.pipeline.get_state())
     """
+
+    def get_controller_requests(self, ctrl):
+	return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
+
+    def controller_request_is_playing(self, ctrl):
+	for output in self.get_controller_requests(ctrl):
+	    request_pipe = self.pipes[self.requests[output]['media_type']]
+	    if request_pipe.is_playing():
+		return True
+	return False
+
+    def stop_controller_requests(self, ctrl):
+	#with self.lock:
+	for output in self.requests.keys():
+	    if self.requests[output] != None and self.requests[output]['controller'] == ctrl:
+		self.stop_request(output)
 
 
 #############################
@@ -693,7 +668,10 @@ class ObGstPipeline (ObPipeline):
 	self.pipeline.set_state(target_state)
         (statechange, state, pending) = self.pipeline.get_state(timeout=5 * Gst.SECOND)
         if statechange != Gst.StateChangeReturn.SUCCESS:
-	    raise Exception("Failed waiting for state change")
+	    obplayer.Log.log("gstreamer failed waiting for state change to " + str(pending), 'error')
+	    #raise Exception("Failed waiting for state change")
+	    return False
+	return True
 
     def start(self):
 	print self.name + ": starting"
@@ -785,7 +763,7 @@ class ObTestPipeline (ObGstPipeline):
 	self.videosink = None
 
 	self.fakesinks = { }
-	for output in self.player.outputs.keys():
+	for output in self.player.outputs.keys() + [ 'audio', 'visual' ]:
 	    self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
 	self.set_property('audio-sink', self.fakesinks['audio'])
@@ -850,7 +828,7 @@ class ObPlaybinPipeline (ObGstPipeline):
             self.pipeline.set_property('vis-plugin', self.audiovis)
 
 	self.fakesinks = { }
-	for output in self.player.outputs.keys():
+	for output in self.player.outputs.keys() + [ 'audio', 'visual' ]:
 	    self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
 	self.pipeline.set_property('audio-sink', self.fakesinks['audio'])
