@@ -160,14 +160,14 @@ class ObShow (object):
 	else:
 	    # find the track that should play at the present time
 	    self.playlist.seek_current(present_time - self.show_data['start_time'])
-	    obplayer.Log.log('starting at track number ' + str(self.playlist.pos), 'scheduler')
+	    obplayer.Log.log("starting at track number " + str(self.playlist.pos), 'scheduler')
 
 	self.play_current(present_time)
 
     def play_next(self, present_time):
 	if self.is_paused() or self.playlist.is_finished():
 	    self.ctrl.stop_requests()
-	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "show paused break")
 	    return False
 
 	if self.show_data['type'] == 'live_assist':
@@ -183,7 +183,7 @@ class ObShow (object):
 		if self.playlist.advance_to_current(present_time - self.start_time()): # TODO shouldn't neeed this?? and not self.playlist.is_finished():
 		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
 		    # over again until the next track, which isn't good
-		    print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
+		    #print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
 		    return self.play_current(present_time)
 
 	    if self.ctrl.has_requests():
@@ -191,7 +191,7 @@ class ObShow (object):
 		return False
 	    self.media_start_time = 0
 	    self.ctrl.stop_requests()
-	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "break (filling spaces)")
 
 	"""
 	if self.show_data['type'] != 'live_assist':
@@ -224,13 +224,13 @@ class ObShow (object):
 	self.media_start_time = present_time - offset
 
 	if media['media_type'] == 'breakpoint':
-	    obplayer.Log.log('stopping on breakpoint at position ' + str(self.playlist.pos), 'scheduler')
+	    obplayer.Log.log("stopping on breakpoint at position " + str(self.playlist.pos), 'scheduler')
 	    self.playlist.increment()
 	    self.auto_advance = False
 	    self.media_start_time = 0
 	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], '', '', self.show_data['name'])
 
-	    self.ctrl.add_request(media_type = 'break', end_time = self.end_time())
+	    self.ctrl.add_request(media_type = 'break', end_time = self.end_time(), title = "live assist breakpoint", order_num = media['order_num'])
 
 	else:
 	    self.ctrl.add_request(
@@ -317,7 +317,7 @@ class ObScheduler:
     def __init__(self):
 	self.lock = thread.allocate_lock()
 
-	self.ctrl = obplayer.Player.create_controller('scheduler', 50, default_play_mode='overlay_self')
+	self.ctrl = obplayer.Player.create_controller('scheduler', 50, default_play_mode='overlap', allow_overlay=False)
 	self.ctrl.set_request_callback(self.do_player_request)
 	self.ctrl.set_update_callback(self.do_player_update)
 
@@ -345,7 +345,7 @@ class ObScheduler:
 	self.set_next_update()
 
     def set_next_update(self):
-	print str(time.time()) + ": set_next_update: current next update is " + str(self.ctrl.get_next_update()) + ".  Media Update: " + str(obplayer.Scheduler.present_show.next_media_update) + " Show Update: " + str(obplayer.Scheduler.next_show_update)
+	print str(time.time()) + ": set_next_update: current next update is " + str(self.ctrl.get_next_update()) + ".  Media Update: " + str(obplayer.Scheduler.present_show.next_media_update if obplayer.Scheduler.present_show else "(no show)") + " Show Update: " + str(obplayer.Scheduler.next_show_update)
 	if self.present_show and self.present_show.next_media_update < self.next_show_update:
 	    self.ctrl.set_next_update(self.present_show.next_media_update)
 	else:
@@ -385,9 +385,9 @@ class ObScheduler:
 
 		if self.present_show.playlist.is_finished():
 		    if next_show_times != None:
-			obplayer.Log.log('this show over. waiting for next show to start in ' + str(self.next_show_start - present_time) + ' seconds', 'scheduler')
+			obplayer.Log.log("this show over. waiting for next show to start in " + str(self.next_show_start - present_time) + " seconds", 'scheduler')
 		    else:
-			obplayer.Log.log('this show over. next show not found. will retry after next update.')
+			obplayer.Log.log("this show over. next show not found. will retry after next update.")
 
     # update show update time after show sync. (if next show starting sooner than previously set, we need to update!)
     # this is already subject to the 'show lock' cutoff time.

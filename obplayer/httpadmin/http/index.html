@@ -189,6 +189,14 @@
         <table>
           <tbody>
             <tr>
+              <td>Enable Scheduler/Sync</td>
+              <td><input type="checkbox" name="scheduler_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('scheduler_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Enable Fallback Media Player</td>
+              <td><input type="checkbox" name="fallback_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('fallback_enable') %>></td>
+            </tr>
+            <tr>
               <td>Sync Buffer</td>
               <td><input type="text" name="buffer" value="<% obplayer.Config.setting('buffer', True) %>"></td>
             </tr>

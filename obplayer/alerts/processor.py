@@ -178,7 +178,7 @@ class ObAlertProcessor (object):
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
         self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
 
-	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlay_all')
+	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlap', allow_overlay=True)
 	#self.ctrl.do_player_request = self.do_player_request
 
 	self.thread = obplayer.ObThread('ObAlertProcessor', target=self.run)
@@ -269,7 +269,6 @@ class ObAlertProcessor (object):
 	next_expired_check = time.time() + 30
 	next_alert_check = 0
 
-	time.sleep(2)
 	while not self.thread.stopflag.wait(1):
 	    try:
 		present_time = time.time()
@@ -294,10 +293,11 @@ class ObAlertProcessor (object):
 			for alert in self.active_alerts.itervalues():
 			    alert_media = alert.get_media_info()
 			    if alert_media:
-				self.ctrl.add_request(media_type='audio', file_location="/media/work/Projects/Openbroadcaster/Remote2/obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
+				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
 				alert_media['duration'] += 2
 				self.ctrl.add_request(**alert_media)
 		    next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
+		    print "Next alert check: " + str(next_alert_check)
 
 	    except:
 		obplayer.Log.log('exception in ObAlertProcessor thread', 'error')

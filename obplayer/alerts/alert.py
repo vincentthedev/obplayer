@@ -151,7 +151,7 @@ class ObAlert (object):
 	if info is None:
 	    return False
 
-	#location = "/home/trans/.openbroadcaster/alerts"
+	# TODO there needs to be a better way to get the datadir
 	location = obplayer.ObData.get_datadir() + "/alerts"
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
@@ -163,7 +163,7 @@ class ObAlert (object):
 
 	elif info.description:
 	    brief = info.description.split('\n\n', 1)
-	    print "echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename)
+	    #print "echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename)
 	    os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
 
 	else:

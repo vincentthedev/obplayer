@@ -74,48 +74,40 @@ class ObMainApp:
 	    obplayer.Player = obplayer.ObPlayer()
 
 	    self.load_module('httpadmin')
-	    #self.load_module('alerts')
-	    self.load_module('liveassist')
-	    self.load_module('scheduler')
-	    #self.load_module('fallback')
+	    if obplayer.Config.setting('alerts_enable'):
+		self.load_module('alerts')
+	    if obplayer.Config.setting('scheduler_enable'):
+		self.load_module('scheduler')
+	    if obplayer.Config.setting('fallback_enable'):
+		self.load_module('fallback')
+	    if obplayer.Config.setting('live_assist_enable'):
+		self.load_module('liveassist')
 
 	    #### TEST CODE ####
 
-	    """
-	    import time
-	    time.sleep(5)
-	    obplayer.Player.play({
-		'file_location' : '/home/trans/Downloads',
-		'filename' : '3 Teeth - Nihil.mp4',
-		'media_id' : 3,
-		'artist' : 'Nihil',
-		'title' : '3 Teeth',
-		'media_type' : 'video',
-		'duration' : 240,
-		'order_num' : 3
-	    }, 240)
-	    """
+	    #time.sleep(2)
 
 	    #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/2example_CAPCP_with_Embedded_Large_Audio_File(2).xml")
 	    #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
 	    #obplayer.alerts.Processor.dispatch(alert)
 
-	    ctrl = obplayer.Player.create_controller('testsource', 30)
+	    ctrl = obplayer.Player.create_controller('testsource', 30, default_play_mode='overlap')
 	    #ctrl.add_request(media_type='testsignal', duration=5)
 	    #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
 	    #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
 	    #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
-	    #ctrl.add_request(media_type='image', play_mode='overlay_self', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=15)
-	    #ctrl.add_request(media_type='audio', play_mode='overlay_self', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
-	    #ctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+	    #ctrl.add_request(media_type='image', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=30)
+	    #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+	    #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+	    #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
 
-	    alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlay_all')
-	    #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
+	    alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
+	    #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
+	    #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
 
 	    #### END TEST CODE ####
 
 	    obplayer.Player.start_player()
-
 	    self.loop.run()
 	except KeyboardInterrupt:
 	    print "Keyboard Interrupt"

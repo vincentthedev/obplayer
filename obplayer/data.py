@@ -279,6 +279,8 @@ class ObConfigData(ObData):
         self.add_setting('http_admin_password', 'admin', 'text')
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
+	self.add_setting('scheduler_enable', '1', 'bool')
+	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
@@ -806,13 +808,13 @@ class ObPlaylogData(ObData):
     # emerg_id : if this is an emergency broadcast, what is the emergency broadcast id?
     # notes : any misc notes (in particular, offset if play is resumed part-way through).
     #
-    def playlog_add(self, media_id, artist, title, datetime, context, emerg_id='', notes=''):
+    def playlog_add(self, media_id, artist, title, datetime, context, notes=''):
 
         artist = self.escape(artist)
         title = self.escape(title)
         notes = self.escape(notes)
 
-        self.cur.execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(emerg_id) + "','" + notes + "')"
+        self.cur.execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(-1) + "','" + notes + "')"
                          )
         return self.con.last_insert_rowid()
 

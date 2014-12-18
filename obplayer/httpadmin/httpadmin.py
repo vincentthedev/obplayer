@@ -103,7 +103,7 @@ class ObHTTPAdmin(HTTPServer):
 	# we didn't get an errors on validate, so update each setting now.
         for key in postvars:
             setting_name = key
-            setting_nalue = postvars[key][0]
+            setting_value = postvars[key][0]
             obplayer.Config.set(setting_name, setting_value)
 
         return { 'status' : True }
