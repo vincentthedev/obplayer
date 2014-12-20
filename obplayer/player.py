@@ -240,14 +240,15 @@ class ObPlayer (object):
         playlog_notes = 'resuming at ' + str(time.time() - req['start_time']) + 's'
         obplayer.PlaylogData.playlog_add(req['media_id'], req['artist'], req['title'], time.time(), req['controller'].name, playlog_notes)
 
-        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %s type: %s)" % (
+        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %s type: '%s' source: %s)" % (
 	    str(req['order_num'] + 1) if req['order_num'] else '?',
 	    unicode(req['artist']).encode('ascii', 'replace'),
 	    unicode(req['title']).encode('ascii', 'replace'),
 	    req['media_id'],
 	    unicode(req['filename']).encode('ascii', 'replace'),
 	    str(req['duration']),
-	    req['media_type']
+	    req['media_type'],
+	    req['controller'].name
 	), 'player')
 
     def get_media_path(self, req):

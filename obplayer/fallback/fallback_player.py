@@ -68,7 +68,7 @@ class ObFallbackPlayer (obplayer.ObPlayerController):
 
                 if filetype in self.media_types:
 		    d = GstPbutils.Discoverer()
-		    mediainfo = d.discover_uri("file://" + obplayer.Config.setting('fallback_media') + '/' + filename)
+		    mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
 
 		    media_type = None
 		    for stream in mediainfo.get_video_streams():
@@ -82,10 +82,10 @@ class ObFallbackPlayer (obplayer.ObPlayerController):
 
 		    if media_type:
 			# we discovered some more fallback media, add to our media list.
-			self.media.append([filename, media_type, mediainfo.get_duration() / Gst.SECOND])
+			self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
 
                 if filetype in self.image_types:
-                    self.media.append([filename, 'image', self.image_duration])
+                    self.media.append([ dirname, filename, 'image', self.image_duration ])
 
         # shuffle the list
         random.shuffle(self.media)
@@ -95,43 +95,18 @@ class ObFallbackPlayer (obplayer.ObPlayerController):
 
     # the player is asking us what to play next
     def do_player_request(self, ctrl, present_time):
-
-	"""
-        # early return if we're playing something already, have no fallback media, or scheduler is about to do something.
-        if obplayer.Player.is_playing() or len(self.media) == 0 or obplayer.Scheduler.next_update() - time.time() < 5:
-            return True
-	"""
-
         if len(self.media) <= self.play_index:
             self.play_index = 0
             random.shuffle(self.media)  # shuffle again to create a new order for next time.
 
-	"""
-        # nothing playing? well let's play something.
-        media = {
-	    'media_id': 0,
-	    'order_num': 0,
-	    'media_type': unicode(self.media[self.play_index][1]),
-	    'file_location': unicode(obplayer.Config.setting('fallback_media')),
-	    'filename': unicode(self.media[self.play_index][0]),
-	    'artist': u'unknown',
-	    'title': unicode(self.media[self.play_index][0]),
-	    'start_time': 0.0,
-	    'duration': self.media[self.play_index][2]
-	}
-
-        obplayer.Player.play(media, 0, 'fallback')
-	"""
-
-	print "Requesting player play " + self.media[self.play_index][0] + " for " + str(self.media[self.play_index][2]) + "s (" + self.media[self.play_index][1] + ")"
 	ctrl.add_request(
-	    media_type = unicode(self.media[self.play_index][1]),
-	    file_location = unicode(obplayer.Config.setting('fallback_media')),
-	    filename = unicode(self.media[self.play_index][0]),
-	    duration = self.media[self.play_index][2],
+	    media_type = unicode(self.media[self.play_index][2]),
+	    file_location = unicode(self.media[self.play_index][0]),
+	    filename = unicode(self.media[self.play_index][1]),
+	    duration = self.media[self.play_index][3],
 	    order_num = self.play_index,
 	    artist = u'unknown',
-	    title = unicode(self.media[self.play_index][0])
+	    title = unicode(self.media[self.play_index][1])
 	)
 
         self.play_index = self.play_index + 1
