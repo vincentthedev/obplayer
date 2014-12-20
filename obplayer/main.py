@@ -79,7 +79,7 @@ class ObMainApp:
 	    if obplayer.Config.setting('scheduler_enable'):
 		self.load_module('scheduler')
 	    if obplayer.Config.setting('fallback_enable'):
-		self.load_module('fallback')
+	    	self.load_module('fallback')
 	    if obplayer.Config.setting('live_assist_enable'):
 		self.load_module('liveassist')
 

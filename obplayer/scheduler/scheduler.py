@@ -80,21 +80,12 @@ class ObPlaylist (object):
 	    return None
 	return self.playlist[self.pos + 1]['offset']
 
-    def seek_current(self, present_offset):
-	for i in xrange(0, len(self.playlist) - 1):
-	    if self.playlist[i + 1]['offset'] > present_offset:
-		self.pos = i
-		return
-	self.pos = len(self.playlist) - 1
-
     def advance_to_current(self, present_offset):
-	print "Present Offset: " + str(present_offset)
-	print "Old Pos: " + str(self.pos)
 	for i in xrange(self.pos, len(self.playlist)):
 	    if present_offset >= self.playlist[i]['offset'] and present_offset <= self.playlist[i]['offset'] + self.playlist[i]['duration']:
 		self.pos = i
 		return True
-	print "New Pos: " + str(self.pos)
+	self.pos = len(self.playlist)
 	return False
 
 
@@ -159,7 +150,7 @@ class ObShow (object):
 		self.now_playing = self.playlist.current()
 	else:
 	    # find the track that should play at the present time
-	    self.playlist.seek_current(present_time - self.show_data['start_time'])
+	    self.playlist.advance_to_current(present_time - self.show_data['start_time'])
 	    obplayer.Log.log("starting at track number " + str(self.playlist.pos), 'scheduler')
 
 	self.play_current(present_time)
@@ -176,15 +167,12 @@ class ObShow (object):
 		return False
 	    # TODO can you insert a break if the previous track failed to play?
 	    self.playlist.increment()
-	    return self.play_current(present_time)
+	    self.play_current(present_time)
 
 	else:
 	    if present_time >= self.next_media_update - 2:
-		if self.playlist.advance_to_current(present_time - self.start_time()): # TODO shouldn't neeed this?? and not self.playlist.is_finished():
-		    # TODO there is a problem with errors... if a request fails to play, then we'd try to play it over and
-		    # over again until the next track, which isn't good
-		    #print "PLAY: " + str(present_time) + " " + repr(self.playlist.current())
-		    return self.play_current(present_time)
+		if self.playlist.advance_to_current(present_time - self.start_time()):
+		    self.play_current(present_time)
 
 	    if self.ctrl.has_requests():
 		print str(time.time()) + ": Player already has a request so just return"
@@ -193,26 +181,25 @@ class ObShow (object):
 	    self.ctrl.stop_requests()
 	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "break (filling spaces)")
 
-	"""
-	if self.show_data['type'] != 'live_assist':
-	    # this will keep trying to play until the media checks out as valid (in the case of presently downloading)
-	    # in case downloading time is too long, we might still need to advance to the next track.
-	    self.playlist.advance_to_current(present_time - self.show_data['start_time'])
-	"""
-
     def play_current(self, present_time):
 	if self.is_paused():
+	    self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "show paused break")
 	    return False
 
 	media = self.playlist.current()
 	if not media or not obplayer.Sync.check_media(media):
+	    obplayer.Log.log("media not found at position: " + self.playlist.current_pos(), 'scheduler')
+	    next_start = self.playlist.next_start() if media and self.show_data['type'] != 'liveassist' else None
+	    self.next_media_update = self.start_time() + next_start if next_start else self.end_time()
+	    self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', end_time=self.next_media_update, title="media not found break")
 	    return False
 
 	if self.show_data['type'] == 'live_assist':
 	    self.play_media(media, 0, present_time)
 	else:
 	    offset = present_time - self.show_data['start_time'] - media['offset']
-	    #print str(self.playlist.pos) + " " + media['title'] + " Offset: " + str(offset) + " " + str(present_time - self.show_data['start_time']) + " " + str(media['offset'])
 	    self.play_media(media, offset, present_time)
 	    next_start = self.playlist.next_start()
 	    self.next_media_update = self.start_time() + next_start if next_start else self.end_time()
@@ -245,15 +232,7 @@ class ObShow (object):
 		duration = media['duration']
 	    )
 
-	    if media['media_type'] != 'image':
-		self.av_end_time = self.media_start_time + media['duration']
-
 	    obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], media['media_id'], self.media_start_time + media['duration'], self.show_data['name'])
-
-    def stop_current(self):
-	if self.av_end_time > 0:
-	    self.ctrl.stop_requests()
-	    self.av_end_time = 0
 
     def playlist_seek(self, track_num, seek):
 	self.playlist.set(track_num)
@@ -286,7 +265,7 @@ class ObShow (object):
 	    self.pause_position = time.time() - self.media_start_time
 	    self.media_start_time = 0
 	    self.ctrl.stop_requests()
-	    self.ctrl.add_request(media_type='break', end_time=self.end_time())
+	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title="show paused break")
 
     def unpause(self):
 	if self.paused:

@@ -232,7 +232,7 @@ class ObPlayer (object):
 		request_pipe.set_media_file(media_filename, req['start_time'])
 	request_pipe.start()
 
-	# record the currently playing requests in the requests table (only the minimum set)
+	# record the currently playing requests in the requests table (only the minimum set, so that other requests can use those outputs)
 	for output in min_list:
 	    self.requests[output] = req
 
@@ -240,12 +240,15 @@ class ObPlayer (object):
         playlog_notes = 'resuming at ' + str(time.time() - req['start_time']) + 's'
         obplayer.PlaylogData.playlog_add(req['media_id'], req['artist'], req['title'], time.time(), req['controller'].name, playlog_notes)
 
-        obplayer.Log.log('now playing track %s: %s - %s (id: %d file: %s)' % (
+        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %s type: %s)" % (
 	    str(req['order_num'] + 1) if req['order_num'] else '?',
 	    unicode(req['artist']).encode('ascii', 'replace'),
 	    unicode(req['title']).encode('ascii', 'replace'),
 	    req['media_id'],
-	    unicode(req['filename']).encode('ascii', 'replace') ), 'player')
+	    unicode(req['filename']).encode('ascii', 'replace'),
+	    str(req['duration']),
+	    req['media_type']
+	), 'player')
 
     def get_media_path(self, req):
         if '/' in req['file_location']:
@@ -372,7 +375,7 @@ class ObPlayerController (object):
 
     # media_type can be:	audio, video, image, audioin, break, testsignal
     # play_mode can be:		exclusive, overlap
-    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None):
+    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None):
 	if start_time is None:
 	    start_time = self.get_requests_endtime()
 	if end_time is not None:
