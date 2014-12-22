@@ -87,7 +87,7 @@ class ObAlertFetcher (obplayer.ObThread):
 			self.processor.dispatch(alert)
 
 			# TODO for testing only
-			#with codecs.open('sandbox/testalerts/'+ alert.identifier + '.xml', 'w', encoding='utf-8') as f:
+			#with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + alert.identifier + '.xml', 'w', encoding='utf-8') as f:
 			#    f.write(data)
 
 		except socket.error, e:
@@ -255,7 +255,7 @@ class ObAlertProcessor (object):
 
 			# TODO for testing only
 			#print r.text
-			with codecs.open('sandbox/testalerts/' + filename + '.xml', 'w', encoding='utf-8') as f:
+			with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'w', encoding='utf-8') as f:
 			    f.write(r.text)
 
 			if r.status_code == 200:

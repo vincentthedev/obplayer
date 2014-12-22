@@ -29,6 +29,15 @@ import os
 import re
 
 
+class Database (object):
+    def __init__(self, filename):
+	self.filename = filename
+	self.dbcon = apsw.Connection(os.path.join(nerve.configdir(), filename))
+
+    def get_cursor(self):
+	return self.dbcon.cursor()
+
+
 class ObData:
 
     @staticmethod
@@ -40,6 +49,9 @@ class ObData:
 
         if os.access(datadir, os.F_OK) == False:
             os.mkdir(datadir)
+
+        if os.access(datadir + '/alerts', os.F_OK) == False:
+            os.mkdir(datadir + '/alerts')
 
         if os.access(datadir + '/media', os.F_OK) == False:
             os.mkdir(datadir + '/media')
