@@ -42,7 +42,7 @@ class SyncShowsThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncShowsThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.timer_scale * obplayer.Config.setting('syncfreq'))
+	self.synctime = int(60 * obplayer.Config.setting('syncfreq'))
 	while not self.stopflag.wait(self.synctime):
 	    obplayer.Sync.sync_shows()
 
@@ -57,7 +57,7 @@ class SyncPlaylogThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncPlaylogThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.timer_scale * obplayer.Config.setting('syncfreq_log'))
+	self.synctime = int(60 * obplayer.Config.setting('syncfreq_log'))
 	while not self.stopflag.wait(self.synctime):
 	    obplayer.Sync.sync_playlog()
 
@@ -71,7 +71,7 @@ class SyncEmergThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncEmergThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.timer_scale * obplayer.Config.setting('syncfreq_emerg'))
+	self.synctime = int(60 * obplayer.Config.setting('syncfreq_emerg'))
 	while not self.stopflag.wait(self.synctime):
 	    obplayer.Sync.sync_emergency_broadcasts()
 
@@ -85,23 +85,13 @@ class SyncMediaThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncMediaThread')
 
     def run(self):
-	self.synctime = int(5 * obplayer.Config.timer_scale)
+	self.synctime = int(5)
 	while not self.stopflag.wait(self.synctime):
 	    obplayer.Sync.sync_media()
 
     def stop(self):
 	obplayer.ObThread.stop(self)
 	obplayer.Sync.quit = True
-
-
-class SchedulerThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'SchedulerThread')
-
-    def run(self):
-	while not self.stopflag.wait(0.25):
-	    obplayer.Scheduler.schedule_loop()
-	    #obplayer.FallbackPlayer.run()
 
 
 def init():
@@ -129,9 +119,6 @@ def init():
 	obplayer.Sync.sync_shows(True)
 	obplayer.Sync.sync_emergency_broadcasts()
 	obplayer.Sync.sync_media()
-
-    # Start scheduler thread
-    #SchedulerThread().start()
 
     # Start sync threads
     SyncShowsThread().start()

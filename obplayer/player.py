@@ -73,6 +73,7 @@ class ObPlayer (object):
 	self.pipes['testsignal'] = ObTestPipeline('test-signal', self)
 	self.pipes['image'] = ObImagePipeline('image-pipeline', self)
 	self.pipes['break'] = ObBreakPipeline('audio-break', self)
+	self.pipes['audioin'] = ObAudioInPipeline('audio-input', self)
 
 	self.testctrl = self.create_controller('testsignal', 1, allow_requeue=False)
 	def testsignal_request(self, present_time):
@@ -831,9 +832,6 @@ class ObTestPipeline (ObGstPipeline):
 	if len(self.mode) > 0:
 	    self.wait_state(Gst.State.PLAYING)
 
-    def set_media_file(self, filename, start_time):
-	pass
-
 
 class ObPlaybinPipeline (ObGstPipeline):
     output_caps = [ 'audio', 'visual' ]
@@ -915,6 +913,80 @@ class ObPlaybinPipeline (ObGstPipeline):
 	    if self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, offset * Gst.SECOND) == False:
 		obplayer.Log.log('unable to seek on this track', 'error')
 	    obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
+
+
+class ObAudioInPipeline (ObGstPipeline):
+    output_caps = [ 'audio' ]
+
+    def __init__(self, name, player):
+	ObGstPipeline.__init__(self, name)
+	self.player = player
+
+	self.pipeline = Gst.Pipeline()
+
+        audio_input = obplayer.Config.setting('audio_input')
+        if audio_input == 'alsa':
+            self.audiosrc = Gst.ElementFactory.make('alsasrc', 'audiosrc')
+            alsa_device = obplayer.Config.setting('alsa_input_device')
+            if alsa_device != '':
+                self.audiosrc.set_property('device', alsa_device)
+
+        elif audio_input == 'esd':
+            self.audiosrc = Gst.ElementFactory.make('esdsrc', 'audiosrc')
+
+        elif audio_input == 'jack':
+            self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', 'audiosrc')
+            self.audiosrc.set_property('connect', 0)  # don't autoconnect ports.
+	    name = obplayer.Config.setting('jack_input_port_name')
+            self.audiosrc.set_property('client-name', name if name else 'obplayer')
+
+        elif audio_input == 'oss':
+            self.audiosrc = Gst.ElementFactory.make('osssrc', 'audiosrc')
+
+        elif audio_input == 'pulse':
+            self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
+
+        elif audio_input == 'test':
+            self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
+
+        else:
+            self.audiosrc = Gst.ElementFactory.make('autoaudiosrc', 'audiosrc')
+
+	self.pipeline.add(self.audiosrc)
+
+	self.audioconvert = Gst.ElementFactory.make('audioconvert')
+	self.pipeline.add(self.audioconvert)
+	self.audiosrc.link(self.audioconvert)
+
+	self.audiosink = None
+	self.fakesink = Gst.ElementFactory.make('fakesink')
+	self.set_property('audio-src', self.fakesink)
+
+	self.register_signals()
+
+    def set_property(self, property, value):
+	if property == 'audio-sink':
+	    if self.audiosink:
+		self.pipeline.remove(self.audiosink)
+	    self.audiosink = value
+	    if self.audiosink:
+		self.pipeline.add(self.audiosink)
+		self.audioconvert.link(self.audiosink)
+
+    def patch(self, mode):
+	self.wait_state(Gst.State.NULL)
+	if 'audio' in mode:
+	    self.set_property('audio-sink', self.player.outputs['audio'])
+	ObPipeline.patch(self, mode)
+	self.wait_state(Gst.State.PLAYING)
+
+    def unpatch(self, mode):
+	self.wait_state(Gst.State.NULL)
+	if 'audio' in mode:
+	    self.set_property('audio-sink', self.fakesinks['audio'])
+	ObPipeline.unpatch(self, mode)
+	if len(self.mode) > 0:
+	    self.wait_state(Gst.State.PLAYING)
 
 
 class ObImagePipeline (ObPipeline):

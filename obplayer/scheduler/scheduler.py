@@ -96,7 +96,6 @@ class ObShow (object):
 	self.auto_advance = True
 
 	self.media_start_time = 0
-	self.av_end_time = 0
 	self.now_playing = None
 	self.next_media_update = 0
 
@@ -116,6 +115,16 @@ class ObShow (object):
 	self.playlist = ObPlaylist(self.show_data['id'])
 	self.groups = obplayer.RemoteData.load_groups(self.show_data['id'])
 	return self
+
+    def get_break_media(self, end_time=None, title="show paused break"):
+	if end_time == None:
+	    end_time = self.end_time()
+	return {
+	    'media_type' : 'break',
+	    'end_time' : end_time,
+	    'artist' : '[scheduler]',
+	    'title' : title
+	}
 
     def id(self):
 	return self.show_data['id']

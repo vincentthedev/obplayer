@@ -253,6 +253,8 @@
       </div>
       <div style="display: none;" id="content-audio">
 
+        <h4>Audio Output Settings</h4>
+
         <table>
           <tbody>
             <tr>
@@ -282,6 +284,37 @@
             <tr>
               <td>Gstreamer Init Callback</td>
               <td><input type="text" name="gst_init_callback" value="<% obplayer.Config.setting('gst_init_callback',False) %>"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Audio Input Settings</h4>
+
+        <table>
+          <tbody>
+            <tr>
+              <td>Enable Audio In Source</td>
+              <td><input type="checkbox" name="audioin_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('audioin_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Media Mode</td>
+              <td><select id="audio_input_select" name="audio_input">
+                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('audio_input','auto') %>>Auto Detect</option>
+                  <option value="alsa"<% obplayer.HTTPAdmin.form_item_selected('audio_input','alsa') %>>ALSA</option>
+                  <option value="esd"<% obplayer.HTTPAdmin.form_item_selected('audio_input','esd') %>>Esound</option>
+                  <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('audio_input','jack') %>>JACK</option>
+                  <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('audio_input','oss') %>>OSS</option>
+                  <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('audio_input','pulse') %>>Pulse Audio</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('audio_input','test') %>>No Output</option>
+                </select></td>
+            </tr>
+            <tr id="alsa_input_device_row">
+              <td>ALSA Device Name</td>
+              <td><input type="text" name="alsa_input_device" value="<% obplayer.Config.setting('alsa_input_device',True) %>"></td>
+            </tr>
+            <tr id="jack_input_port_name_row">
+              <td>Jack Port Name</td>
+              <td><input type="text" name="jack_input_port_name" value="<% obplayer.Config.setting('jack_input_port_name',True) %>"></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>

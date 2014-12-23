@@ -26,26 +26,21 @@ import apsw
 import string
 import time
 import os
+import os.path
 import re
 
 
-class Database (object):
-    def __init__(self, filename):
-	self.filename = filename
-	self.dbcon = apsw.Connection(os.path.join(nerve.configdir(), filename))
-
-    def get_cursor(self):
-	return self.dbcon.cursor()
-
-
 class ObData:
+    datadir = '~/.openbroadcaster'
 
     @staticmethod
-    def get_datadir(basedir=None):
-	# if ~/.openbroadcaster doesn't exist, we need to create it.
-	if basedir is None:
-	    basedir = '~/.openbroadcaster'
-        datadir = os.path.expanduser(basedir)
+    def set_datadir(basedir):
+	if basedir is not None:
+	    ObData.datadir = basedir
+
+    @staticmethod
+    def get_datadir(subdir=None):
+        datadir = os.path.expanduser(ObData.datadir)
 
         if os.access(datadir, os.F_OK) == False:
             os.mkdir(datadir)
@@ -61,6 +56,9 @@ class ObData:
 
         if os.access(datadir + '/fallback_media', os.F_OK) == False:
             os.mkdir(datadir + '/fallback_media')
+
+	if subdir:
+	    return os.path.join(datadir, subdir)
 	return datadir
 
     def table_exists(self, name):
@@ -96,24 +94,10 @@ class ObData:
     # run query, return dict.
     def query(self, query, thread='main'):
 
-        if thread == 'sync':
-            use_cur = self.cur_sync
-        elif thread == 'sync_show':
-
-            use_cur = self.cur_sync_show
-        elif thread == 'sync_emerg':
-
-            use_cur = self.cur_sync_emerg
-        else:
-
-            use_cur = self.cur
-
+        cols = None
         return_array = []
 
-        cols = None
-
         for row in self.cur.execute(query):
-
             if cols == None:
                 cols = self.cur.getdescription()
 
@@ -130,20 +114,19 @@ class ObData:
 
 class ObConfigData(ObData):
 
-    def __init__(self, basedir=None):
-	# we can use this to speed up (or slow down) our timer for debugging.
-	self.timer_scale = 1
+    def __init__(self):
 
 	self.headless = False
 	self.args = None
 	self.version = ''
 
-	self.datadir = ObData.get_datadir(basedir)
+	self.datadir = ObData.get_datadir()
         self.con = apsw.Connection(self.datadir + '/settings.db')
         self.cur = self.con.cursor()
 
         if self.table_exists('settings') != True:
-            self.create_table()
+	    self.cur.execute('CREATE TABLE settings (id INTEGER PRIMARY KEY, name TEXT, value TEXT, type TEXT)')
+	    self.cur.execute('CREATE UNIQUE INDEX name_index on settings(name)')
 
         self.check_defaults()
 
@@ -168,12 +151,10 @@ class ObConfigData(ObData):
         self.settings_edit_cache = self.settings_cache.copy()
 
     def validate_settings(self, settings):
-
         for (setting_name, setting_value) in settings.iteritems():
             error = self.validate_setting(setting_name, setting_value, settings)
             if error:
                 return error
-
         return None
 
     def is_int(self, value):
@@ -191,8 +172,7 @@ class ObConfigData(ObData):
         try:
             self.settings_cache[setting_name]
         except:
-            error = 'One or more setting names were not valid.' + setting_name
-            return error
+            return 'One or more setting names were not valid.' + setting_name
 
 	# disabled for now - this was locking the UI while waiting to timeout (if network problems)
 	# try:
@@ -255,14 +235,9 @@ class ObConfigData(ObData):
         return None
 
     def set(self, setting_name, setting_value):
-
         settings = {}
         settings[setting_name] = setting_value
         self.save_settings(settings)
-
-    def create_table(self):
-        self.cur.execute('CREATE TABLE settings (id INTEGER PRIMARY KEY, name TEXT, value TEXT, type TEXT)')
-        self.cur.execute('CREATE UNIQUE INDEX name_index on settings(name)')
 
     # make sure we have all our required settings. if not, add setting with default value.
     def check_defaults(self):
@@ -294,6 +269,10 @@ class ObConfigData(ObData):
 	self.add_setting('scheduler_enable', '1', 'bool')
 	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
+	self.add_setting('audioin_enable', '0', 'bool')
+        self.add_setting('audio_input', 'auto', 'text')
+        self.add_setting('alsa_input_device', 'default', 'text')
+        self.add_setting('jack_input_port_name', '', 'text')
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
 	self.add_setting('alerts_enable', '0', 'bool')
@@ -316,14 +295,9 @@ class ObConfigData(ObData):
         self.row_addedit('settings', data)
 
     def setting(self, name, use_edit_cache=False):
-        if use_edit_cache:
-            try:
-                return self.settings_edit_cache[name]
-            except:
-                return False
-
+	settings = self.settings_edit_cache if use_edit_cache else self.settings_cache
         try:
-            return self.settings_cache[name]
+            return settings[name]
         except:
             return False
 
@@ -344,9 +318,9 @@ class ObConfigData(ObData):
 
 class ObRemoteData(ObData):
 
-    def __init__(self, basedir=None):
+    def __init__(self):
 
-	self.datadir = ObData.get_datadir(basedir)
+	self.datadir = ObData.get_datadir()
 
 	# our main database, stored in memory.
         self.con = apsw.Connection(':memory:')
@@ -793,21 +767,14 @@ class ObRemoteData(ObData):
 
 class ObPlaylogData(ObData):
 
-    def __init__(self, basedir=None):
-
-	self.datadir = ObData.get_datadir(basedir)
+    def __init__(self):
+	self.datadir = ObData.get_datadir()
 
         self.con = apsw.Connection(self.datadir + '/playlog.db')
         self.cur = self.con.cursor()
 
-	# used by sync thread. (need separate cursor for each thread to use)
-        self.cur_sync = self.con.cursor()
-
         if self.table_exists('playlog') != True:
-            self.playlog_create_table()
-
-    def playlog_create_table(self):
-        self.cur.execute('CREATE TABLE playlog (id INTEGER PRIMARY KEY, media_id NUMERIC, artist TEXT, title TEXT, datetime NUMERIC, context TEXT, emerg_id NUMERIC, notes TEXT)')
+	    self.cur.execute('CREATE TABLE playlog (id INTEGER PRIMARY KEY, media_id NUMERIC, artist TEXT, title TEXT, datetime NUMERIC, context TEXT, emerg_id NUMERIC, notes TEXT)')
 
     #
     # Add entry to play log.
@@ -826,8 +793,7 @@ class ObPlaylogData(ObData):
         title = self.escape(title)
         notes = self.escape(notes)
 
-        self.cur.execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(-1) + "','" + notes + "')"
-                         )
+        self.cur.execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(-1) + "','" + notes + "')")
         return self.con.last_insert_rowid()
 
     #
@@ -838,11 +804,9 @@ class ObPlaylogData(ObData):
         rows = self.cur_sync.execute("SELECT id,media_id,artist,title,datetime,context,emerg_id,notes from playlog WHERE datetime > '" + str(timestamp) + "'")
 
         return_array = []
-
         for row in rows:
 
             log = {}
-
             log['id'] = row[0]
             log['media_id'] = row[1]
             log['artist'] = row[2]

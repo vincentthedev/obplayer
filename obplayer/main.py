@@ -52,9 +52,10 @@ class ObMainApp:
 	obplayer.Log = obplayer.ObLog()
 	obplayer.Log.set_debug(self.args.debug)
 
-	obplayer.Config = obplayer.ObConfigData(self.args.configdir[0])
-	obplayer.RemoteData = obplayer.ObRemoteData(self.args.configdir[0])
-	obplayer.PlaylogData = obplayer.ObPlaylogData(self.args.configdir[0])
+	obplayer.ObData.set_datadir(self.args.configdir[0])
+	obplayer.Config = obplayer.ObConfigData()
+	obplayer.RemoteData = obplayer.ObRemoteData()
+	obplayer.PlaylogData = obplayer.ObPlaylogData()
 
 	obplayer.Config.args = self.args
         obplayer.Config.headless = self.args.headless
@@ -80,6 +81,8 @@ class ObMainApp:
 		self.load_module('scheduler')
 	    if obplayer.Config.setting('fallback_enable'):
 	    	self.load_module('fallback')
+	    if obplayer.Config.setting('audioin_enable'):
+	    	self.load_module('audioin')
 	    if obplayer.Config.setting('live_assist_enable'):
 		self.load_module('liveassist')
 

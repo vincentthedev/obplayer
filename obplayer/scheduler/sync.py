@@ -24,9 +24,11 @@ import obplayer
 
 import pycurl
 import urllib
+
 import xml.dom.minidom
 from xml.dom.minidom import Node
 from xml.dom.minidom import getDOMImplementation
+
 import os
 import time
 import hashlib
@@ -679,8 +681,7 @@ class ObSync:
 
             media_id = str(media_id)
 
-            postfields = str('media_id=' + media_id + '&id=' + str(obplayer.Config.setting('device_id')) + '&pw=' + obplayer.Config.setting('device_password') + '&buffer=' + str(obplayer.Config.setting('buffer'
-                             )))
+            postfields = str('media_id=' + media_id + '&id=' + str(obplayer.Config.setting('device_id')) + '&pw=' + obplayer.Config.setting('device_password') + '&buffer=' + str(obplayer.Config.setting('buffer')))
 
             obplayer.Log.log('downloading ' + filename, 'sync')
 
