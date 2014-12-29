@@ -149,6 +149,7 @@ class ObShow (object):
 
     def start_show(self, present_time):
 
+	self.ctrl.stop_requests()
 	if self.show_data['type'] == 'live_assist':
 	    # if we start the show less than 30 seconds in, then start it, otherwise start paused
 	    if present_time - self.show_data['start_time'] < 30:
