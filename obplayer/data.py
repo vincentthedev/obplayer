@@ -801,7 +801,7 @@ class ObPlaylogData(ObData):
     #
     def playlog_entries_since(self, timestamp):
 
-        rows = self.cur_sync.execute("SELECT id,media_id,artist,title,datetime,context,emerg_id,notes from playlog WHERE datetime > '" + str(timestamp) + "'")
+        rows = self.cur.execute("SELECT id,media_id,artist,title,datetime,context,emerg_id,notes from playlog WHERE datetime > '" + str(timestamp) + "'")
 
         return_array = []
         for row in rows:
@@ -824,7 +824,7 @@ class ObPlaylogData(ObData):
     # Remove playlog entries since ID (used after a successful sync with web app database)
     #
     def remove_playlog_entries_since(self, entryid):
-        self.cur_sync.execute('DELETE from playlog WHERE id <= ' + str(entryid))
+        self.cur.execute('DELETE from playlog WHERE id <= ' + str(entryid))
         return True
 
 

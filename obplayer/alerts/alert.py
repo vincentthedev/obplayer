@@ -163,7 +163,7 @@ class ObAlert (object):
 
 	elif info.description:
 	    brief = info.description.split('\n\n', 1)
-	    #print "echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename)
+	    obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
 	    os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
 
 	else:
@@ -180,6 +180,8 @@ class ObAlert (object):
 	    'filename' : filename,
 	    'duration' : mediainfo.get_duration() / float(Gst.SECOND)
 	}
+	obplayer.Log.log("apparent duration of alert audio: " + str(mediainfo.get_duration()) + " (" + str(mediainfo.get_duration() / Gst.SECOND) + ")", 'debug')
+	obplayer.Log.log(repr(self.media_info), 'debug')
 	return True
 
     def get_media_info(self):
