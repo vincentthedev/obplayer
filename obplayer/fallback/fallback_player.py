@@ -95,7 +95,10 @@ class ObFallbackPlayer (obplayer.ObPlayerController):
 
     # the player is asking us what to play next
     def do_player_request(self, ctrl, present_time):
-        if len(self.media) <= self.play_index:
+	if len(self.media) == 0:
+	    return False
+
+        if self.play_index >= len(self.media):
             self.play_index = 0
             random.shuffle(self.media)  # shuffle again to create a new order for next time.
 

@@ -294,7 +294,6 @@ class ObAlertProcessor (object):
 			    alert_media = alert.get_media_info()
 			    if alert_media:
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
-				alert_media['duration'] += 2
 				self.ctrl.add_request(**alert_media)
 		    next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
 		    print "Next alert check: " + str(next_alert_check)

@@ -178,8 +178,13 @@ class ObAlert (object):
 	    'title' : str(self.identifier),
 	    'file_location' : location,
 	    'filename' : filename,
-	    'duration' : mediainfo.get_duration() / float(Gst.SECOND)
+	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 2
 	}
+
+	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
+	if self.media_info['duration'] > 120:
+	    self.media_info['duration'] = 120
+
 	obplayer.Log.log("apparent duration of alert audio: " + str(mediainfo.get_duration()) + " (" + str(mediainfo.get_duration() / Gst.SECOND) + ")", 'debug')
 	obplayer.Log.log(repr(self.media_info), 'debug')
 	return True
