@@ -67,7 +67,7 @@ class ObLog:
             if self.logfile != False:
                 self.logfile.close()
 
-            self.logfile = open(self.datadir + '/logs/' + self.logdate + '.obremote.log', 'a', 1)
+            self.logfile = open(self.datadir + '/logs/' + self.logdate + '.obplayer.log', 'a', 1)
         self.logfile.write(mstring + '\n')
 
 	self.logbuffer.append(mstring)

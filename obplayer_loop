@@ -5,6 +5,6 @@ cd $DIR
 
 while [ 1 ]
 do
-	./obremote $@
+	./obplayer_check $@
 	sleep 5
 done

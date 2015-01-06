@@ -129,7 +129,7 @@ class ObSync:
         enc_postfields = urllib.urlencode(postfields)
 
         curl.setopt(pycurl.NOSIGNAL, 1)
-        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Remote')
+        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Player')
         curl.setopt(pycurl.URL, obplayer.Config.setting('sync_url') + '?action=version')
         curl.setopt(pycurl.HEADER, False)
         curl.setopt(pycurl.POST, True)
@@ -522,7 +522,7 @@ class ObSync:
         enc_postfields = urllib.urlencode(postfields)
 
         curl.setopt(pycurl.NOSIGNAL, 1)
-        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Remote')
+        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Player')
         curl.setopt(pycurl.URL, obplayer.Config.setting('sync_url') + '?action=now_playing')
         curl.setopt(pycurl.HEADER, False)
         curl.setopt(pycurl.POST, True)
@@ -563,7 +563,7 @@ class ObSync:
         enc_postfields = urllib.urlencode(postfields)
 
         curl.setopt(pycurl.NOSIGNAL, 1)
-        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Remote')
+        curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Player')
         curl.setopt(pycurl.URL, obplayer.Config.setting('sync_url') + '?action=' + request_type)
         curl.setopt(pycurl.HEADER, False)
         curl.setopt(pycurl.POST, True)
@@ -690,7 +690,7 @@ class ObSync:
             outfile = open(media_outfilename, 'wb')
 
             curl.setopt(pycurl.NOSIGNAL, 1)
-            curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Remote')
+            curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Player')
             curl.setopt(pycurl.URL, obplayer.Config.setting('sync_url') + '?action=media')
             curl.setopt(pycurl.HEADER, False)
             curl.setopt(pycurl.POST, True)
