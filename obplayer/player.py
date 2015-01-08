@@ -48,7 +48,7 @@ class ObPlayer (object):
 	self.pipes = { }
 
     def start_player(self):
-	self.thread = obplayer.ObThread('ObPlayerThread', target=self.run)
+	self.thread = obplayer.ObThread('PlayerThread', target=self.run)
 	self.thread.start()
 
     def player_init(self):

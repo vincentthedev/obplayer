@@ -95,6 +95,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    break
 
 		except:
+		    obplayer.Log.log('exception in " + self.name + " thread', 'error')
 		    obplayer.Log.log(traceback.format_exc(), 'alerts')
 	    self.close()
 	    time.sleep(2)
@@ -210,6 +211,14 @@ class ObAlertProcessor (object):
 	    alerts = self.active_alerts
 	return alerts
 
+    def inject_alert(self, filename):
+	obplayer.Log.log("inject test alert from file " + filename, 'alerts')
+	with open(filename, 'r') as f:
+	    data = f.read()
+	alert = obplayer.alerts.ObAlert(data)
+	alert.print_data()
+	self.processor.dispatch(alert)
+
     def dispatch(self, alert):
 	with self.lock:
 	    self.dispatch_queue.insert(0, alert)
@@ -299,7 +308,7 @@ class ObAlertProcessor (object):
 		    print "Next alert check: " + str(next_alert_check)
 
 	    except:
-		obplayer.Log.log('exception in ObAlertProcessor thread', 'error')
+		obplayer.Log.log('exception in " + self.thread.name + " thread', 'error')
 		obplayer.Log.log(traceback.format_exc(), 'error')
 
 

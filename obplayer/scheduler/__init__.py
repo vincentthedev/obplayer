@@ -44,7 +44,11 @@ class SyncShowsThread (obplayer.ObThread):
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('syncfreq'))
 	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_shows()
+	    try:
+		obplayer.Sync.sync_shows()
+	    except:
+		obplayer.Log.log('exception in " + self.name + " thread', 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 
     # TODO this is temporary until you can have Sync check the stop flags directly
     def stop(self):
@@ -59,7 +63,11 @@ class SyncPlaylogThread (obplayer.ObThread):
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('syncfreq_log'))
 	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_playlog()
+	    try:
+		obplayer.Sync.sync_playlog()
+	    except:
+		obplayer.Log.log('exception in " + self.name + " thread', 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
 	obplayer.ObThread.stop(self)
@@ -73,7 +81,11 @@ class SyncEmergThread (obplayer.ObThread):
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('syncfreq_emerg'))
 	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_emergency_broadcasts()
+	    try:
+		obplayer.Sync.sync_emergency_broadcasts()
+	    except:
+		obplayer.Log.log('exception in " + self.name + " thread', 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
 	obplayer.ObThread.stop(self)
@@ -87,7 +99,11 @@ class SyncMediaThread (obplayer.ObThread):
     def run(self):
 	self.synctime = int(5)
 	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_media()
+	    try:
+		obplayer.Sync.sync_media()
+	    except:
+		obplayer.Log.log('exception in " + self.name + " thread', 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
 	obplayer.ObThread.stop(self)
