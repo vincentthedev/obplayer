@@ -90,21 +90,25 @@ class ObHTTPAdmin(HTTPServer):
     def handle_post(self, path, postvars):
         error = None
 
-	# run through each setting and make sure it's valid. if not, complain.
-        for key in postvars:
-            setting_name = key
-            setting_value = postvars[key][0]
+	if path == "/save":
+	    # run through each setting and make sure it's valid. if not, complain.
+	    for key in postvars:
+		setting_name = key
+		setting_value = postvars[key][0]
 
-            error = obplayer.Config.validate_setting(setting_name, setting_value)
+		error = obplayer.Config.validate_setting(setting_name, setting_value)
 
-            if error != None:
-                return { 'status' : False, 'error' : error }
+		if error != None:
+		    return { 'status' : False, 'error' : error }
 
-	# we didn't get an errors on validate, so update each setting now.
-        for key in postvars:
-            setting_name = key
-            setting_value = postvars[key][0]
-            obplayer.Config.set(setting_name, setting_value)
+	    # we didn't get an errors on validate, so update each setting now.
+	    for key in postvars:
+		setting_name = key
+		setting_value = postvars[key][0]
+		obplayer.Config.set(setting_name, setting_value)
 
-        return { 'status' : True }
+	    return { 'status' : True }
+
+	elif path == "/inject_alert":
+	    obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
 

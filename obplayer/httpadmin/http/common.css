@@ -83,3 +83,10 @@ h2:first-child
   background-color: #9f9;
   margin-bottom: 20px;
 }
+
+#log-data
+{
+  height: 40em;
+  overflow: auto;
+}
+

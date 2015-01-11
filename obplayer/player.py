@@ -556,7 +556,6 @@ class ObVideoSinkBin (Gst.Bin):
 
 	self.videoscale.link(self.videosink)
 
-
 	"""
 	# Cairo Overlay Test
 	self.cairooverlay = Gst.ElementFactory.make("cairooverlay", "cairooverlay")
@@ -591,13 +590,7 @@ class ObVideoSinkBin (Gst.Bin):
 	self.overlay_caps.from_caps(caps)
 
     def overlay_draw(self, overlay, context, arg1, arg2):
-	#context.scale(self.overlay_caps.width, self.overlay_caps.height)
-	#context.set_source_rgb(1, 0, 0)
-	#context.show_text("Hello World")
-	pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/home/trans/Downloads/kitty.jpg", self.overlay_caps.width, self.overlay_caps.height)
-	Gdk.cairo_set_source_pixbuf(context, pixbuf, 0, 0)
-	context.paint_with_alpha(100)
-	context.stroke()
+	obplayer.Gui.draw_overlay(context, self.overlay_caps.width, self.overlay_caps.height)
 
 
 class ObAudioSinkBin (Gst.Bin):

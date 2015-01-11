@@ -39,9 +39,9 @@ class ObGui:
             return
 
         else:
-            global Gtk, Gdk, GdkX11, GdkPixbuf
+            global Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 	    gi.require_version('Gtk', '3.0')
-	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf
+	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 
         builder = Gtk.Builder()
         builder.add_from_file('obplayer/ui.glade')
@@ -258,4 +258,13 @@ class ObGui:
 
             self.gui_drawing_area.queue_draw()
         return True
+
+    def draw_overlay(self, context, width, height):
+	#context.scale(width, height)
+	#context.set_source_rgb(1, 0, 0)
+	#context.show_text("Hello World")
+	pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/home/trans/Downloads/kitty.jpg", width, height)
+	Gdk.cairo_set_source_pixbuf(context, pixbuf, 0, 0)
+	context.paint_with_alpha(100)
+	context.stroke()
 

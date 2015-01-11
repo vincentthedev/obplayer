@@ -54,7 +54,7 @@ Site.save = function(section)
     postfields[$(element).attr('name')] = value;	
   });
 
-  $.post('/',postfields,Site.saveSuccess,'json');
+  $.post('/save',postfields,Site.saveSuccess,'json');
 
 }
 
@@ -62,6 +62,17 @@ Site.saveSuccess = function(response)
 {
   if(response.status) $('#notice').text('Settings saved.').show();
   else $('#error').text(response.error).show();
+}
+
+Site.inject_alert = function()
+{
+  
+  test_alert=$('#test_alert_select').val();
+
+  $.post('/inject_alert',{'alert':test_alert},function(response)
+  {
+    // we don't need no stinking response
+  },'json');
 }
 
 Site.logUpdate = function(response)
@@ -87,6 +98,7 @@ Site.logUpdate = function(response)
       }
     }
     $('#log-data').html(lines.join('\n'));
+    $('#log-data')[0].scrollTop = $('#log-data')[0].scrollHeight;
   },'html');
 }
 
