@@ -146,6 +146,13 @@ class ObAlert (object):
 		return False
 	return True
 
+    def broadcast_immediately(self):
+	for info in self.info:
+	    val = info.get_parameter("layer:SOREM:1.0:Broadcast_Immediately");
+	    if val.lower() == "yes":
+		return True
+	return False
+
     def generate_audio(self):
 	info = self.get_first_info(lang='en-CA')
 	if info is None:
@@ -218,6 +225,13 @@ class ObAlertInfo (object):
 	self.description = xml_get_first_tag_value(info, 'description')
 	self.instruction = xml_get_first_tag_value(info, 'instruction')
 
+	self.parameters = [ ]
+	for parameter in xml_get_tags(info, 'parameter'):
+	    name = xml_get_first_tag_value(parameter, 'valueName')
+	    val = xml_get_first_tag_value(parameter, 'value')
+	    if val is not None:
+		self.parameters.append([ name, val ])
+
 	self.eventcodes = [ ]
 	for eventcode in xml_get_tags(info, 'eventCode'):
 	    name = xml_get_first_tag_value(eventcode, 'valueName')
@@ -246,6 +260,12 @@ class ObAlertInfo (object):
 	    if area.has_geocode(code):
 		return True
 	return False
+
+    def get_parameter(self, name):
+	for param in self.parameters:
+	    if param[0] == name:
+		return param[1];
+	return None
 
 
 class ObAlertArea (object):

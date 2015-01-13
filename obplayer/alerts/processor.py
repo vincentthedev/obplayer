@@ -95,7 +95,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    break
 
 		except:
-		    obplayer.Log.log('exception in " + self.name + " thread', 'error')
+		    obplayer.Log.log("exception in " + self.name + " thread", 'error')
 		    obplayer.Log.log(traceback.format_exc(), 'alerts')
 	    self.close()
 	    time.sleep(2)
@@ -166,6 +166,7 @@ class ObAlertUDPFetcher (ObAlertFetcher):
 class ObAlertProcessor (object):
     def __init__(self):
 	self.lock = thread.allocate_lock()
+	self.next_alert_check = 0
 	self.alert_list = { }
 	self.active_alerts = { }
 
@@ -217,7 +218,7 @@ class ObAlertProcessor (object):
 	    data = f.read()
 	alert = obplayer.alerts.ObAlert(data)
 	alert.print_data()
-	self.processor.dispatch(alert)
+	self.dispatch(alert)
 
     def dispatch(self, alert):
 	with self.lock:
@@ -247,7 +248,8 @@ class ObAlertProcessor (object):
 		print "Active Alert:"
 		alert.print_data()
 		alert.next_play = 0
-
+		if alert.broadcast_immediately():
+		    self.next_alert_check = time.time()
 
     def fetch_references(self, references):
 	for (sender, identifier, timestamp) in references:
@@ -275,8 +277,8 @@ class ObAlertProcessor (object):
 			obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'alerts')
 
     def run(self):
-	next_expired_check = time.time() + 30
-	next_alert_check = 0
+	self.next_expired_check = time.time() + 30
+	self.next_alert_check = 0
 
 	while not self.thread.stopflag.wait(1):
 	    try:
@@ -290,13 +292,14 @@ class ObAlertProcessor (object):
 		    with self.dispatch_lock:
 			self.handle_dispatch(alert)
 
-		if present_time > next_expired_check:
-		    next_expired_check = present_time + 30
-		    for alert in self.active_alerts.itervalues():
-			if alert.is_expired():
-			    self.set_alert_inactive(alert)
+		if present_time > self.next_expired_check:
+		    self.next_expired_check = present_time + 30
+		    with self.lock:
+			for alert in self.active_alerts.itervalues():
+			    if alert.is_expired():
+				self.set_alert_inactive(alert)
 
-		if present_time > next_alert_check:
+		if present_time > self.next_alert_check:
 		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.active_alerts),), 'alerts')
 		    with self.lock:
 			for alert in self.active_alerts.itervalues():
@@ -304,11 +307,11 @@ class ObAlertProcessor (object):
 			    if alert_media:
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
 				self.ctrl.add_request(**alert_media)
-		    next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
-		    print "Next alert check: " + str(next_alert_check)
+		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
+		    print "Next alert check: " + str(self.next_alert_check)
 
 	    except:
-		obplayer.Log.log('exception in " + self.thread.name + " thread', 'error')
+		obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')
 		obplayer.Log.log(traceback.format_exc(), 'error')
 
 

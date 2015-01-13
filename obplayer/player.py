@@ -159,7 +159,7 @@ class ObPlayer (object):
 			    ctrl.call_player_update(present_time)
 
 	    except:
-		obplayer.Log.log('exception in " + self.thread.name + " thread', 'error')
+		obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')
 		obplayer.Log.log(traceback.format_exc(), 'error')
 		time.sleep(2)
 
