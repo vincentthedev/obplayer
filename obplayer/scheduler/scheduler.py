@@ -199,7 +199,7 @@ class ObShow (object):
 
 	media = self.playlist.current()
 	if not media or not obplayer.Sync.check_media(media):
-	    obplayer.Log.log("media not found at position: " + self.playlist.current_pos(), 'scheduler')
+	    obplayer.Log.log("media not found at position: " + str(self.playlist.current_pos()), 'scheduler')
 	    next_start = self.playlist.next_start() if media and self.show_data['type'] != 'liveassist' else None
 	    self.next_media_update = self.start_time() + next_start if next_start else self.end_time()
 	    self.ctrl.stop_requests()
