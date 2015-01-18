@@ -108,11 +108,6 @@ class ObAlert (object):
 	    for node in xml_get_tags(alert, 'info'):
 		self.info.append(ObAlertInfo(node))
 
-    def reference_filename(self):
-	filename = self.sent + "I" + self.identifier
-	filename = filename.translate({ ord('-') : ord('_'), ord(':') : ord('_'), ord('+') : ord('p') })
-	return filename
-
     def print_data(self):
 	print self.identifier
 	print self.sent + " by " + self.sender
@@ -136,9 +131,15 @@ class ObAlert (object):
 
     def has_geocode(self, code):
 	for info in self.info:
-	    if info.has_geocode(code):
-		return True
+	    for area in info.areas:
+		if area.has_geocode(code):
+		    return True
 	return False
+
+    def add_geocode(self, code):
+	for info in self.info:
+	    for area in info.areas:
+		area.add_geocode(code)
 
     def is_expired(self):
 	for info in self.info:
@@ -162,7 +163,7 @@ class ObAlert (object):
 	location = obplayer.ObData.get_datadir() + "/alerts"
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
-	filename = self.reference_filename()
+	filename = self.reference(self.sent, self.identifier)
 
 	if len(info.resources) > 0:
 	    if info.resources[0].write_file(location + "/" + filename) is False:
@@ -200,6 +201,12 @@ class ObAlert (object):
 	if self.media_info is None:
 	    self.generate_audio()
 	return self.media_info
+
+    @staticmethod
+    def reference(timestamp, identifier):
+	reference = timestamp + "I" + identifier
+	reference = reference.translate({ ord('-') : ord('_'), ord(':') : ord('_'), ord('+') : ord('p') })
+	return reference
 
 
 class ObAlertInfo (object):
@@ -255,12 +262,6 @@ class ObAlertInfo (object):
 		return True
 	return False
 
-    def has_geocode(self, code):
-	for area in self.areas:
-	    if area.has_geocode(code):
-		return True
-	return False
-
     def get_parameter(self, name):
 	for param in self.parameters:
 	    if param[0] == name:
@@ -294,6 +295,9 @@ class ObAlertArea (object):
 	    if geocode[0] == 'profile:CAP-CP:Location:0.3' and geocode[1].startswith(code):
 		return True
 	return False
+
+    def add_geocode(self, code):
+	self.geocodes.append([ 'profile:CAP-CP:Location:0.3', code ])
 
 
 class ObAlertResource (object):

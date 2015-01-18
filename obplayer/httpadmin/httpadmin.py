@@ -27,12 +27,14 @@ import os
 import sys
 import signal
 
-from OpenSSL import SSL
-from BaseHTTPServer import HTTPServer
+import OpenSSL
+import SocketServer
+import BaseHTTPServer
+
 from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
-class ObHTTPAdmin(HTTPServer):
+class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
     def __init__(self):
 	self.root = 'obplayer/httpadmin/http'
@@ -45,9 +47,9 @@ class ObHTTPAdmin(HTTPServer):
 
         server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
 
-	HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
+	BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
 	if sslenable:
-	    self.socket = ssl.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+	    self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
 
         sa = self.socket.getsockname()
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'admin')
@@ -110,5 +112,6 @@ class ObHTTPAdmin(HTTPServer):
 	    return { 'status' : True }
 
 	elif path == "/inject_alert":
-	    obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
+	    if hasattr(obplayer, 'alerts'):
+		obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
 

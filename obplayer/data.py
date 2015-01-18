@@ -150,6 +150,9 @@ class ObConfigData(ObData):
 	# they don't take effect until restart, but we want to keep track of them for subsequent edits.
         self.settings_edit_cache = self.settings_cache.copy()
 
+	if not self.setting("video_out_enable"):
+	    self.headless = True
+
     def validate_settings(self, settings):
         for (setting_name, setting_value) in settings.iteritems():
             error = self.validate_setting(setting_name, setting_value, settings)
@@ -180,28 +183,25 @@ class ObConfigData(ObData):
 	# except IOError:
 	# error = 'The SYNC URL you have provided does not appear to be valid.';
 
-        if setting_name == 'device_id' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_device_id' and self.is_int(setting_value) == False:
             return 'The device ID is not valid.'
 
-        if setting_name == 'buffer' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_buffer' and self.is_int(setting_value) == False:
             return 'The sync buffer is not valid.'
 
-        if setting_name == 'showlock' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_showlock' and self.is_int(setting_value) == False:
             return 'The show lock is not valid.'
 
-        if setting_name == 'syncfreq' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_freq' and self.is_int(setting_value) == False:
             return 'The show sync frequency is not valid.'
 
-        if setting_name == 'syncfreq_emerg' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_freq_emerg' and self.is_int(setting_value) == False:
             return 'The emergency sync frequency is not valid.'
 
-        if setting_name == 'syncfreq_playlog' and self.is_int(setting_value) == False:
+        if setting_name == 'sync_freq_playlog' and self.is_int(setting_value) == False:
             return 'The playlog sync frequency is not valid.'
 
-        if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
-            return 'The web admin port is not valid.'
-
-        if setting_name == 'device_password' and setting_value == '':
+        if setting_name == 'sync_device_password' and setting_value == '':
             return 'A device password is required.'
 
 	url_regex = re.compile(
@@ -217,14 +217,17 @@ class ObConfigData(ObData):
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
-        if setting_name == 'local_media' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
+        if setting_name == 'local_media' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (approved) directory you have specified does not exist.'
 
-        if setting_name == 'local_archive' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
+        if setting_name == 'local_archive' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (archived) directory you have specified does not exist.'
 
-        if setting_name == 'local_uploads' and settings['syncmode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
+        if setting_name == 'local_uploads' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (unapproved) directory you have specified does not exist.'
+
+        if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
+            return 'The web admin port is not valid.'
 
         if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'To use the web admin with SSL, a valid certiciate file is required.'
@@ -241,43 +244,55 @@ class ObConfigData(ObData):
 
     # make sure we have all our required settings. if not, add setting with default value.
     def check_defaults(self):
-        self.add_setting('device_id', '1', 'int')
-        self.add_setting('device_password', 'password', 'text')
+        self.add_setting('audio_out_visualization', '1', 'bool')
+        self.add_setting('audio_out_mode', 'auto', 'text')
+        self.add_setting('audio_out_alsa_device', 'default', 'text')
+        self.add_setting('audio_out_jack_name', '', 'text')
+        self.add_setting('gst_init_callback', '', 'text')
+
+	self.add_setting('audio_in_enable', '0', 'bool')
+        self.add_setting('audio_in_mode', 'auto', 'text')
+        self.add_setting('audio_in_alsa_device', 'default', 'text')
+        self.add_setting('audio_in_jack_name', '', 'text')
+
+	self.add_setting('video_out_enable', '1', 'bool')
+        self.add_setting('video_out_mode', 'opengl', 'text')
+
+	self.add_setting('overlay_enable', '0', 'bool')
+        self.add_setting('overlay_mode', 'auto', 'text')
+
+	self.add_setting('scheduler_enable', '1', 'bool')
+        self.add_setting('sync_device_id', '1', 'int')
+        self.add_setting('sync_device_password', 'password', 'text')
         self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
-        self.add_setting('buffer', '24', 'int')
-	self.add_setting('modules', 'httpadmin, alerts, scheduler, fallback', 'string')
+        self.add_setting('sync_buffer', '24', 'int')
+        self.add_setting('sync_showlock', '20', 'int')
+        self.add_setting('sync_freq', '2', 'int')
+        self.add_setting('sync_freq_emerg', '1', 'int')
+        self.add_setting('sync_freq_log', '3', 'int')
+        self.add_setting('sync_mode', 'remote', 'text')
+        self.add_setting('sync_copy_media_to_backup', '0', 'bool')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
-        self.add_setting('showlock', '20', 'int')
-        self.add_setting('syncfreq', '2', 'int')
-        self.add_setting('syncfreq_emerg', '1', 'int')
-        self.add_setting('syncfreq_log', '3', 'int')
-        self.add_setting('syncmode', 'remote', 'text')
         self.add_setting('local_archive', '', 'text')
         self.add_setting('local_uploads', '', 'text')
         self.add_setting('local_media', '', 'text')
-        self.add_setting('copy_media_to_backup', '0', 'bool')
-        self.add_setting('audiovis', '1', 'bool')
-        self.add_setting('audio_output', 'auto', 'text')
-        self.add_setting('alsa_device', 'default', 'text')
-        self.add_setting('jack_port_name', '', 'text')
-        self.add_setting('gst_init_callback', '', 'text')
+
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
         self.add_setting('http_admin_password', 'admin', 'text')
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
-	self.add_setting('scheduler_enable', '1', 'bool')
-	self.add_setting('fallback_enable', '1', 'bool')
-        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
-	self.add_setting('audioin_enable', '0', 'bool')
-        self.add_setting('audio_input', 'auto', 'text')
-        self.add_setting('alsa_input_device', 'default', 'text')
-        self.add_setting('jack_input_port_name', '', 'text')
+
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
+
 	self.add_setting('alerts_enable', '0', 'bool')
+	self.add_setting('alerts_language', 'english', 'text')
 	self.add_setting('alerts_geocode', '59', 'text')
 	self.add_setting('alerts_repeat_time', '120', 'int')
+
+	self.add_setting('fallback_enable', '1', 'bool')
+        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 
     def add_setting(self, name, value, datatype=None):
 

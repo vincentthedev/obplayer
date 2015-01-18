@@ -120,8 +120,8 @@ class ObSync:
         obplayer.Log.log('reporting version to server: ' + obplayer.Config.version, 'sync')
 
         postfields = {}
-        postfields['id'] = obplayer.Config.setting('device_id')
-        postfields['pw'] = obplayer.Config.setting('device_password')
+        postfields['id'] = obplayer.Config.setting('sync_device_id')
+        postfields['pw'] = obplayer.Config.setting('sync_device_password')
         postfields['version'] = obplayer.Config.version
 
         curl = pycurl.Curl()
@@ -153,7 +153,7 @@ class ObSync:
     # if ignore_showlock = true, ignore cutoff time. we're doing a database reset.
     def sync_shows(self, ignore_showlock=False):
 
-        cutoff_time = time.time() + obplayer.Config.setting('showlock') * 60
+        cutoff_time = time.time() + obplayer.Config.setting('sync_showlock') * 60
 
         syncfiles = {}
 
@@ -500,8 +500,8 @@ class ObSync:
     def now_playing_update_thread(self, playlist_id, playlist_end, media_id, media_end, show_name):
 
         postfields = {}
-        postfields['id'] = obplayer.Config.setting('device_id')
-        postfields['pw'] = obplayer.Config.setting('device_password')
+        postfields['id'] = obplayer.Config.setting('sync_device_id')
+        postfields['pw'] = obplayer.Config.setting('sync_device_password')
 
         postfields['playlist_id'] = playlist_id
         postfields['media_id'] = media_id
@@ -555,9 +555,9 @@ class ObSync:
         curl = pycurl.Curl()
 
         postfields = {}
-        postfields['id'] = obplayer.Config.setting('device_id')
-        postfields['pw'] = obplayer.Config.setting('device_password')
-        postfields['hbuffer'] = obplayer.Config.setting('buffer')
+        postfields['id'] = obplayer.Config.setting('sync_device_id')
+        postfields['pw'] = obplayer.Config.setting('sync_device_password')
+        postfields['hbuffer'] = obplayer.Config.setting('sync_buffer')
         postfields['data'] = data
 
         enc_postfields = urllib.urlencode(postfields)
@@ -640,11 +640,11 @@ class ObSync:
 
 	# determine our sync mode - if local or backup, look in local location first.
 
-        syncmode = obplayer.Config.setting('syncmode')
-        if syncmode == 'remote':
+        sync_mode = obplayer.Config.setting('sync_mode')
+        if sync_mode == 'remote':
             fetch_from_http = True
 
-        if syncmode == 'local' or syncmode == 'backup':
+        if sync_mode == 'local' or sync_mode == 'backup':
 
             if archived == 1:
                 local_media_location = obplayer.Config.setting('local_archive')
@@ -670,10 +670,10 @@ class ObSync:
                 local_exists = False
                 file_match = False
 
-            if local_exists and (file_match or syncmode == 'local'):  # ignoring hash mismatch if source local, there is nothing we can do anyway...
+            if local_exists and (file_match or sync_mode == 'local'):  # ignoring hash mismatch if source local, there is nothing we can do anyway...
                 obplayer.Log.log('copying ' + filename + ' from local', 'sync')
                 shutil.copy(local_fullpath, media_outfilename)
-            elif syncmode == 'backup':
+            elif sync_mode == 'backup':
 
                 fetch_from_http = True
 
@@ -681,7 +681,7 @@ class ObSync:
 
             media_id = str(media_id)
 
-            postfields = str('media_id=' + media_id + '&id=' + str(obplayer.Config.setting('device_id')) + '&pw=' + obplayer.Config.setting('device_password') + '&buffer=' + str(obplayer.Config.setting('buffer')))
+            postfields = str('media_id=' + media_id + '&id=' + str(obplayer.Config.setting('sync_device_id')) + '&pw=' + obplayer.Config.setting('sync_device_password') + '&buffer=' + str(obplayer.Config.setting('sync_buffer')))
 
             obplayer.Log.log('downloading ' + filename, 'sync')
 
@@ -720,7 +720,7 @@ class ObSync:
 	    # if file download complete and we're on 'backup' mode, copy the downloaded file to our backup repository to keep it up to date.
 	    # also check to make sure this setting is selected
 
-            if obplayer.Config.setting('copy_media_to_backup') and file_download_complete and syncmode == 'backup' and os.path.exists(media_outfilename) and os.path.getsize(media_outfilename) == file_size:
+            if obplayer.Config.setting('sync_copy_media_to_backup') and file_download_complete and sync_mode == 'backup' and os.path.exists(media_outfilename) and os.path.getsize(media_outfilename) == file_size:
 		# create our dirs in the backup location if required
                 if os.path.isdir(local_media_location + '/' + file_location[0]) == False:
                     os.mkdir(local_media_location + '/' + file_location[0], 0755)

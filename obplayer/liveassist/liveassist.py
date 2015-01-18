@@ -29,11 +29,13 @@ import time
 
 import json
 
-from BaseHTTPServer import HTTPServer
+import OpenSSL
+import SocketServer
+import BaseHTTPServer
+
 from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
-
-class ObLiveAssist(HTTPServer):
+class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
     def __init__(self):
 	self.root = 'obplayer/liveassist/http'
@@ -41,7 +43,7 @@ class ObLiveAssist(HTTPServer):
 
         server_address = ('', obplayer.Config.setting('live_assist_port'))  # (address, port)
 
-	HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
+	BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
         sa = self.socket.getsockname()
         self.log('serving live assist http on port ' + str(sa[1]))
 

@@ -217,6 +217,7 @@ class ObAlertProcessor (object):
 	with open(filename, 'r') as f:
 	    data = f.read()
 	alert = obplayer.alerts.ObAlert(data)
+	alert.add_geocode(self.target_geocode)
 	alert.print_data()
 	self.dispatch(alert)
 
@@ -255,8 +256,7 @@ class ObAlertProcessor (object):
 	for (sender, identifier, timestamp) in references:
 	    if not identifier in self.alert_list:
 		(urldate, _, _) = timestamp.partition('T')
-		filename = timestamp + "I" + identifier
-		filename = filename.translate({ ord('-') : ord('_'), ord(':') : ord('_'), ord('+') : ord('p') })
+		filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
 		for host in self.archive_hosts:
 		    url = "http://%s/%s/%s.xml" % (host, urldate, filename)
@@ -297,6 +297,7 @@ class ObAlertProcessor (object):
 		    with self.lock:
 			for alert in self.active_alerts.itervalues():
 			    if alert.is_expired():
+				obplayer.Log.log("alert %s has expired" % (obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier),), 'alerts')
 				self.set_alert_inactive(alert)
 
 		if present_time > self.next_alert_check:

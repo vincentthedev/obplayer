@@ -39,9 +39,9 @@ class ObGui:
             return
 
         else:
-            global Gtk, Gdk, GdkX11, GdkPixbuf, cairo
+            global Gtk, Gdk, GdkX11, GdkPixbuf, cairo, Pango, PangoCairo
 	    gi.require_version('Gtk', '3.0')
-	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
+	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo, Pango, PangoCairo
 
         builder = Gtk.Builder()
         builder.add_from_file('obplayer/ui.glade')
@@ -110,8 +110,8 @@ class ObGui:
 	if obplayer.Config.headless:
 	    return
 
-	obplayer.Config.setting('audiovis') == 0
-	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audiovis') == 0):
+	obplayer.Config.setting('audio_out_visualization') == 0
+	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audio_out_visualization') == 0):
 	    self.gui_gst_area_viewport.hide()
 	    # if the image area is not currently visible, then clear what was previous displayed on the image area
 	    if not self.gui_drawing_area_viewport.is_visible():
@@ -260,11 +260,39 @@ class ObGui:
         return True
 
     def draw_overlay(self, context, width, height):
+	"""
+	#print str(width) + " x " + str(height)
 	#context.scale(width, height)
-	#context.set_source_rgb(1, 0, 0)
+	#context.scale(100, 100)
+	context.set_source_rgb(1, 0, 0)
+	#context.paint_with_alpha(1)
+	#context.select_font_face("Helvetica")
+	#context.set_font_face(None)
+	#context.set_font_size(0.05)
+	#context.move_to(0.1, 0.1)
 	#context.show_text("Hello World")
+	#context.rectangle(0, height * 0.60, width, 30)
+	context.rectangle(0, 0.60, 1, 0.1)
+	context.fill()
+
+	context.set_source_rgb(1, 1, 1)
+	#context.translate(0, height * 0.60)
+	context.translate(0, 0.60)
+	layout = PangoCairo.create_layout(context)
+	layout.set_font_description(Pango.font_description_from_string("Sans 14"))
+	layout.set_text("Hello World", -1)
+	PangoCairo.update_layout(context, layout)
+	PangoCairo.show_layout(context, layout)
+
+	#context.set_line_width(0.1)
+	#context.move_to(0, 0)
+	#context.line_to(1, 0)
+	#context.stroke()
+	"""
+
+	"""
 	pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/home/trans/Downloads/kitty.jpg", width, height)
 	Gdk.cairo_set_source_pixbuf(context, pixbuf, 0, 0)
-	context.paint_with_alpha(100)
 	context.stroke()
+	"""
 

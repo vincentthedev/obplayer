@@ -42,7 +42,7 @@ class SyncShowsThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncShowsThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.setting('syncfreq'))
+	self.synctime = int(60 * obplayer.Config.setting('sync_freq'))
 	while not self.stopflag.wait(self.synctime):
 	    try:
 		obplayer.Sync.sync_shows()
@@ -61,7 +61,7 @@ class SyncPlaylogThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncPlaylogThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.setting('syncfreq_log'))
+	self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
 	while not self.stopflag.wait(self.synctime):
 	    try:
 		obplayer.Sync.sync_playlog()
@@ -79,7 +79,7 @@ class SyncEmergThread (obplayer.ObThread):
 	obplayer.ObThread.__init__(self, 'SyncEmergThread')
 
     def run(self):
-	self.synctime = int(60 * obplayer.Config.setting('syncfreq_emerg'))
+	self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
 	while not self.stopflag.wait(self.synctime):
 	    try:
 		obplayer.Sync.sync_emergency_broadcasts()

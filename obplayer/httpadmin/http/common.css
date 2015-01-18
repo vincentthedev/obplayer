@@ -68,6 +68,11 @@ h2:first-child
   padding-top: 15px;
 }
 
+#content table td:first-child
+{
+  width: 16em;
+}
+
 #error
 {
   border: 1px solid #333;

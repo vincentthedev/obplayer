@@ -39,12 +39,12 @@ Site.quitCountdown = function()
 Site.save = function(section)
 {
 
-  postfields = {};
+  var postfields = {};
 
   $('#notice').hide();
   $('#error').hide();
 
-  $('#content-'+section+' input').add('#content-'+section+' select').each(function(index,element)
+  $('#content-'+section+' input').add('#content-'+section+' select').not('.ignore').each(function(index,element)
   {
     if($(element).attr('name')=='save') return; // ignore 'save' button.
 
@@ -64,7 +64,7 @@ Site.saveSuccess = function(response)
   else $('#error').text(response.error).show();
 }
 
-Site.inject_alert = function()
+Site.injectAlert = function()
 {
   
   test_alert=$('#test_alert_select').val();
@@ -126,15 +126,25 @@ $(document).ready(function()
   });
   $('#sync_media_mode').change();
 
-  $('#audio_output_select').change(function()
+  $('#audio_out_mode_select').change(function()
   {
-    if($('#audio_output_select').val()=='alsa') $('#alsa_device_row').show();
-    else $('#alsa_device_row').hide();
+    if($('#audio_out_mode_select').val()=='alsa') $('#audio_out_alsa_device_row').show();
+    else $('#audio_out_alsa_device_row').hide();
 
-    if($('#audio_output_select').val()=='jack') $('#jack_port_name_row').show();
-    else $('#jack_port_name_row').hide();
+    if($('#audio_out_mode_select').val()=='jack') $('#audio_out_jack_name_row').show();
+    else $('#audio_out_jack_name_row').hide();
   });
-  $('#audio_output_select').change();
+  $('#audio_out_mode_select').change();
+
+  $('#audio_in_mode_select').change(function()
+  {
+    if($('#audio_in_mode_select').val()=='alsa') $('#audio_in_alsa_device_row').show();
+    else $('#audio_in_alsa_device_row').hide();
+
+    if($('#audio_in_mode_select').val()=='jack') $('#audio_in_jack_name_row').show();
+    else $('#audio_in_jack_name_row').hide();
+  });
+  $('#audio_out_mode_select').change();
 
   $('#http_admin_secure').change(function()
   {

@@ -31,7 +31,7 @@ import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import GObject, Gst, GstVideo #, cairo, Gdk, GdkPixbuf
+from gi.repository import GObject, Gst, GstVideo
 
 Gst.init(None)
 
@@ -68,7 +68,7 @@ class ObPlayer (object):
 	    self.requests[request] = None
 
 	self.pipes = { }
-	self.pipes['audio'] = ObPlaybinPipeline('audio-playbin', self, obplayer.Config.setting('audiovis'))
+	self.pipes['audio'] = ObPlaybinPipeline('audio-playbin', self, obplayer.Config.setting('audio_out_visualization'))
 	self.pipes['video'] = ObPlaybinPipeline('video-playbin', self)
 	self.pipes['testsignal'] = ObTestPipeline('test-signal', self)
 	self.pipes['image'] = ObImagePipeline('image-pipeline', self)
@@ -321,18 +321,6 @@ class ObPlayer (object):
 		    for class_name in patch_list:
 			self.requests[class_name] = self.requests[output]
 
-
-    """
-    # get the status (state) of the pipline (debug)
-    def status(self):
-	if not self.pipeline:
-	    return True
-        if self.pipeline.get_state()[1] == Gst.State.PLAYING:
-            return False
-        else:
-            return str(self.pipeline.get_state())
-    """
-
     def get_controller_requests(self, ctrl):
 	return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
 
@@ -542,38 +530,63 @@ class ObPlayerController (object):
 #############################
 
 class ObVideoSinkBin (Gst.Bin):
-    __gstmetadata__ = ( 'Video Sink Bin', 'Sink', '', '' )
+    __gstmetadata__ = ( "OpenBroadcaster Video Sink Bin", "Sink", "Custom video sink for OpenBroadcaster", "Sari McFarland <sari@pikalabs.com>" )
 
     def __init__(self):
 	Gst.Bin.__init__(self)
 
-	self.videoscale = Gst.ElementFactory.make("videoscale", "videoscale")
-	self.add(self.videoscale)
-	self.videoconvert = Gst.ElementFactory.make("videoconvert", "videoconvert")
-	self.add(self.videoconvert)
-	self.videosink = Gst.ElementFactory.make("autovideosink", "videosink")
-	self.add(self.videosink)
+	self.elements = [ ]
 
-	self.videoscale.link(self.videosink)
+	## create basic filter elements
+	self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
+	self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
+	self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
 
-	"""
-	# Cairo Overlay Test
-	self.cairooverlay = Gst.ElementFactory.make("cairooverlay", "cairooverlay")
-	self.cairooverlay.connect("draw", self.overlay_draw)
-	self.cairooverlay.connect("caps-changed", self.overlay_caps_changed)
-	self.add(self.cairooverlay)
-	self.videoscale.link(self.cairooverlay)
-	self.cairooverlay.link(self.videoconvert)
-	self.videoconvert.link(self.videosink)
-	"""
+	## create overlay elements (if enabled)
+        if obplayer.Config.setting('overlay_enable'):
+	    overlay_mode = obplayer.Config.setting('overlay_mode')
+	    if overlay_mode:
+		self.overlay = Gst.ElementFactory.make('cairooverlay', "overlay")
+		self.overlay.connect("draw", self.overlay_draw)
+		self.overlay.connect("caps-changed", self.overlay_caps_changed)
+	    self.elements.append(self.overlay)
+	    self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
+	    self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
+	    self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
+
+	## create video sink element
+	video_out_mode = obplayer.Config.setting('video_out_mode')
+	if video_out_mode == 'x11':
+	    self.videosink = Gst.ElementFactory.make("ximagesink", "videosink")
+
+	elif video_out_mode == 'xvideo':
+	    self.videosink = Gst.ElementFactory.make("xvimagesink", "videosink")
+
+	elif video_out_mode == 'opengl':
+	    self.videosink = Gst.ElementFactory.make("glimagesink", "videosink")
+
+	elif video_out_mode == 'wayland':
+	    self.videosink = Gst.ElementFactory.make("waylandsink", "videosink")
+
+	elif video_out_mode == 'ascii':
+	    self.videosink = Gst.ElementFactory.make("cacasink", "videosink")
+
+	else:
+	    self.videosink = Gst.ElementFactory.make("autovideosink", "videosink")
+
+	self.elements.append(self.videosink)
+
+	for element in self.elements:
+	    self.add(element)
+
+	for index in range(0, len(self.elements) - 1):
+	    self.elements[index].link(self.elements[index + 1])
 
 	"""
 	# RSVG Overlay Test
 	self.svgoverlay = Gst.ElementFactory.make("rsvgoverlay", "rsvgoverlay")
 	self.add(self.svgoverlay)
-	self.videoscale.link(self.svgoverlay)
-	self.svgoverlay.link(self.videoconvert)
-	self.videoconvert.link(self.videosink)
+
 	#self.svgoverlay.set_property('fit-to-frame', True)
 	#self.svgoverlay.set_property('width', 1920)
 	#self.svgoverlay.set_property('height', 1080)
@@ -582,7 +595,7 @@ class ObVideoSinkBin (Gst.Bin):
 	#self.svgoverlay.set_property('location', '/home/trans/Downloads/strawberry.svg')
 	"""
 
-	self.sinkpad = Gst.GhostPad.new('sink', self.videoscale.get_static_pad('sink'))
+	self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
 	self.add_pad(self.sinkpad)
 
     def overlay_caps_changed(self, overlay, caps):
@@ -594,15 +607,15 @@ class ObVideoSinkBin (Gst.Bin):
 
 
 class ObAudioSinkBin (Gst.Bin):
-    __gstmetadata__ = ( 'Audio Sink Bin', 'Sink', '', '' )
+    __gstmetadata__ = ( "OpenBroadcaster Audio Sink Bin", "Sink", "Custom audio sink for OpenBroadcaster", "Sari McFarland <sari@pikalabs.com>" )
 
     def __init__(self):
 	Gst.Bin.__init__(self)
 
-        audio_output = obplayer.Config.setting('audio_output')
+        audio_output = obplayer.Config.setting('audio_out_mode')
         if audio_output == 'alsa':
             self.audiosink = Gst.ElementFactory.make('alsasink', 'audiosink')
-            alsa_device = obplayer.Config.setting('alsa_device')
+            alsa_device = obplayer.Config.setting('audio_out_alsa_device')
             if alsa_device != '':
                 self.audiosink.set_property('device', alsa_device)
 
@@ -612,7 +625,7 @@ class ObAudioSinkBin (Gst.Bin):
         elif audio_output == 'jack':
             self.audiosink = Gst.ElementFactory.make('jackaudiosink', 'audiosink')
             self.audiosink.set_property('connect', 0)  # don't autoconnect ports.
-	    name = obplayer.Config.setting('jack_port_name')
+	    name = obplayer.Config.setting('audio_out_jack_name')
             self.audiosink.set_property('client-name', name if name else 'obplayer')
 
         elif audio_output == 'oss':
@@ -625,7 +638,6 @@ class ObAudioSinkBin (Gst.Bin):
             self.audiosink = Gst.ElementFactory.make('fakesink', 'audiosink')
 
         else:
-	    # this is stdout audio output (experimental, some possibility to use with streaming but doesn't propery output silence as audio data).
             self.audiosink = Gst.ElementFactory.make('autoaudiosink', 'audiosink')
 
 	self.add(self.audiosink)
@@ -917,20 +929,17 @@ class ObAudioInPipeline (ObGstPipeline):
 
 	self.pipeline = Gst.Pipeline()
 
-        audio_input = obplayer.Config.setting('audio_input')
+        audio_input = obplayer.Config.setting('audio_in_mode')
         if audio_input == 'alsa':
             self.audiosrc = Gst.ElementFactory.make('alsasrc', 'audiosrc')
-            alsa_device = obplayer.Config.setting('alsa_input_device')
+            alsa_device = obplayer.Config.setting('audio_in_alsa_device')
             if alsa_device != '':
                 self.audiosrc.set_property('device', alsa_device)
-
-        elif audio_input == 'esd':
-            self.audiosrc = Gst.ElementFactory.make('esdsrc', 'audiosrc')
 
         elif audio_input == 'jack':
             self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', 'audiosrc')
             self.audiosrc.set_property('connect', 0)  # don't autoconnect ports.
-	    name = obplayer.Config.setting('jack_input_port_name')
+	    name = obplayer.Config.setting('audio_in_jack_name')
             self.audiosrc.set_property('client-name', name if name else 'obplayer')
 
         elif audio_input == 'oss':

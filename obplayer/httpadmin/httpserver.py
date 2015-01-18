@@ -26,8 +26,7 @@ import os
 import sys
 import traceback
 
-from BaseHTTPServer import HTTPServer
-from BaseHTTPServer import BaseHTTPRequestHandler
+import BaseHTTPServer
 
 from sys import version as python_version
 from cgi import parse_header, parse_multipart
@@ -40,7 +39,8 @@ else:
     from urlparse import parse_qs
 
 
-class ObHTTPRequestHandler(BaseHTTPRequestHandler):
+class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    #protocol_version = 'HTTP/1.1'
     server_version = "OpenBroadcasterHTTP/0.1"
 
     extensions = {
@@ -90,25 +90,23 @@ class ObHTTPRequestHandler(BaseHTTPRequestHandler):
 
         return self.authenticated
 
-    def send_404(self):
-        self.send_response(404)
-        self.send_header('Content-type', 'text/plain')
+    def send_content(self, code, mimetype, content, headers=None):
+	self.send_response(code)
+	if headers:
+	    for name, value in headers:
+		self.send_header(name, value)
+        self.send_header('Content-Type', mimetype)
+        self.send_header('Content-Length', len(content))
         self.end_headers()
-        self.wfile.write('404 Not Found')
+        self.wfile.write(content)
 
-    def send_json_headers(self):
-	self.send_response(200)
-	self.send_header('Content-type', 'application/json')
-	self.end_headers()
+    def send_404(self):
+	self.send_content(404, 'text/plain', "404 Not Found")
 
     def do_GET(self):
 
         if self.check_authorization() == False:
-            self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
-            self.send_header('Content-type', 'text/plain')
-            self.end_headers()
-            self.wfile.write('Authorization required.')
+	    self.send_content(401, 'text/plain', "Authorization Required", [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
             return
 
 	# handle commands sent via GET
@@ -121,9 +119,8 @@ class ObHTTPRequestHandler(BaseHTTPRequestHandler):
 		self.send_404()
 		return
 
-            self.send_json_headers()
 	    ret = command_func()
-	    self.wfile.write(json.dumps(ret))
+	    self.send_content(200, 'application/json', json.dumps(ret))
 	    return
 
 	if not self.is_valid_path(self.path):
@@ -141,15 +138,11 @@ class ObHTTPRequestHandler(BaseHTTPRequestHandler):
 	    self.extension = self.get_extension(filename)
 	    self.mimetype = self.get_mimetype(filename)
 
-	    self.send_response(200)
-	    self.send_header('Content-type', self.mimetype)
-	    self.end_headers()
-
 	    with open(filename, 'r') as f:
 		contents = f.read()
 		if self.extension == 'html':
 		    contents = self.parse(contents)
-		self.wfile.write(contents)
+		self.send_content(200, self.mimetype, contents)
 		return
 
 	# send error if nothing found
@@ -158,11 +151,7 @@ class ObHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
 
         if self.check_authorization() == False:
-            self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write('Authorization required.')
+	    self.send_content(401, 'text/plain', "Authorization Required", [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
             return
 
 	# empty post doesn't provide a content-type.
@@ -180,10 +169,9 @@ class ObHTTPRequestHandler(BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-        self.send_json_headers()
-
 	ret = self.server.handle_post(self.path, postvars)
-	self.wfile.write(json.dumps(ret))
+
+        self.send_content(200, 'application/json', json.dumps(ret))
 
     @staticmethod
     def is_valid_path(path):
