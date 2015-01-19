@@ -44,7 +44,7 @@ Site.save = function(section)
   $('#notice').hide();
   $('#error').hide();
 
-  $('#content-'+section+' input').add('#content-'+section+' select').not('.ignore').each(function(index,element)
+  $('#content-'+section+' .settings input').add('#content-'+section+' .settings select').each(function(index,element)
   {
     if($(element).attr('name')=='save') return; // ignore 'save' button.
 
@@ -66,13 +66,20 @@ Site.saveSuccess = function(response)
 
 Site.injectAlert = function()
 {
-  
   test_alert=$('#test_alert_select').val();
 
   $.post('/inject_alert',{'alert':test_alert},function(response)
   {
     // we don't need no stinking response
   },'json');
+}
+
+Site.displayAlerts = function()
+{
+  $.post('/get_alerts',{},function(response)
+  {
+    $('#active-alerts').html(response);
+  },'html');
 }
 
 Site.logUpdate = function(response)
@@ -152,6 +159,9 @@ $(document).ready(function()
     else $('#http_admin_sslcert_row').hide();
   });
   $('#http_admin_secure').change();
+
+  Site.displayAlertsInterval = setInterval(Site.displayAlerts, 5000);
+  Site.displayAlerts();
 
   Site.logInterval = setInterval(Site.logUpdate, 5000);
   Site.logUpdate();

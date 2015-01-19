@@ -39,158 +39,158 @@
 
       <div id="content-home">
 
-<h2>Current Configuration</h2>
+	<h2>Current Configuration</h2>
 
-<table>
-	<tr>
-		<td>Version:</td>
-		<td>v<% obplayer.Config.version %></td>
-	</tr>
-	<tr class="padding">
-		<td>Device ID:</td>
-		<td><% obplayer.Config.setting('sync_device_id') %></td>
-	</tr>
-	<tr>
-		<td>Device Password:</td>
-		<td>(hidden)</td>
-	</tr>
-	<tr>
-		<td>Sync URL:</td>
-		<td><% obplayer.Config.setting('sync_url') %></td>
-	</tr>
-	<tr>
-		<td>Sync Amount (buffer):</td>
-		<td><% obplayer.Config.setting('sync_buffer') %> hours</td>
-	</tr>
-	<tr class="padding">
-		<td>Remote Media Location:</td>
-		<td><% obplayer.Config.setting('remote_media') %></td>
-	</tr>
-	<tr>
-		<td>Show Lock-in Time:</td>
-		<td><% obplayer.Config.setting('sync_showlock') %> minutes</td>
-	</tr>
-	<tr>
-		<td>Media Sync Frequency:</td>
-		<td><% obplayer.Config.setting('sync_freq') %> minutes</td>
-	</tr>
-	<tr>
-		<td>Emergency Sync Frequency:</td>
-		<td><% obplayer.Config.setting('sync_freq_emerg') %></td>
-	</tr>
-	<tr>
-		<td>Log Sync Frequency:</td>
-		<td><% obplayer.Config.setting('sync_freq_log') %></td>
-	</tr>
-	<tr>
-		<td>Media Sync Mode:</td>
-		<td id="sync_mode_value"><% obplayer.Config.setting('sync_mode') %></td>
-	</tr>
-  <tr class="backup_media">
-    <td>Backup Downloaded Media:</td>
-    <td><% obplayer.Config.setting('sync_copy_media_to_backup') %></td>
-  </tr>
-  <tr>
-    <td>Fallback Media:</td>
-    <td><% obplayer.Config.setting('fallback_media') %></td>
-  </tr>
-	<tr class="local_media_location">
-		<td>Local Media Location:</td>
-		<td><% obplayer.Config.setting('local_media') %></td>
-	</tr>
-	<tr class="local_media_location">
-		<td>Local Uploads (Unapproved) Location:</td>
-		<td><% obplayer.Config.setting('local_uploads') %></td>
-	</tr>
-	<tr class="local_media_location">
-		<td>Local Archive (Deleted) Location:</td>
-		<td><% obplayer.Config.setting('local_archive') %></td>
-	</tr>
-	<tr class="padding">
-		<td>Audio Visualization Enabled?:</td>
-		<td><% obplayer.Config.setting('audio_out_visualization') %></td>
-	</tr>
-	<tr>
-		<td>Audio Output Mode:</td>
-		<td><% obplayer.Config.setting('audio_out_mode') %></td>
-	</tr>
-	<tr>
-		<td>ALSA Device (if using ALSA):</td>
-		<td><% obplayer.Config.setting('audio_out_alsa_device') %></td>
-	</tr>
-	<tr>
-		<td>Jack Port Name (if using Jack):</td>
-		<td><% obplayer.Config.setting('audio_out_jack_name') %></td>
-	</tr>
-	<tr>
-		<td>Gstreamer Init Callback:</td>
-		<td><% obplayer.Config.setting('gst_init_callback') %></td>
-	</tr>
-	<tr class="padding">
-		<td>Audio Input Mode:</td>
-		<td><% obplayer.Config.setting('audio_in_mode') %></td>
-	</tr>
-	<tr>
-		<td>ALSA Device (if using ALSA):</td>
-		<td><% obplayer.Config.setting('audio_in_alsa_device') %></td>
-	</tr>
-	<tr>
-		<td>Jack Port Name (if using Jack):</td>
-		<td><% obplayer.Config.setting('audio_in_jack_name') %></td>
-	</tr>
-	<tr class="padding">
-		<td>Video Output Enabled?:</td>
-		<td><% obplayer.Config.setting('video_out_enable') %></td>
-	</tr>
-	<tr>
-		<td>Video Output Mode:</td>
-		<td><% obplayer.Config.setting('video_out_mode') %></td>
-	</tr>
-	<tr class="padding">
-		<td>Video Overlay Enabled?:</td>
-		<td><% obplayer.Config.setting('overlay_enable') %></td>
-	</tr>
-	<tr>
-		<td>Video Overlay Mode:</td>
-		<td><% obplayer.Config.setting('overlay_mode') %></td>
-	</tr>
-	<tr class="padding">
-		<td>HTTPS Enabled?:</td>
-		<td id="https_setting"><% obplayer.Config.setting('http_admin_secure') %></td>
-	</tr>
-	<tr class="ssl_certificate">
-		<td>SSL Certificate:</td>
-		<td><% obplayer.Config.setting('http_admin_sslcert') %></td>
-	</tr>
-	<tr>
-		<td>HTTP Admin Port:</td>
-		<td><% obplayer.Config.setting('http_admin_port') %></td>
-	</tr>
-	<tr>
-		<td>HTTP Admin Username:</td>
-		<td><% obplayer.Config.setting('http_admin_username') %></td>
-	</tr>
-	<tr>
-		<td>HTTP Admin Password:</td>
-		<td>(hidden)</td>
-	</tr>
+	<table>
+	  <tr>
+	    <td>Version:</td>
+	    <td>v<% obplayer.Config.version %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Device ID:</td>
+	    <td><% obplayer.Config.setting('sync_device_id') %></td>
+	  </tr>
+	  <tr>
+	    <td>Device Password:</td>
+	    <td>(hidden)</td>
+	  </tr>
+	  <tr>
+	    <td>Sync URL:</td>
+	    <td><% obplayer.Config.setting('sync_url') %></td>
+	  </tr>
+	  <tr>
+	    <td>Sync Amount (buffer):</td>
+	    <td><% obplayer.Config.setting('sync_buffer') %> hours</td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Remote Media Location:</td>
+	    <td><% obplayer.Config.setting('remote_media') %></td>
+	  </tr>
+	  <tr>
+	    <td>Show Lock-in Time:</td>
+	    <td><% obplayer.Config.setting('sync_showlock') %> minutes</td>
+	  </tr>
+	  <tr>
+	    <td>Media Sync Frequency:</td>
+	    <td><% obplayer.Config.setting('sync_freq') %> minutes</td>
+	  </tr>
+	  <tr>
+	    <td>Emergency Sync Frequency:</td>
+	    <td><% obplayer.Config.setting('sync_freq_emerg') %></td>
+	  </tr>
+	  <tr>
+	    <td>Log Sync Frequency:</td>
+	    <td><% obplayer.Config.setting('sync_freq_log') %></td>
+	  </tr>
+	  <tr>
+	    <td>Media Sync Mode:</td>
+	    <td id="sync_mode_value"><% obplayer.Config.setting('sync_mode') %></td>
+	  </tr>
+	  <tr class="backup_media">
+	    <td>Backup Downloaded Media:</td>
+	    <td><% obplayer.Config.setting('sync_copy_media_to_backup') %></td>
+	  </tr>
+	  <tr>
+	    <td>Fallback Media:</td>
+	    <td><% obplayer.Config.setting('fallback_media') %></td>
+	  </tr>
+	  <tr class="local_media_location">
+	    <td>Local Media Location:</td>
+	    <td><% obplayer.Config.setting('local_media') %></td>
+	  </tr>
+	  <tr class="local_media_location">
+	    <td>Local Uploads (Unapproved) Location:</td>
+	    <td><% obplayer.Config.setting('local_uploads') %></td>
+	  </tr>
+	  <tr class="local_media_location">
+	    <td>Local Archive (Deleted) Location:</td>
+	    <td><% obplayer.Config.setting('local_archive') %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Audio Visualization Enabled?:</td>
+	    <td><% obplayer.Config.setting('audio_out_visualization') %></td>
+	  </tr>
+	  <tr>
+	    <td>Audio Output Mode:</td>
+	    <td><% obplayer.Config.setting('audio_out_mode') %></td>
+	  </tr>
+	  <tr>
+	    <td>ALSA Device (if using ALSA):</td>
+	    <td><% obplayer.Config.setting('audio_out_alsa_device') %></td>
+	  </tr>
+	  <tr>
+	    <td>Jack Port Name (if using Jack):</td>
+	    <td><% obplayer.Config.setting('audio_out_jack_name') %></td>
+	  </tr>
+	  <tr>
+	    <td>Gstreamer Init Callback:</td>
+	    <td><% obplayer.Config.setting('gst_init_callback') %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Audio Input Mode:</td>
+	    <td><% obplayer.Config.setting('audio_in_mode') %></td>
+	  </tr>
+	  <tr>
+	    <td>ALSA Device (if using ALSA):</td>
+	    <td><% obplayer.Config.setting('audio_in_alsa_device') %></td>
+	  </tr>
+	  <tr>
+	    <td>Jack Port Name (if using Jack):</td>
+	    <td><% obplayer.Config.setting('audio_in_jack_name') %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Video Output Enabled?:</td>
+	    <td><% obplayer.Config.setting('video_out_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td>Video Output Mode:</td>
+	    <td><% obplayer.Config.setting('video_out_mode') %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>Video Overlay Enabled?:</td>
+	    <td><% obplayer.Config.setting('overlay_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td>Video Overlay Mode:</td>
+	    <td><% obplayer.Config.setting('overlay_mode') %></td>
+	  </tr>
+	  <tr class="padding">
+	    <td>HTTPS Enabled?:</td>
+	    <td id="https_setting"><% obplayer.Config.setting('http_admin_secure') %></td>
+	  </tr>
+	  <tr class="ssl_certificate">
+	    <td>SSL Certificate:</td>
+	    <td><% obplayer.Config.setting('http_admin_sslcert') %></td>
+	  </tr>
+	  <tr>
+	    <td>HTTP Admin Port:</td>
+	    <td><% obplayer.Config.setting('http_admin_port') %></td>
+	  </tr>
+	  <tr>
+	    <td>HTTP Admin Username:</td>
+	    <td><% obplayer.Config.setting('http_admin_username') %></td>
+	  </tr>
+	  <tr>
+	    <td>HTTP Admin Password:</td>
+	    <td>(hidden)</td>
+	  </tr>
 
-	<tr class="padding">
-		<td>Live Assist Enabled?:</td>
-		<td><% obplayer.Config.setting('live_assist_enable') %></td>
-	</tr>
-	<tr>
-		<td>Live Assist HTTP Port:</td>
-		<td><% obplayer.Config.setting('live_assist_port') %></td>
-	</tr>
-</table>
+	  <tr class="padding">
+	    <td>Live Assist Enabled?:</td>
+	    <td><% obplayer.Config.setting('live_assist_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td>Live Assist HTTP Port:</td>
+	    <td><% obplayer.Config.setting('live_assist_port') %></td>
+	  </tr>
+	</table>
 
       </div>
       <div style="display: none;" id="content-basic">
 
         <h2>Basic Settings</h2>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Device ID</td>
@@ -215,7 +215,7 @@
 
         <h2>Sync/Media Settings</h2>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable Scheduler/Sync</td>
@@ -284,7 +284,7 @@
 
         <h4>Audio Output Settings</h4>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Audio Output Mode</td>
@@ -319,7 +319,7 @@
 
         <h4>Audio Input Settings</h4>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable Audio In Source</td>
@@ -350,7 +350,7 @@
 
         <h4>Video Output Settings</h4>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable Video Output</td>
@@ -372,7 +372,7 @@
 
         <h4>Video Overlay Settings</h4>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable Video Overlay</td>
@@ -388,7 +388,7 @@
           </tbody>
         </table>
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
@@ -399,7 +399,7 @@
       </div>
       <div style="display: none;" id="content-alerts">
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable National Emergency Alerts</td>
@@ -419,28 +419,33 @@
           </tbody>
         </table>
 
-	<br />
+        <h4>Alerting System Tests</h4>
 
         <table>
           <tbody>
             <tr>
               <td>Test Alerts</td>
-              <td><select class="ignore" id="test_alert_select" name="test_alert">
+              <td><select id="test_alert_select" name="test_alert">
                   <option value="obplayer/alerts/data/testalerts/1example_CAPCP_No_Attachment.xml">Simple Test</option>
                   <option value="obplayer/alerts/data/testalerts/2example_CAPCP_with_Embedded_Large_Audio_File.xml">Embedded Audio Test</option>
                   <option value="obplayer/alerts/data/testalerts/4example_CAPCP_with_External_Large_Audio_File.xml">External Audio Test</option>
                 </select></td>
             </tr>
             <tr>
-              <td colspan="2"><input class="ignore" name="inject" type="button" onclick="javascript: Site.injectAlert();" value="Inject Alert"></td>
+              <td colspan="2"><input name="inject" type="button" onclick="javascript: Site.injectAlert();" value="Inject Alert"></td>
             </tr>
           </tbody>
         </table>
 
+        <h4>Active Alerts</h4>
+
+	<div id="active-alerts">
+	</div>
+
       </div>
       <div style="display: none;" id="content-http">
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable SSL</td>
@@ -472,7 +477,7 @@
 
       <div style="display: none;" id="content-liveassist">
 
-        <table>
+        <table class="settings">
           <tbody>
             <tr>
               <td>Enable Live Assist</td>
