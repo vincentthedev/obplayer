@@ -25,6 +25,7 @@ import obplayer
 import socket
 import os
 import sys
+import time
 import signal
 
 import OpenSSL
@@ -55,7 +56,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'admin')
 
     def log(self, message):
-	if not "GET /logs.html" in message:
+	if not "POST /status_info" in message:
             obplayer.Log.log(message, 'admin')
 
     def form_item_selected(self, setting, value):
@@ -111,16 +112,29 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
 	    return { 'status' : True }
 
-	elif path == "/inject_alert":
+	elif path == "/status_info":
+	    requests = obplayer.Player.get_requests()
+	    select_keys = [ 'media_type', 'end_time', 'filename', 'duration', 'media_id', 'order_num', 'artist', 'title' ]
+
+	    data = { }
+	    data['time'] = time.time()
+	    for stream in requests.keys():
+		data[stream] = { key: requests[stream][key] for key in requests[stream].keys() if key in select_keys }
+	    if hasattr(obplayer, 'scheduler'):
+		data['show'] = obplayer.Scheduler.get_show_info()
+	    data['logs'] = obplayer.Log.get_log()
+	    return data
+
+	elif path == "/alerts/inject_test":
 	    if hasattr(obplayer, 'alerts'):
 		obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
 
-	elif path == "/get_alerts":
+	elif path == "/alerts/list":
 	    if hasattr(obplayer, 'alerts'):
 		alerts = [ ]
 		active_alerts = obplayer.alerts.Processor.get_active_alerts()
 		for key in active_alerts.keys():
 		    alert = active_alerts[key]
 		    alerts.append("[%s] %s: %s" % (alert.sent, alert.identifier, alert.get_first_info(lang='en-CA').headline))
-		return '<br />'.join(alerts)
+		return alerts
 

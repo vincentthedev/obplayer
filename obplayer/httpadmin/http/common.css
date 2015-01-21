@@ -89,6 +89,26 @@ h2:first-child
   margin-bottom: 20px;
 }
 
+.summary
+{
+  vertical-align: top;
+  display: inline-block;
+  width: 25em;
+}
+
+.summary h4
+{
+  margin-top: 0px;
+  margin-bottom: 5px;
+  text-decoration: underline;
+}
+
+.summary div label
+{
+  display: inline-block;
+  width: 10em;
+}
+
 #log-data
 {
   height: 40em;
@@ -97,8 +117,8 @@ h2:first-child
 
 #active-alerts
 {
-    margin: 5px;
-    padding: 5px;
-    border: 1px solid #000;
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid #000;
 }
 

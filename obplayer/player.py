@@ -336,6 +336,13 @@ class ObPlayer (object):
 	    if self.requests[output] != None and self.requests[output]['controller'] == ctrl:
 		self.stop_request(output)
 
+    def get_requests(self):
+	requests = { }
+	for output in self.requests.keys():
+	    if self.requests[output] != None:
+		requests[output] = self.requests[output].copy()
+	return requests
+
 
 #############################
 #

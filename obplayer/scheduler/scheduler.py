@@ -141,6 +141,9 @@ class ObShow (object):
     def end_time(self):
 	return self.show_data['end_time']
 
+    def show_info(self):
+	return { key : self.show_data[key] for key in self.show_data if key in [ 'id', 'name', 'description', 'type', 'last_updated' ] }
+
     def get_playlist(self):
 	return self.playlist.playlist
 
@@ -390,6 +393,11 @@ class ObScheduler:
 	if self.present_show == None:
 	    return '(no show playing)'
 	return self.present_show.name()
+
+    def get_show_info(self):
+	if self.present_show == None:
+	    return None
+	return self.present_show.show_info()
 
     def get_show_end(self):
 	if self.present_show == None:
