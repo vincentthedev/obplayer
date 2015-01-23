@@ -176,7 +176,6 @@ class ObShow (object):
 
 	if self.show_data['type'] == 'live_assist':
 	    if self.ctrl.has_requests():
-		print str(time.time()) + ": Player already has a request so just return"
 		return False
 	    # TODO can you insert a break if the previous track failed to play?
 	    self.playlist.increment()
@@ -188,7 +187,6 @@ class ObShow (object):
 		    self.play_current(present_time)
 
 	    if self.ctrl.has_requests():
-		print str(time.time()) + ": Player already has a request so just return"
 		return False
 	    self.media_start_time = 0
 	    self.ctrl.stop_requests()
@@ -202,11 +200,11 @@ class ObShow (object):
 
 	media = self.playlist.current()
 	if not media or not obplayer.Sync.check_media(media):
-	    obplayer.Log.log("media not found at position: " + str(self.playlist.current_pos()), 'scheduler')
+	    obplayer.Log.log("media not found at position " + str(self.playlist.current_pos()) + ": " + str(media['filename']) if media else '??', 'scheduler')
 	    next_start = self.playlist.next_start() if media and self.show_data['type'] != 'liveassist' else None
 	    self.next_media_update = self.start_time() + next_start if next_start else self.end_time()
-	    self.ctrl.stop_requests()
-	    self.ctrl.add_request(media_type='break', end_time=self.next_media_update, title="media not found break")
+	    #self.ctrl.stop_requests()
+	    self.ctrl.add_request(media_type='break', duration=2, title="media not found break")
 	    return False
 
 	if self.show_data['type'] == 'live_assist':
@@ -317,8 +315,6 @@ class ObScheduler:
 	self.next_show_update = 0
 
     def do_player_request(self, ctrl, present_time):
-	print str(time.time()) + ": scheduler asked for requests"
-
 	self.check_show(present_time)
 
 	if self.present_show is not None:
@@ -327,8 +323,6 @@ class ObScheduler:
 	self.set_next_update()
 
     def do_player_update(self, ctrl, present_time):
-	print str(time.time()) + ": scheduler update callback called"
-
 	self.check_show(present_time)
 
 	if self.present_show and present_time > self.present_show.next_media_update:
@@ -337,7 +331,6 @@ class ObScheduler:
 	self.set_next_update()
 
     def set_next_update(self):
-	print str(time.time()) + ": set_next_update: current next update is " + str(self.ctrl.get_next_update()) + ".  Media Update: " + str(obplayer.Scheduler.present_show.next_media_update if obplayer.Scheduler.present_show else "(no show)") + " Show Update: " + str(obplayer.Scheduler.next_show_update)
 	if self.present_show and self.present_show.next_media_update < self.next_show_update:
 	    self.ctrl.set_next_update(self.present_show.next_media_update)
 	else:
@@ -496,7 +489,6 @@ class ObScheduler:
 	    data['position'] = 0
 	    data['track'] = -1
 
-	print data
 	return data
 
  

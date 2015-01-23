@@ -214,6 +214,18 @@ class ObConfigData(ObData):
         if setting_name == 'sync_url' and url_regex.match(setting_value) == None:
             return 'The sync URL does not appear to be valid.'
 
+        if setting_name == 'alerts_naad_stream1' and url_regex.match(setting_value) == None:
+            return 'The stream #1 URL does not appear to be valid.'
+
+        if setting_name == 'alerts_naad_stream2' and url_regex.match(setting_value) == None:
+            return 'The stream #2 URL does not appear to be valid.'
+
+        if setting_name == 'alerts_naad_archive1' and url_regex.match(setting_value) == None:
+            return 'The archive #1 URL does not appear to be valid.'
+
+        if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
+            return 'The archive #2 URL does not appear to be valid.'
+
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
@@ -282,6 +294,7 @@ class ObConfigData(ObData):
         self.add_setting('http_admin_password', 'admin', 'text')
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
+        self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
 
 	self.add_setting('live_assist_enable', '0', 'bool')
 	self.add_setting('live_assist_port', '23456', 'int')
@@ -290,6 +303,10 @@ class ObConfigData(ObData):
 	self.add_setting('alerts_language', 'english', 'text')
 	self.add_setting('alerts_geocode', '59', 'text')
 	self.add_setting('alerts_repeat_time', '120', 'int')
+	self.add_setting('alerts_naad_stream1', "streaming1.naad-adna.pelmorex.com:8080", 'text')
+	self.add_setting('alerts_naad_stream2', "streaming2.naad-adna.pelmorex.com:8080", 'text')
+	self.add_setting('alerts_naad_archive1', "capcp1.naad-adna.pelmorex.com", 'text')
+	self.add_setting('alerts_naad_archive2', "capcp2.naad-adna.pelmorex.com", 'text')
 
 	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')

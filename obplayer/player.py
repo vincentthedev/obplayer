@@ -46,6 +46,7 @@ class ObPlayer (object):
 	self.patches = { }
 	self.requests = { }
 	self.pipes = { }
+	self.audio_levels = None
 
     def start_player(self):
 	self.thread = obplayer.ObThread('PlayerThread', target=self.run)
@@ -109,7 +110,6 @@ class ObPlayer (object):
 			self.request_update.set()
 			restore = True
 		if restore:
-		    print str(time.time()) + ": Attempting to restore outputs"
 		    self.restore_outputs()
 
 		#print str(time.time()) + ": Current State (" + str(time.time()) + "): " + repr(self.request_update.is_set()) + " | " + (self.requests['audio']['filename'] if self.requests['audio'] is not None else "No astream") + " | " + (self.requests['visual']['filename'] if 'visual' in self.requests and self.requests['visual'] is not None else "No vstream")
@@ -127,7 +127,6 @@ class ObPlayer (object):
 
 		    # if we found a request, then execute it, otherwise set req to the current highest priority request
 		    if req:
-			print remaining_outputs
 			self.execute_request(req, output_limit=remaining_outputs)
 		    else:
 			req = self.requests[priority_list[0][1]]
@@ -168,7 +167,6 @@ class ObPlayer (object):
     def get_request(self, present_time, priority, output_list, allow_query=False):
 	with self.lock:
 	    for ctrl in self.controllers:
-		# TODO justify this being <= and also the has_requests check at the bottom
 		if ctrl.priority <= priority:
 		    break
 
@@ -189,8 +187,7 @@ class ObPlayer (object):
 	return None
 
     def execute_request(self, req, output_limit=None):
-	print str(time.time()) + ": executing request from " + req['controller'].name + ": [" + req['media_type'] + "] " + req['filename']
-
+	self.audio_levels = None
 	request_pipe = self.pipes[req['media_type']]
 
 	stop_list = [ ]
@@ -207,9 +204,6 @@ class ObPlayer (object):
 
 	patch_list = [ output for output in max_list if output in min_list or self.requests[output] is None ]
 	patch_class = '/'.join(patch_list)
-	print max_list
-	print min_list
-	print patch_class
 
 	# NOTE this should never happen
 	if patch_class == '':
@@ -228,7 +222,6 @@ class ObPlayer (object):
 	request_pipe.stop()
 	if req['media_type'] in [ 'image', 'audio', 'video' ]:
 	    media_filename = self.get_media_path(req)
-	    print str(time.time()) + ": Media filename " + str(media_filename)
 	    if media_filename is not None:
 		request_pipe.set_media_file(media_filename, req['start_time'])
 	request_pipe.start()
@@ -272,7 +265,6 @@ class ObPlayer (object):
 	    return
 
 	req = self.requests[output]
-	print "Stopping request: " + req['media_type'] + ": " + req['filename']
 	request_pipe = self.pipes[req['media_type']]
 	request_pipe.stop()
 
@@ -281,7 +273,7 @@ class ObPlayer (object):
 		self.requests[name] = None
 
     def repatch_outputs(self, media_class, media_type):
-	print "Repatching " + media_class + " to pipe " + str(media_type)
+	#print "Repatching " + media_class + " to pipe " + str(media_type)
 
 	output_list = media_class.split('/')
 	for pipe in self.pipes.keys():
@@ -316,7 +308,6 @@ class ObPlayer (object):
 		patch_list = [ output for output in class_list if self.requests[output] is None ]
 		if len(patch_list) > 0:
 		    patch_list.sort()
-		    print "restoring outputs " + str(patch_list)
 		    self.repatch_outputs('/'.join(patch_list), self.patches[output])
 		    for class_name in patch_list:
 			self.requests[class_name] = self.requests[output]
@@ -343,6 +334,11 @@ class ObPlayer (object):
 		requests[output] = self.requests[output].copy()
 	return requests
 
+    def get_audio_levels(self):
+	if self.audio_levels is None:
+	    return [ 0.0, 0.0 ]
+	return self.audio_levels
+
 
 #############################
 #
@@ -367,8 +363,6 @@ class ObPlayerController (object):
 
 	# TODO you could have a list of failed requests, where the request is automatically added (auto limit to say 5 entries)
 	self.failed = [ ]
-	# TODO this is possible too, but i think calling the player is better, even though it's a bit messy.  It's less messy than this way
-	#self.playing = [ ]
 
     # media_type can be:	audio, video, image, audioin, break, testsignal
     # play_mode can be:		exclusive, overlap
@@ -379,7 +373,6 @@ class ObPlayerController (object):
 	    duration = end_time - start_time
 	else:
 	    end_time = start_time + duration
-	print str(time.time()) + ": Adding request at " + str(start_time) + " and ending " + str(end_time) + " (Duration: " + str(duration) + ") [" + media_type + "] " + filename
 
 	if play_mode is None:
 	    play_mode = self.default_play_mode
@@ -403,7 +396,6 @@ class ObPlayerController (object):
 	}
 
 	self.insert_request(req)
-	#self.player.request_update.set()
 
     def insert_request(self, req):
 	with self.lock:
@@ -462,9 +454,6 @@ class ObPlayerController (object):
     def find_current_request(self, present_time):
 	with self.lock:
 	    for (i, req) in enumerate(self.queue):
-		#print "Found " + req['media_class'] + " " + req['filename']
-		#print str(req['start_time']) + " " + str(present_time) + " " + str(req['end_time'])
-		#print str(req['start_time'] <= present_time) + " " + str(req['end_time'] > present_time)
 		if present_time >= req['start_time'] and present_time < req['end_time']:
 		    return i
 	return None
@@ -498,7 +487,6 @@ class ObPlayerController (object):
 	self.do_player_update = func
 
     def set_next_update(self, t):
-	#print str(time.time()) + ": ***** Setting next update for " + self.name + " for " + str(t)
 	with self.lock:
 	    self.next_update = t
 
@@ -583,9 +571,9 @@ class ObVideoSinkBin (Gst.Bin):
 
 	self.elements.append(self.videosink)
 
+	# build pipeline from elements
 	for element in self.elements:
 	    self.add(element)
-
 	for index in range(0, len(self.elements) - 1):
 	    self.elements[index].link(self.elements[index + 1])
 
@@ -619,6 +607,14 @@ class ObAudioSinkBin (Gst.Bin):
     def __init__(self):
 	Gst.Bin.__init__(self)
 
+	self.elements = [ ]
+
+	# create filter elements
+	level = Gst.ElementFactory.make("level", "level")
+        level.set_property('interval', int(0.5 * Gst.SECOND))
+	self.elements.append(level)
+
+	## create audio sink element
         audio_output = obplayer.Config.setting('audio_out_mode')
         if audio_output == 'alsa':
             self.audiosink = Gst.ElementFactory.make('alsasink', 'audiosink')
@@ -647,9 +643,15 @@ class ObAudioSinkBin (Gst.Bin):
         else:
             self.audiosink = Gst.ElementFactory.make('autoaudiosink', 'audiosink')
 
-	self.add(self.audiosink)
+	self.elements.append(self.audiosink)
 
-	self.sinkpad = Gst.GhostPad.new('sink', self.audiosink.get_static_pad('sink'))
+	# build pipeline from elements
+	for element in self.elements:
+	    self.add(element)
+	for index in range(0, len(self.elements) - 1):
+	    self.elements[index].link(self.elements[index + 1])
+
+	self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
 	self.add_pad(self.sinkpad)
 
 
@@ -772,6 +774,15 @@ class ObGstPipeline (ObPipeline):
 	elif message.type == Gst.MessageType.EOS:
 	    obplayer.Log.log("player received end of stream signal", 'debug')
 	    self.player.request_update.set()
+
+	elif message.type == Gst.MessageType.ELEMENT:
+	    struct = message.get_structure()
+	    rms_values = struct.get_value('rms')
+	    if rms_values:
+		#self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
+		self.player.audio_levels = [ pow(10, rms / 30) for rms in rms_values ]
+	    else:
+		self.player.audio_levels = None
 
     """
     def signal_about_to_finish(self, message):

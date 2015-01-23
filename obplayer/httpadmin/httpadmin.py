@@ -42,6 +42,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         self.username = obplayer.Config.setting('http_admin_username')
         self.password = obplayer.Config.setting('http_admin_password')
+        self.title = obplayer.Config.setting('http_admin_title')
 
         sslenable = obplayer.Config.setting('http_admin_secure')
         sslcert = obplayer.Config.setting('http_admin_sslcert')
@@ -120,6 +121,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	    data['time'] = time.time()
 	    for stream in requests.keys():
 		data[stream] = { key: requests[stream][key] for key in requests[stream].keys() if key in select_keys }
+	    data['audio_levels'] = obplayer.Player.get_audio_levels()
 	    if hasattr(obplayer, 'scheduler'):
 		data['show'] = obplayer.Scheduler.get_show_info()
 	    data['logs'] = obplayer.Log.get_log()

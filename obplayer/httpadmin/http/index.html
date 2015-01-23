@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>OpenBroadcaster Player - Web Admin</title>
+    <title><% obplayer.HTTPAdmin.title %></title>
     <meta charset="utf-8" />
     <link href="/common.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="/jquery.min.js"></script>
@@ -10,7 +10,7 @@
 
   <body>
 
-    <h1>OpenBroadcaster Player Web Admin</h1>
+    <h1><% obplayer.HTTPAdmin.title %></h1>
 
     <div id="tabs">
       <div class="tab selected" data-content="home">Home</div>
@@ -45,6 +45,10 @@
 	  <tr>
 	    <td>Version:</td>
 	    <td>v<% obplayer.Config.version %></td>
+	  </tr>
+	  <tr>
+	    <td>Local Time:</td>
+	    <td><% time.strftime("%c") %></td>
 	  </tr>
 	  <tr class="padding">
 	    <td>Device ID:</td>
@@ -188,8 +192,6 @@
       </div>
       <div style="display: none;" id="content-basic">
 
-        <h2>Basic Settings</h2>
-
         <table class="settings">
           <tbody>
             <tr>
@@ -212,8 +214,6 @@
 
       </div>
       <div style="display: none;" id="content-sync">
-
-        <h2>Sync/Media Settings</h2>
 
         <table class="settings">
           <tbody>
@@ -406,12 +406,38 @@
               <td><input type="checkbox" name="alerts_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_enable') %>></td>
             </tr>
             <tr>
+              <td>Language</td>
+              <td>
+		<select id="alerts_language_select" name="alerts_language">
+                  <option value="english"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','english') %>>English</option>
+                  <option value="french"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','french') %>>French</option>
+                  <option value="inuktitut"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','inuktitut') %>>Inuktitut</option>
+                </select>
+	      </td>
+            </tr>
+            <tr>
               <td>Location Geocode</td>
               <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>"></td>
             </tr>
             <tr>
               <td>Repeat Time (in seconds)</td>
               <td><input type="text" name="alerts_repeat_time" value="<% obplayer.Config.setting('alerts_repeat_time', True) %>"></td>
+            </tr>
+            <tr>
+              <td>NAAD Stream #1 URL</td>
+              <td><input type="text" name="alerts_naad_stream1" value="<% obplayer.Config.setting('alerts_naad_stream1',True) %>"></td>
+            </tr>
+            <tr>
+              <td>NAAD Stream #2 URL</td>
+              <td><input type="text" name="alerts_naad_stream2" value="<% obplayer.Config.setting('alerts_naad_stream2',True) %>"></td>
+            </tr>
+            <tr>
+              <td>NAAD Archive #1 URL</td>
+              <td><input type="text" name="alerts_naad_archive1" value="<% obplayer.Config.setting('alerts_naad_archive1',True) %>"></td>
+            </tr>
+            <tr>
+              <td>NAAD Archive #2 URL</td>
+              <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('alerts');" value="Save"></td>
@@ -452,7 +478,7 @@
               <td><input id="http_admin_secure" type="checkbox" name="http_admin_secure" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_admin_secure') %>></td>
             </tr>
             <tr>
-              <td>Web Admin Port</td>
+              <td>Dashboard Port</td>
               <td><input type="text" name="http_admin_port" value="<% obplayer.Config.setting('http_admin_port',True) %>"></td>
             </tr>
             <tr id="http_admin_sslcert_row">
@@ -466,6 +492,10 @@
             <tr>
               <td>Password</td>
               <td><input type="password" name="http_admin_password" value="<% obplayer.Config.setting('http_admin_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Dashboard Title</td>
+              <td><input type="text" name="http_admin_title" value="<% obplayer.Config.setting('http_admin_title',True) %>"></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('http');" value="Save"></td>
@@ -554,6 +584,9 @@
 	    <label>Scheduled End:</label>
 	    <span id="audio-summary-end-time"></span>
 	  </div>
+	  <div>
+	    <canvas id="audio-levels" width=200 height=20></canvas>
+	  </div>
 	</div>
 
 	<div id="visual-summary" class="summary">
@@ -591,7 +624,11 @@
 	<div id="log-window">
 	  <h4>Logs</h4>
 	  <div>
-	    <label>Show debug:</label><input type="checkbox" id="log-debug" value="1" />
+	    <label>Log Level:</label>
+	    <select id="log_level">
+              <option value="normal">Normal</option>
+              <option value="debug">Debug</option>
+            </select>
 	  </div><br />
 	  <div id="log-data">
 	    <!-- Content loaded when displayed -->

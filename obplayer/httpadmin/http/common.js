@@ -116,6 +116,7 @@ Site.updateStatusInfo = function()
 	$('#audio-summary-title').html(response.audio.title);
 	$('#audio-summary-duration').html(Site.friendlyDuration(response.audio.duration));
 	$('#audio-summary-end-time').html(Site.friendlyTime(response.audio.end_time));
+	Site.drawAudioMeter(response.audio_levels);
       }
 
       if(response.visual){
@@ -136,8 +137,8 @@ Site.updateStatusInfo = function()
 Site.formatLogs = function(lines)
 {
   var scroll = false;
-  var debug = $('#log-debug').is(':checked');
   var logdiv = $('#log-data')[0];
+  var log_level = $('#log_level').val();
 
   if(logdiv.scrollTop == logdiv.scrollTopMax) scroll=true;
 
@@ -153,11 +154,12 @@ Site.formatLogs = function(lines)
     else if(lines[i].search('\\\[emerg\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[scheduler\\\]')>0) lines[i] = '<span style="color: #005555;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[sync\\\]')>0) lines[i] = '<span style="color: #000055;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[sync download\\\]')>0) lines[i] = '<span style="color: #AA4400;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[admin\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[live\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
     else if(lines[i].search('\\[debug\\]')>0)
     {
-      if(debug) lines[i] = '<span style="color: #008000;">'+lines[i]+'</span>';
+      if(log_level=='debug') lines[i] = '<span style="color: #008000;">'+lines[i]+'</span>';
       else {
 	lines.splice(i, 1);
 	i -= 1;
@@ -166,6 +168,24 @@ Site.formatLogs = function(lines)
   }
   $('#log-data').html(lines.join('<br />\n'));
   if(scroll) logdiv.scrollTop = logdiv.scrollHeight;
+}
+
+Site.drawAudioMeter = function(levels)
+{
+  var canvas = $('#audio-levels')[0];
+  var c = canvas.getContext('2d');
+  var channels = levels.length;
+
+  c.clearRect(0, 0, canvas.width, canvas.height);
+
+  gradient = c.createLinearGradient(0, 0, canvas.width, 0);
+  gradient.addColorStop(0, "green");
+  gradient.addColorStop(1, "red");
+  c.fillStyle = gradient;
+
+  for(var i=0; i<channels; i++) {
+    c.fillRect(0, i * (canvas.height / channels), levels[i] * canvas.width, canvas.height / channels);
+  }
 }
 
 // convert seconds to friendly duration
@@ -264,8 +284,8 @@ $(document).ready(function()
   Site.displayAlertsInterval = setInterval(Site.displayAlerts, 3000);
   Site.displayAlerts();
 
-  Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 3000);
+  Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 2000);
   Site.updateStatusInfo();
-  $('#log-debug').change(Site.updateStatusInfo);
+  $('#log_level').change(Site.updateStatusInfo);
 
 });

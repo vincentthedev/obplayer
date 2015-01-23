@@ -33,6 +33,7 @@ import os
 import thread
 import requests
 
+import urlparse
 import codecs
 
 class ObAlertFetcher (obplayer.ObThread):
@@ -113,32 +114,33 @@ class ObAlertTCPFetcher (ObAlertFetcher):
 	if self.socket is not None:
 	    self.close()
 
-	(self.host, self.port) = self.hosts[0].split(':')
-	if self.port == '':
-	    self.port = 80
-	for res in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM):
-	    af, socktype, proto, canonname, sa = res
-	    try:
-		self.socket = socket.socket(af, socktype, proto)
-	    except socket.error as msg:
-		self.socket = None
-		continue
+	for urlstring in self.hosts:
+	    url = urlparse.urlparse(urlstring, 'http')
+	    urlparts = url.netloc.split(':')
+	    (self.host, self.port) = (urlparts[0], urlparts[1] if len(urlparts) > 1 else 80)
+	    for res in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM):
+		af, socktype, proto, canonname, sa = res
+		try:
+		    self.socket = socket.socket(af, socktype, proto)
+		except socket.error as msg:
+		    self.socket = None
+		    continue
 
-	    try:
-		self.socket.connect(sa)
-	    except socket.error as msg:
-		self.socket.close()
-		self.socket = None
-		continue
-	    break
+		try:
+		    self.socket.connect(sa)
+		except socket.error as msg:
+		    self.socket.close()
+		    self.socket = None
+		    continue
+		break
 
-	if self.socket is None:
-	    obplayer.Log.log("error connecting to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
-	    return False
+	    if self.socket is None:
+		obplayer.Log.log("error connecting to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
+		return False
 
-	else:
-	    obplayer.Log.log("connected to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
-	    return True
+	    else:
+		obplayer.Log.log("connected to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
+		return True
 
     def receive(self):
 	return self.socket.recv(4096)
@@ -173,10 +175,10 @@ class ObAlertProcessor (object):
 	self.dispatch_lock = thread.allocate_lock()
 	self.dispatch_queue = [ ]
 
-        #self.streaming_hosts = obplayer.Config.setting('alerts_archive_host')
-        self.streaming_hosts = [ "streaming1.naad-adna.pelmorex.com:8080", "streaming2.naad-adna.pelmorex.com:8080" ]
-        #self.archive_hosts = obplayer.Config.setting('alerts_archive_host')
-        self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
+        self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
+        #self.streaming_hosts = [ "streaming1.naad-adna.pelmorex.com:8080", "streaming2.naad-adna.pelmorex.com:8080" ]
+        self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
+        #self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
         self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
 
@@ -259,7 +261,7 @@ class ObAlertProcessor (object):
 		filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
 		for host in self.archive_hosts:
-		    url = "http://%s/%s/%s.xml" % (host, urldate, filename)
+		    url = "%s/%s/%s.xml" % (host, urldate, filename)
 		    try:
 			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'alerts')
 			r = requests.get(url)
@@ -309,7 +311,6 @@ class ObAlertProcessor (object):
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
 				self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
-		    print "Next alert check: " + str(self.next_alert_check)
 
 	    except:
 		obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')

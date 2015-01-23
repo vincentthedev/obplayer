@@ -683,7 +683,7 @@ class ObSync:
 
             postfields = str('media_id=' + media_id + '&id=' + str(obplayer.Config.setting('sync_device_id')) + '&pw=' + obplayer.Config.setting('sync_device_password') + '&buffer=' + str(obplayer.Config.setting('sync_buffer')))
 
-            obplayer.Log.log('downloading ' + filename, 'sync')
+            obplayer.Log.log('downloading ' + filename, 'sync download')
 
             curl = pycurl.Curl()
 
