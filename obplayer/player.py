@@ -49,7 +49,7 @@ class ObPlayer (object):
 	self.audio_levels = None
 
     def start_player(self):
-	self.thread = obplayer.ObThread('PlayerThread', target=self.run)
+	self.thread = obplayer.ObThread('PlayerThread', target=self.try_run)
 	self.thread.start()
 
     def player_init(self):
@@ -95,7 +95,7 @@ class ObPlayer (object):
 	self.controllers.append(ctrl)
 	return ctrl
 
-    def run(self):
+    def try_run(self):
 	self.player_init()
 	self.request_update.set()
 	while not self.thread.stopflag.wait(0.1):
@@ -234,7 +234,7 @@ class ObPlayer (object):
         playlog_notes = 'resuming at ' + str(time.time() - req['start_time']) + 's'
         obplayer.PlaylogData.playlog_add(req['media_id'], req['artist'], req['title'], time.time(), req['controller'].name, playlog_notes)
 
-        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %s type: '%s' source: %s)" % (
+        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %ss type: '%s' source: %s)" % (
 	    str(req['order_num'] + 1) if req['order_num'] else '?',
 	    unicode(req['artist']).encode('ascii', 'replace'),
 	    unicode(req['title']).encode('ascii', 'replace'),
@@ -336,7 +336,7 @@ class ObPlayer (object):
 
     def get_audio_levels(self):
 	if self.audio_levels is None:
-	    return [ 0.0, 0.0 ]
+	    return [ -1000.0, -1000.0 ]
 	return self.audio_levels
 
 
@@ -532,10 +532,18 @@ class ObVideoSinkBin (Gst.Bin):
 
 	self.elements = [ ]
 
+
 	## create basic filter elements
 	self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
 	self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
 	self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+
+	## create caps filter element to set the output video parameters
+	video_width = obplayer.Config.setting('video_out_width')
+	video_height = obplayer.Config.setting('video_out_height')
+	caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter")
+	caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(video_width) + ",height=" + str(video_height)))
+	self.elements.append(caps_filter)
 
 	## create overlay elements (if enabled)
         if obplayer.Config.setting('overlay_enable'):
@@ -573,6 +581,7 @@ class ObVideoSinkBin (Gst.Bin):
 
 	# build pipeline from elements
 	for element in self.elements:
+	    obplayer.Log.log("adding element to video bin: " + element.get_name(), 'debug')
 	    self.add(element)
 	for index in range(0, len(self.elements) - 1):
 	    self.elements[index].link(self.elements[index + 1])
@@ -647,6 +656,7 @@ class ObAudioSinkBin (Gst.Bin):
 
 	# build pipeline from elements
 	for element in self.elements:
+	    obplayer.Log.log("adding element to audio bin: " + element.get_name(), 'debug')
 	    self.add(element)
 	for index in range(0, len(self.elements) - 1):
 	    self.elements[index].link(self.elements[index + 1])
@@ -777,12 +787,8 @@ class ObGstPipeline (ObPipeline):
 
 	elif message.type == Gst.MessageType.ELEMENT:
 	    struct = message.get_structure()
-	    rms_values = struct.get_value('rms')
-	    if rms_values:
-		#self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
-		self.player.audio_levels = [ pow(10, rms / 30) for rms in rms_values ]
-	    else:
-		self.player.audio_levels = None
+	    #self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
+	    self.player.audio_levels = struct.get_value('rms')
 
     """
     def signal_about_to_finish(self, message):

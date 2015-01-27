@@ -78,8 +78,7 @@ def xml_get_first_tag_value(element, tag, default=None):
 class ObAlert (object):
     def __init__(self, xmlcode=None):
 	self.active = False
-	self.next_play = 0
-	self.last_play = 0
+	self.times_played = 0
 	self.media_info = None
 
 	if xmlcode is not None:
@@ -116,14 +115,16 @@ class ObAlert (object):
 	if len(self.info) > 0:
 	    print self.info[0].description
 
-    def get_all_info(self, lang):
+    def get_all_info(self, language):
 	infos = [ ]
+	lang = self.lang_ref(language)
 	for info in self.info:
 	    if info.language == lang:
 		infos.append(info)
 	return infos
 
-    def get_first_info(self, lang):
+    def get_first_info(self, language):
+	lang = self.lang_ref(language)
 	for info in self.info:
 	    if info.language == lang:
 		return info
@@ -154,8 +155,8 @@ class ObAlert (object):
 		return True
 	return False
 
-    def generate_audio(self):
-	info = self.get_first_info(lang='en-CA')
+    def generate_audio(self, language):
+	info = self.get_first_info(language)
 	if info is None:
 	    return False
 
@@ -197,9 +198,9 @@ class ObAlert (object):
 	obplayer.Log.log(repr(self.media_info), 'debug')
 	return True
 
-    def get_media_info(self):
+    def get_media_info(self, language):
 	if self.media_info is None:
-	    self.generate_audio()
+	    self.generate_audio(language)
 	return self.media_info
 
     @staticmethod
@@ -207,6 +208,15 @@ class ObAlert (object):
 	reference = timestamp + "I" + identifier
 	reference = reference.translate({ ord('-') : ord('_'), ord(':') : ord('_'), ord('+') : ord('p') })
 	return reference
+
+    @staticmethod
+    def lang_ref(language):
+	if language == 'english':
+	    return 'en-CA'
+	elif language == 'french':
+	    return 'fr-CA'
+	else:
+	    raise Exception("Unsupported language: " + language)
 
 
 class ObAlertInfo (object):

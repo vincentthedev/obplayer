@@ -27,7 +27,7 @@ from obplayer.httpadmin.httpadmin import obplayer, ObHTTPAdmin
 HTTPAdmin = None
 
 class HTTPAdminThread (obplayer.ObThread):
-    def run(self):
+    def try_run(self):
 	obplayer.HTTPAdmin = ObHTTPAdmin()
 	obplayer.HTTPAdmin.serve_forever()
 

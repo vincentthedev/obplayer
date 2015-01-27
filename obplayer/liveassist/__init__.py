@@ -27,7 +27,7 @@ from obplayer.liveassist.liveassist import *
 LiveAssist = None
 
 class LiveAssistThread (obplayer.ObThread):
-    def run(self):
+    def try_run(self):
 	obplayer.LiveAssist = ObLiveAssist()
         obplayer.LiveAssist.serve_forever()
 

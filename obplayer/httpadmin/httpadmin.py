@@ -131,12 +131,12 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	    if hasattr(obplayer, 'alerts'):
 		obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
 
+	elif path == "/alerts/cancel":
+	    if hasattr(obplayer, 'alerts'):
+		for identifier in postvars['identifier[]']:
+		    obplayer.alerts.Processor.cancel_alert(identifier)
+
 	elif path == "/alerts/list":
 	    if hasattr(obplayer, 'alerts'):
-		alerts = [ ]
-		active_alerts = obplayer.alerts.Processor.get_active_alerts()
-		for key in active_alerts.keys():
-		    alert = active_alerts[key]
-		    alerts.append("[%s] %s: %s" % (alert.sent, alert.identifier, alert.get_first_info(lang='en-CA').headline))
-		return alerts
+		return obplayer.alerts.Processor.get_alerts()
 

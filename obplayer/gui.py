@@ -263,6 +263,7 @@ class ObGui:
 	"""
 	#print str(width) + " x " + str(height)
 	#context.scale(width, height)
+	#context.scale(width / 100, height / 100)
 	#context.scale(100, 100)
 	context.set_source_rgb(1, 0, 0)
 	#context.paint_with_alpha(1)

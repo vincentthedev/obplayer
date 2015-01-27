@@ -74,20 +74,67 @@ Site.injectAlert = function()
   },'json');
 }
 
-Site.displayAlerts = function()
+Site.cancelAlert = function()
+{
+  var ids = [ ];
+
+  $('#active-alerts input').each(function(index,element)
+  {
+    if($(element).is(':checked'))
+      ids.push($(element).attr('name'));
+  });
+
+  if(ids.length>0){
+    $.post('/alerts/cancel',{'identifier[]':ids},function(response)
+    {
+      // TODO display success failure??
+    },'json');
+  }
+}
+
+Site.updateAlertInfo = function()
 {
   if ($('#tabs .tab[data-content="alerts"]').hasClass('selected')){
     $.post('/alerts/list',{},function(response)
     {
-      if(response.length){
+      if(response.active.length){
+	var alerts = response.active;
+	var existing = $('#active-alerts');
 	var alert_list = [ ];
-	for(var key in response){
-	  alert_list.push($('<div>').html(response[key]));
+	alert_list.push('<tr><th class="fit">Cancel</th><th>Sender</th><th>Times Played</th><th>Headline</th></tr>');
+	for(var key in alerts){
+	  var row;
+	  row = '<tr>';
+	  row += '<td class="fit"><input type="checkbox" name="'+alerts[key].identifier+'" value="1" '+ ( $(existing).find('[name="'+alerts[key].identifier+'"]').is(':checked') ? 'checked' : '' ) +'/></td>';
+	  row += '<td>' + alerts[key].sender + "<br />" + alerts[key].identifier + "<br />" + alerts[key].sent + '</td>';
+	  row += '<td class="center">' + alerts[key].played + '</td>';
+	  row += '<td><div class="headline">' + alerts[key].headline + '</div><div>' + alerts[key].description + '</div></td>';
+	  row += '</tr>';
+	  alert_list.push(row);
 	}
 	$('#active-alerts').html(alert_list);
       }
       else{
-	$('#active-alerts').html($('<div>').html("No Active Alerts"));
+	$('#active-alerts').html($('<tr><td>').html("No Active Alerts"));
+      }
+
+      if(response.expired.length){
+	var alerts = response.expired;
+	var alert_list = [ ];
+	alert_list.push('<tr><th>Sender</th><th>Times Played</th><th>Description</th></tr>');
+	for(var key in alerts){
+	  var row;
+	  row = '<tr>';
+	  row += '<td>' + alerts[key].sender + "<br />" + alerts[key].identifier + "<br />" + alerts[key].sent + '</td>';
+	  row += '<td class="center">' + alerts[key].played + '</td>';
+	  row += '<td><div class="headline">' + alerts[key].headline + '</div><div>' + alerts[key].description + '</div></td>';
+	  row += '</tr>';
+	  alert_list.push(row);
+	}
+	$('#expired-alerts').html(alert_list);
+      }
+      else{
+	$('#expired-alerts').html($('<tr><td>').html("No Expired Alerts"));
       }
     },'json');
   }
@@ -184,7 +231,8 @@ Site.drawAudioMeter = function(levels)
   c.fillStyle = gradient;
 
   for(var i=0; i<channels; i++) {
-    c.fillRect(0, i * (canvas.height / channels), levels[i] * canvas.width, canvas.height / channels);
+    //c.fillRect(0, i * (canvas.height / channels), levels[i] * canvas.width, canvas.height / channels);
+    c.fillRect(0, i * (canvas.height / channels), canvas.width + (levels[i] * (canvas.width / 100) ), canvas.height / channels);
   }
 }
 
@@ -243,7 +291,7 @@ $(document).ready(function()
     $('.tab').removeClass('selected');
     $(this).addClass('selected');
 
-    if($(this).attr('data-content')=='alerts') Site.displayAlerts();
+    if($(this).attr('data-content')=='alerts') Site.updateAlertInfo();
     if($(this).attr('data-content')=='status') Site.updateStatusInfo();
   });
 
@@ -281,11 +329,13 @@ $(document).ready(function()
   });
   $('#http_admin_secure').change();
 
-  Site.displayAlertsInterval = setInterval(Site.displayAlerts, 3000);
-  Site.displayAlerts();
+  Site.updateAlertInfoInterval = setInterval(Site.updateAlertInfo, 2000);
+  Site.updateAlertInfo();
 
-  Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 2000);
+  Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 1000);
   Site.updateStatusInfo();
   $('#log_level').change(Site.updateStatusInfo);
 
+  $('#alerts_inject_button').click(Site.injectAlert);
+  $('#alerts_cancel_button').click(Site.cancelAlert);
 });

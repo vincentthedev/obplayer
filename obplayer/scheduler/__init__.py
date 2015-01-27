@@ -29,18 +29,12 @@ Sync = None
 Scheduler = None
 
 class VersionUpdateThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'VersionUpdateThread')
-
-    def run(self):
+    def try_run(self):
 	obplayer.Sync.version_update()
 	self.remove_thread()
 
 
 class SyncShowsThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'SyncShowsThread')
-
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('sync_freq'))
 	while not self.stopflag.wait(self.synctime):
@@ -57,9 +51,6 @@ class SyncShowsThread (obplayer.ObThread):
 
 
 class SyncPlaylogThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'SyncPlaylogThread')
-
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
 	while not self.stopflag.wait(self.synctime):
@@ -75,9 +66,6 @@ class SyncPlaylogThread (obplayer.ObThread):
 
 
 class SyncEmergThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'SyncEmergThread')
-
     def run(self):
 	self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
 	while not self.stopflag.wait(self.synctime):
@@ -93,9 +81,6 @@ class SyncEmergThread (obplayer.ObThread):
 
 
 class SyncMediaThread (obplayer.ObThread):
-    def __init__(self):
-	obplayer.ObThread.__init__(self, 'SyncMediaThread')
-
     def run(self):
 	self.synctime = int(5)
 	while not self.stopflag.wait(self.synctime):

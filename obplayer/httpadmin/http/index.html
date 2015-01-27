@@ -150,6 +150,10 @@
 	    <td>Video Output Mode:</td>
 	    <td><% obplayer.Config.setting('video_out_mode') %></td>
 	  </tr>
+	  <tr>
+	    <td>Video Output Upscale Size:</td>
+	    <td><% str(obplayer.Config.setting('video_out_width')) + " x " + str(obplayer.Config.setting('video_out_height')) %></td>
+	  </tr>
 	  <tr class="padding">
 	    <td>Video Overlay Enabled?:</td>
 	    <td><% obplayer.Config.setting('overlay_enable') %></td>
@@ -367,6 +371,14 @@
                   <option value="ascii"<% obplayer.HTTPAdmin.form_item_selected('video_out_mode','ascii') %>>Coloured ASCII</option>
                 </select></td>
             </tr>
+            <tr>
+              <td>Upscale Width</td>
+              <td><input type="text" name="video_out_width" value="<% obplayer.Config.setting('video_out_width', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Upscale Height</td>
+              <td><input type="text" name="video_out_height" value="<% obplayer.Config.setting('video_out_height', True) %>"></td>
+            </tr>
           </tbody>
         </table>
 
@@ -458,15 +470,21 @@
                 </select></td>
             </tr>
             <tr>
-              <td colspan="2"><input name="inject" type="button" onclick="javascript: Site.injectAlert();" value="Inject Alert"></td>
+              <td colspan="2"><input id="alerts_inject_button" type="button" value="Inject Alert"></td>
             </tr>
           </tbody>
         </table>
 
         <h4>Active Alerts</h4>
 
-	<div id="active-alerts">
-	</div>
+	<table id="active-alerts" class="alerts-table">
+	</table>
+	<input id="alerts_cancel_button" type="button" value="Cancel Alerts">
+
+        <h4>Expired Alerts</h4>
+
+	<table id="expired-alerts" class="alerts-table">
+	</table>
 
       </div>
       <div style="display: none;" id="content-http">

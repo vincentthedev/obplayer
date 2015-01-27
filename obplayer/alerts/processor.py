@@ -76,7 +76,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		raise socket.error("TCP socket closed by remote end. (" + str(self.host) + ":" + str(self.port) + ")")
 	    self.buffer = self.buffer + data
 
-    def run(self):
+    def try_run(self):
 	while True:
 	    self.connect()
 	    while True:
@@ -169,18 +169,20 @@ class ObAlertProcessor (object):
     def __init__(self):
 	self.lock = thread.allocate_lock()
 	self.next_alert_check = 0
-	self.alert_list = { }
+	self.seen_alerts = { }
 	self.active_alerts = { }
+	self.expired_alerts = { }
 
 	self.dispatch_lock = thread.allocate_lock()
 	self.dispatch_queue = [ ]
 
-        self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
         #self.streaming_hosts = [ "streaming1.naad-adna.pelmorex.com:8080", "streaming2.naad-adna.pelmorex.com:8080" ]
-        self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
         #self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
+        self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
+        self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
         self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
+        self.language = obplayer.Config.setting('alerts_language')
 
 	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlap', allow_overlay=True)
 	#self.ctrl.do_player_request = self.do_player_request
@@ -194,7 +196,7 @@ class ObAlertProcessor (object):
 
     def add_alert(self, alert):
 	with self.lock:
-	    self.alert_list[alert.identifier] = alert
+	    self.seen_alerts[alert.identifier] = True
 
     def set_alert_active(self, alert):
 	if alert.active is not True:
@@ -202,16 +204,28 @@ class ObAlertProcessor (object):
 		self.active_alerts[alert.identifier] = alert
 		alert.active = True
 
-    def set_alert_inactive(self, alert):
+    def set_alert_expired(self, alert):
 	if alert.active is not False:
 	    with self.lock:
 		alert.active = False
 		del self.active_alerts[alert.identifier]
+		self.expired_alerts[alert.identifier] = alert
 
-    def get_active_alerts(self):
-	alerts = None
-	with self.dispatch_lock:
-	    alerts = self.active_alerts
+    def get_alerts(self):
+	alerts = { 'active' : [ ], 'expired' : [ ] }
+	with self.lock:
+	    for (name, alert_list) in [ ('active', self.active_alerts), ('expired', self.expired_alerts) ]:
+		for id in alert_list.keys():
+		    alert = alert_list[id]
+		    info = alert.get_first_info(self.language)
+		    alerts[name].append({
+			'identifier' : alert.identifier,
+			'sender' : alert.sender,
+			'sent' : alert.sent,
+			'headline' : info.headline,
+			'description' : info.description,
+			'played' : alert.times_played
+		    })
 	return alerts
 
     def inject_alert(self, filename):
@@ -223,6 +237,10 @@ class ObAlertProcessor (object):
 	alert.print_data()
 	self.dispatch(alert)
 
+    def cancel_alert(self, identifier):
+	if identifier in self.active_alerts:
+	    self.set_alert_expired(self.active_alerts[identifier])
+
     def dispatch(self, alert):
 	with self.lock:
 	    self.dispatch_queue.insert(0, alert)
@@ -233,8 +251,8 @@ class ObAlertProcessor (object):
 	# deactivate any previous alerts that are cancelled or superceeded by this alert
 	if alert.msgtype == 'update' or alert.msgtype == 'cancel':
 	    for (_, identifier, _) in alert.references:
-		if identifier in self.alert_list:
-		    self.set_alert_inactive(self.alert_list[identifier])
+		if identifier in self.active_alerts:
+		    self.set_alert_expired(self.active_alerts[identifier])
 
 	# TODO have a setting here so that exercise and test type alerts will be optionally displayed
 
@@ -250,13 +268,12 @@ class ObAlertProcessor (object):
 		self.set_alert_active(alert)
 		print "Active Alert:"
 		alert.print_data()
-		alert.next_play = 0
 		if alert.broadcast_immediately():
 		    self.next_alert_check = time.time()
 
     def fetch_references(self, references):
 	for (sender, identifier, timestamp) in references:
-	    if not identifier in self.alert_list:
+	    if not identifier in self.seen_alerts:
 		(urldate, _, _) = timestamp.partition('T')
 		filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
@@ -300,14 +317,15 @@ class ObAlertProcessor (object):
 			for alert in self.active_alerts.itervalues():
 			    if alert.is_expired():
 				obplayer.Log.log("alert %s has expired" % (obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier),), 'alerts')
-				self.set_alert_inactive(alert)
+				self.set_alert_expired(alert)
 
 		if present_time > self.next_alert_check:
 		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.active_alerts),), 'alerts')
 		    with self.lock:
 			for alert in self.active_alerts.itervalues():
-			    alert_media = alert.get_media_info()
+			    alert_media = alert.get_media_info(self.language)
 			    if alert_media:
+				alert.times_played += 1
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'])
 				self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time

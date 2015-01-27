@@ -269,6 +269,8 @@ class ObConfigData(ObData):
 
 	self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'opengl', 'text')
+        self.add_setting('video_out_width', '1280', 'int')
+        self.add_setting('video_out_height', '720', 'int')
 
 	self.add_setting('overlay_enable', '0', 'bool')
         self.add_setting('overlay_mode', 'auto', 'text')
@@ -303,10 +305,10 @@ class ObConfigData(ObData):
 	self.add_setting('alerts_language', 'english', 'text')
 	self.add_setting('alerts_geocode', '59', 'text')
 	self.add_setting('alerts_repeat_time', '120', 'int')
-	self.add_setting('alerts_naad_stream1', "streaming1.naad-adna.pelmorex.com:8080", 'text')
-	self.add_setting('alerts_naad_stream2', "streaming2.naad-adna.pelmorex.com:8080", 'text')
-	self.add_setting('alerts_naad_archive1', "capcp1.naad-adna.pelmorex.com", 'text')
-	self.add_setting('alerts_naad_archive2', "capcp2.naad-adna.pelmorex.com", 'text')
+	self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
+	self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
+	self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
+	self.add_setting('alerts_naad_archive2', "http://capcp2.naad-adna.pelmorex.com", 'text')
 
 	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
