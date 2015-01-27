@@ -13,14 +13,14 @@
     <h1><% obplayer.HTTPAdmin.title %></h1>
 
     <div id="tabs">
-      <div class="tab selected" data-content="home">Home</div>
+      <div class="tab selected" data-content="status">Status</div>
+      <div class="tab" data-content="summary">Summary</div>
       <div class="tab" data-content="basic">Basic</div>
       <div class="tab" data-content="sync">Sync/Media</div>
       <div class="tab" data-content="audio">Audio/Visualization</div>
       <div class="tab" data-content="alerts">Emergency Alerts</div>
       <div class="tab" data-content="http">HTTP(S) Admin</div>
       <div class="tab" data-content="liveassist">Live Assist</div>
-      <div class="tab" data-content="status">Status</div>
 
       <div id="commands">
         <input id="command_quit" type="button" value="Quit/Restart" onclick="Site.quit();">
@@ -37,7 +37,118 @@
       <div id="notice" style="display: none;"></div>
       <div id="error" style="display: none;"></div>
 
-      <div id="content-home">
+      <div id="content-status">
+
+	<div id="show-summary" class="summary">
+	  <h4>Show</h4>
+	  <div>
+	    <label>Current Time:</label>
+	    <span id="show-summary-time"></span>
+	  </div>
+	  <div>
+	    <label>Show Type:</label>
+	    <span id="show-summary-type"></span>
+	  </div>
+	  <div>
+	    <label>Show ID:</label>
+	    <span id="show-summary-id"></span>
+	  </div>
+	  <div>
+	    <label>Show Name:</label>
+	    <span id="show-summary-name"></span>
+	  </div>
+	  <div>
+	    <label>Show Description:</label>
+	    <span id="show-summary-description"></span>
+	  </div>
+	  <div>
+	    <label>Last Updated:</label>
+	    <span id="show-summary-last-updated"></span>
+	  </div>
+	</div>
+
+	<div id="audio-summary" class="summary">
+	  <h4>Audio Stream</h4>
+	  <div>
+	    <label>Media Type:</label>
+	    <span id="audio-summary-media-type"></span>
+	  </div>
+	  <div>
+	    <label>Order #:</label>
+	    <span id="audio-summary-order-num"></span>
+	  </div>
+	  <div>
+	    <label>Media ID:</label>
+	    <span id="audio-summary-media-id"></span>
+	  </div>
+	  <div>
+	    <label>Media Artist:</label>
+	    <span id="audio-summary-artist"></span>
+	  </div>
+	  <div>
+	    <label>Media Title:</label>
+	    <span id="audio-summary-title"></span>
+	  </div>
+	  <div>
+	    <label>Media Duration:</label>
+	    <span id="audio-summary-duration"></span>
+	  </div>
+	  <div>
+	    <label>Scheduled End:</label>
+	    <span id="audio-summary-end-time"></span>
+	  </div>
+	  <div>
+	    <canvas id="audio-levels" width=200 height=20></canvas>
+	  </div>
+	</div>
+
+	<div id="visual-summary" class="summary">
+	  <h4>Visual Stream</h4>
+	  <div>
+	    <label>Media Type:</label>
+	    <span id="visual-summary-media-type"></span>
+	  </div>
+	  <div>
+	    <label>Order #:</label>
+	    <span id="visual-summary-order-num"></span>
+	  </div>
+	  <div>
+	    <label>Media ID:</label>
+	    <span id="visual-summary-media-id"></span>
+	  </div>
+	  <div>
+	    <label>Media Artist:</label>
+	    <span id="visual-summary-artist"></span>
+	  </div>
+	  <div>
+	    <label>Media Title:</label>
+	    <span id="visual-summary-title"></span>
+	  </div>
+	  <div>
+	    <label>Media Duration:</label>
+	    <span id="visual-summary-duration"></span>
+	  </div>
+	  <div>
+	    <label>Scheduled End:</label>
+	    <span id="visual-summary-end-time"></span>
+	  </div>
+	</div>
+
+	<div id="log-window">
+	  <h4>Logs</h4>
+	  <div>
+	    <label>Log Level:</label>
+	    <select id="log_level">
+              <option value="normal">Normal</option>
+              <option value="debug">Debug</option>
+            </select>
+	  </div><br />
+	  <div id="log-data">
+	    <!-- Content loaded when displayed -->
+	  </div>
+	</div>
+      </div>
+      <div style="display: none;" id="content-summary">
 
 	<h2>Current Configuration</h2>
 
@@ -99,15 +210,15 @@
 	    <td><% obplayer.Config.setting('fallback_media') %></td>
 	  </tr>
 	  <tr class="local_media_location">
-	    <td>Local Media Location:</td>
+	    <td>Media Location:</td>
 	    <td><% obplayer.Config.setting('local_media') %></td>
 	  </tr>
 	  <tr class="local_media_location">
-	    <td>Local Uploads (Unapproved) Location:</td>
+	    <td>Uploads (Unapproved) Location:</td>
 	    <td><% obplayer.Config.setting('local_uploads') %></td>
 	  </tr>
 	  <tr class="local_media_location">
-	    <td>Local Archive (Deleted) Location:</td>
+	    <td>Archive (Deleted) Location:</td>
 	    <td><% obplayer.Config.setting('local_archive') %></td>
 	  </tr>
 	  <tr class="padding">
@@ -477,6 +588,10 @@
 
         <h4>Active Alerts</h4>
 
+	<div>
+	  <span>Last Heartbeat:</span>
+	  <span id="alerts-last-heartbeat"></span>
+	</div>
 	<table id="active-alerts" class="alerts-table">
 	</table>
 	<input id="alerts_cancel_button" type="button" value="Cancel Alerts">
@@ -542,117 +657,7 @@
         </table>
 
       </div>
-      <div style="display: none;" id="content-status">
 
-	<div id="show-summary" class="summary">
-	  <h4>Show</h4>
-	  <div>
-	    <label>Current Time:</label>
-	    <span id="show-summary-time"></span>
-	  </div>
-	  <div>
-	    <label>Show Type:</label>
-	    <span id="show-summary-type"></span>
-	  </div>
-	  <div>
-	    <label>Show ID:</label>
-	    <span id="show-summary-id"></span>
-	  </div>
-	  <div>
-	    <label>Show Name:</label>
-	    <span id="show-summary-name"></span>
-	  </div>
-	  <div>
-	    <label>Show Description:</label>
-	    <span id="show-summary-description"></span>
-	  </div>
-	  <div>
-	    <label>Last Updated:</label>
-	    <span id="show-summary-last-updated"></span>
-	  </div>
-	</div>
-
-	<div id="audio-summary" class="summary">
-	  <h4>Audio Stream</h4>
-	  <div>
-	    <label>Media Type:</label>
-	    <span id="audio-summary-media-type"></span>
-	  </div>
-	  <div>
-	    <label>Order #:</label>
-	    <span id="audio-summary-order-num"></span>
-	  </div>
-	  <div>
-	    <label>Media ID:</label>
-	    <span id="audio-summary-media-id"></span>
-	  </div>
-	  <div>
-	    <label>Media Artist:</label>
-	    <span id="audio-summary-artist"></span>
-	  </div>
-	  <div>
-	    <label>Media Title:</label>
-	    <span id="audio-summary-title"></span>
-	  </div>
-	  <div>
-	    <label>Media Duration:</label>
-	    <span id="audio-summary-duration"></span>
-	  </div>
-	  <div>
-	    <label>Scheduled End:</label>
-	    <span id="audio-summary-end-time"></span>
-	  </div>
-	  <div>
-	    <canvas id="audio-levels" width=200 height=20></canvas>
-	  </div>
-	</div>
-
-	<div id="visual-summary" class="summary">
-	  <h4>Visual Stream</h4>
-	  <div>
-	    <label>Media Type:</label>
-	    <span id="visual-summary-media-type"></span>
-	  </div>
-	  <div>
-	    <label>Order #:</label>
-	    <span id="visual-summary-order-num"></span>
-	  </div>
-	  <div>
-	    <label>Media ID:</label>
-	    <span id="visual-summary-media-id"></span>
-	  </div>
-	  <div>
-	    <label>Media Artist:</label>
-	    <span id="visual-summary-artist"></span>
-	  </div>
-	  <div>
-	    <label>Media Title:</label>
-	    <span id="visual-summary-title"></span>
-	  </div>
-	  <div>
-	    <label>Media Duration:</label>
-	    <span id="visual-summary-duration"></span>
-	  </div>
-	  <div>
-	    <label>Scheduled End:</label>
-	    <span id="visual-summary-end-time"></span>
-	  </div>
-	</div>
-
-	<div id="log-window">
-	  <h4>Logs</h4>
-	  <div>
-	    <label>Log Level:</label>
-	    <select id="log_level">
-              <option value="normal">Normal</option>
-              <option value="debug">Debug</option>
-            </select>
-	  </div><br />
-	  <div id="log-data">
-	    <!-- Content loaded when displayed -->
-	  </div>
-	</div>
-      </div>
 
     </div>
 

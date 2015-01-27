@@ -259,13 +259,20 @@ class ObGui:
             self.gui_drawing_area.queue_draw()
         return True
 
+    def overlay_scroll_timer(self):
+        #GObject.timeout_add(50, self.overlay_scroll_timer)
+	self.overlay_scroll_pos += 0.01
+	if self.overlay_scroll_pos >= 1:
+	    self.overlay_scroll_pos = 0
+        GObject.timeout_add(50, self.overlay_scroll_timer)
+
     def draw_overlay(self, context, width, height):
 	"""
 	#print str(width) + " x " + str(height)
 	#context.scale(width, height)
 	#context.scale(width / 100, height / 100)
 	#context.scale(100, 100)
-	context.set_source_rgb(1, 0, 0)
+	#context.set_source_rgb(1, 0, 0)
 	#context.paint_with_alpha(1)
 	#context.select_font_face("Helvetica")
 	#context.set_font_face(None)
@@ -273,14 +280,19 @@ class ObGui:
 	#context.move_to(0.1, 0.1)
 	#context.show_text("Hello World")
 	#context.rectangle(0, height * 0.60, width, 30)
-	context.rectangle(0, 0.60, 1, 0.1)
+	#context.rectangle(0, 0.60, 1, 0.1)
+
+	context.set_source_rgb(1, 0, 0)
+	context.rectangle(0, 0.60 * height, width, 0.1 * height)
 	context.fill()
 
-	context.set_source_rgb(1, 1, 1)
+	#context.scale(1.0 / width, 1.0 / height)
 	#context.translate(0, height * 0.60)
-	context.translate(0, 0.60)
+
+	context.set_source_rgb(1, 1, 1)
+	context.translate(self.overlay_scroll_pos * width, 0.60 * height)
 	layout = PangoCairo.create_layout(context)
-	layout.set_font_description(Pango.font_description_from_string("Sans 14"))
+	layout.set_font_description(Pango.font_description_from_string("Sans " + str(0.070 * height)))
 	layout.set_text("Hello World", -1)
 	PangoCairo.update_layout(context, layout)
 	PangoCairo.show_layout(context, layout)

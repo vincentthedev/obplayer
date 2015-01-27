@@ -301,6 +301,7 @@ class ObPlayer (object):
 	    self.requests[output] = None
 		
     def restore_outputs(self):
+	self.audio_levels = None
 	for output in self.requests.keys():
 	    if self.requests[output] is not None:
 		# TODO you should maybe use the output caps instead of the media_class
@@ -534,9 +535,9 @@ class ObVideoSinkBin (Gst.Bin):
 
 
 	## create basic filter elements
-	self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
-	self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
-	self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+	#self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
+	#self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
+	#self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
 
 	## create caps filter element to set the output video parameters
 	video_width = obplayer.Config.setting('video_out_width')
@@ -552,10 +553,13 @@ class ObVideoSinkBin (Gst.Bin):
 		self.overlay = Gst.ElementFactory.make('cairooverlay', "overlay")
 		self.overlay.connect("draw", self.overlay_draw)
 		self.overlay.connect("caps-changed", self.overlay_caps_changed)
-	    self.elements.append(self.overlay)
-	    self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
-	    self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
-	    self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
+		self.elements.append(self.overlay)
+
+		#obplayer.Gui.overlay_scroll_pos = 0
+		#GObject.timeout_add(50, obplayer.Gui.overlay_scroll_timer)
+	    #self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
+	    #self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
+	    #self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
 
 	## create video sink element
 	video_out_mode = obplayer.Config.setting('video_out_mode')

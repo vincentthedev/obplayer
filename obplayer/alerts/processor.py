@@ -169,6 +169,7 @@ class ObAlertProcessor (object):
     def __init__(self):
 	self.lock = thread.allocate_lock()
 	self.next_alert_check = 0
+	self.last_heartbeat = 0
 	self.seen_alerts = { }
 	self.active_alerts = { }
 	self.expired_alerts = { }
@@ -212,7 +213,7 @@ class ObAlertProcessor (object):
 		self.expired_alerts[alert.identifier] = alert
 
     def get_alerts(self):
-	alerts = { 'active' : [ ], 'expired' : [ ] }
+	alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat }
 	with self.lock:
 	    for (name, alert_list) in [ ('active', self.active_alerts), ('expired', self.expired_alerts) ]:
 		for id in alert_list.keys():
@@ -257,11 +258,12 @@ class ObAlertProcessor (object):
 	# TODO have a setting here so that exercise and test type alerts will be optionally displayed
 
 	if alert.status == 'system':
+	    self.last_heartbeat = time.time()
 	    self.fetch_references(alert.references)	# only fetch alerts referenced in system heartbeats
-	    print "---- ACTIVE ----"
-	    for a in self.active_alerts.itervalues():
-		a.print_data()
-	    print "---- END OF ACTIVE ----"
+	    #print "---- ACTIVE ----"
+	    #for a in self.active_alerts.itervalues():
+	    #	a.print_data()
+	    #print "---- END OF ACTIVE ----"
 
 	if alert.status == 'actual' and alert.scope == 'public':
 	    if alert.has_geocode(self.target_geocode):

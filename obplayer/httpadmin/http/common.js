@@ -136,6 +136,11 @@ Site.updateAlertInfo = function()
       else{
 	$('#expired-alerts').html($('<tr><td>').html("No Expired Alerts"));
       }
+
+      var elapsed = (Date.now() / 1000) - response.last_heartbeat;
+      $('#alerts-last-heartbeat').html(Site.friendlyDuration(elapsed));
+      if(elapsed>150) $('#alerts-last-heartbeat').css('color','red');
+      else $('#alerts-last-heartbeat').css('color','black');
     },'json');
   }
 }
