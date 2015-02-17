@@ -78,7 +78,11 @@ class ObAlertFetcher (obplayer.ObThread):
 
     def try_run(self):
 	while True:
-	    self.connect()
+	    success = self.connect()
+	    if not success:
+		time.sleep(20)
+		continue
+
 	    while True:
 		try:
 		    data = self.read_alert_data()
@@ -92,12 +96,12 @@ class ObAlertFetcher (obplayer.ObThread):
 			#    f.write(data)
 
 		except socket.error, e:
-		    obplayer.Log.log("Socket Error: " + str(e), 'alerts')
+		    obplayer.Log.log("Socket Error: " + str(e), 'error')
 		    break
 
 		except:
 		    obplayer.Log.log("exception in " + self.name + " thread", 'error')
-		    obplayer.Log.log(traceback.format_exc(), 'alerts')
+		    obplayer.Log.log(traceback.format_exc(), 'error')
 	    self.close()
 	    time.sleep(2)
 
@@ -118,29 +122,34 @@ class ObAlertTCPFetcher (ObAlertFetcher):
 	    url = urlparse.urlparse(urlstring, 'http')
 	    urlparts = url.netloc.split(':')
 	    (self.host, self.port) = (urlparts[0], urlparts[1] if len(urlparts) > 1 else 80)
-	    for res in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM):
-		af, socktype, proto, canonname, sa = res
-		try:
-		    self.socket = socket.socket(af, socktype, proto)
-		except socket.error as msg:
-		    self.socket = None
-		    continue
+	    self.socket = None
+	    try:
+		for res in socket.getaddrinfo(self.host, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM):
+		    af, socktype, proto, canonname, sa = res
 
-		try:
-		    self.socket.connect(sa)
-		except socket.error as msg:
-		    self.socket.close()
-		    self.socket = None
-		    continue
-		break
+		    try:
+			self.socket = socket.socket(af, socktype, proto)
+		    except socket.error as msg:
+			self.socket = None
+			continue
 
-	    if self.socket is None:
-		obplayer.Log.log("error connecting to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
-		return False
+		    try:
+			self.socket.connect(sa)
+		    except socket.error as msg:
+			self.socket.close()
+			self.socket = None
+			continue
+		    break
+	    except socket.gaierror:
+		pass
 
-	    else:
+	    if self.socket is not None:
 		obplayer.Log.log("connected to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'alerts')
 		return True
+
+	    obplayer.Log.log("error connecting to alert broadcaster at " + str(self.host) + ":" + str(self.port), 'error')
+	    time.sleep(1)
+	return False
 
     def receive(self):
 	return self.socket.recv(4096)
@@ -295,7 +304,7 @@ class ObAlertProcessor (object):
 			    self.handle_dispatch(alert)
 			    break
 		    except requests.ConnectionError:
-			obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'alerts')
+			obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
 
     def run(self):
 	self.next_expired_check = time.time() + 30
