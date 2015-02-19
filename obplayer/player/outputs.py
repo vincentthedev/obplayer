@@ -235,7 +235,7 @@ class ObVideoOverlayBin (ObOutputBin):
 	self.overlay = ObOverlay()
 	global Overlay
 	Overlay = self.overlay
-	self.overlay.set_message("My cat has cutenesses coming out of her body.  It's really spectacular and your head will explode when you see it.")
+	#self.overlay.set_message("My cat has cutenesses coming out of her body.  It's really spectacular and your head will explode when you see it.")
 
 	self.elements = [ ]
 
