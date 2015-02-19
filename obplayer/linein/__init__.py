@@ -25,8 +25,8 @@ from __future__ import absolute_import
 import obplayer
 
 def init():
-    ctrl = obplayer.Player.create_controller('audioin', 10, allow_requeue=False)
-    def audioin_request(self, present_time):
-	self.add_request(media_type='audioin', duration=5000)
-    ctrl.set_request_callback(audioin_request)
+    ctrl = obplayer.Player.create_controller('linein', 10, allow_requeue=False)
+    def linein_request(self, present_time):
+	self.add_request(media_type='linein', duration=5000)
+    ctrl.set_request_callback(linein_request)
 

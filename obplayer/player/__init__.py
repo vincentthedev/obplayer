@@ -22,21 +22,10 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import 
 
-from obplayer.task import ObThread
-from obplayer.log import ObLog
-from obplayer.data import ObData, ObConfigData, ObRemoteData, ObPlaylogData
-from obplayer.main import ObMainApp
-from obplayer.gui import ObGui
+import obplayer
 
-Log = None
+from obplayer.player.control import ObPlayer, ObPlayerController
 
-Config = None
-RemoteData = None
-PlaylogData = None
-
-Gui = None
-Main = None
-
-def main():
-    ObMainApp().start()
+def init():
+    obplayer.Player = ObPlayer()
 

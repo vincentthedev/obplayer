@@ -62,54 +62,15 @@
             <property name="can_focus">True</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkBox" id="vbox2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkViewport" id="drawingarea_slideshow_viewport">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="shadow_type">none</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="drawingarea_slideshow">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <signal name="configure-event" handler="drawing_area_resize_event" swapped="no"/>
-                        <signal name="motion-notify-event" handler="pointer_position_watch" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkViewport" id="drawingarea_gst_viewport">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="shadow_type">none</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="drawingarea_gst">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <signal name="motion-notify-event" handler="pointer_position_watch" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="resize">False</property>
-                <property name="shrink">True</property>
-              </packing>
+	      <object class="GtkDrawingArea" id="drawingarea_gst">
+		<property name="visible">True</property>
+		<property name="can_focus">False</property>
+		<signal name="motion-notify-event" handler="pointer_position_watch" swapped="no"/>
+	      </object>
+	      <packing>
+		<property name="resize">False</property>
+		<property name="shrink">True</property>
+	      </packing>
             </child>
           </object>
           <packing>

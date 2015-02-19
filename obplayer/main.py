@@ -73,9 +73,9 @@ class ObMainApp:
 	    obplayer.Gui = obplayer.ObGui()
 	    obplayer.Gui.create_window()
 
-	    obplayer.Player = obplayer.ObPlayer()
-
+	    self.load_module('player')
 	    self.load_module('httpadmin')
+
 	    if obplayer.Config.setting('alerts_enable'):
 		self.load_module('alerts')
 	    if obplayer.Config.setting('scheduler_enable'):
@@ -83,7 +83,7 @@ class ObMainApp:
 	    if obplayer.Config.setting('fallback_enable'):
 	    	self.load_module('fallback')
 	    if obplayer.Config.setting('audio_in_enable'):
-	    	self.load_module('audioin')
+	    	self.load_module('linein')
 	    if obplayer.Config.setting('live_assist_enable'):
 		self.load_module('liveassist')
 
@@ -95,7 +95,7 @@ class ObMainApp:
 	    #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
 	    #obplayer.alerts.Processor.dispatch(alert)
 
-	    ctrl = obplayer.Player.create_controller('testsource', 30, default_play_mode='overlap')
+	    #ctrl = obplayer.Player.create_controller('testsource', 30, default_play_mode='overlap')
 	    #ctrl.add_request(media_type='testsignal', duration=5)
 	    #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
 	    #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
@@ -105,7 +105,7 @@ class ObMainApp:
 	    #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
 	    #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
 
-	    alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
+	    #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
 	    #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
 	    #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
 
@@ -125,7 +125,7 @@ class ObMainApp:
 	self.loop.quit()
 
     def sigint_handler(self, signal, frame):
-	self.loop.quit()
+	self.quit()
 
     def application_shutdown(self):
 	# backup our main db to disk.

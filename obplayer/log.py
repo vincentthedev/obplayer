@@ -32,16 +32,11 @@ MAX_BACKLOG = 2000
 # Provides logging for remote application.  Presently logging outputs to stdout only.
 #
 class ObLog:
-
-    #
-    # Initialization, does nothing at the moment.
-    #
     def __init__(self):
 	self.datadir = obplayer.ObData.get_datadir()
 	self.logbuffer = []
 	self.debug = False
 
-	# open log file to write to.
         self.logdate = False
         self.logfile = False
 
@@ -50,10 +45,6 @@ class ObLog:
     def set_debug(self, flag):
 	self.debug = flag
 
-    #
-    # Given message, outputs time + message to stdout.
-    # mtypes = error, emerg, audio, image, sync
-    #
     def log(self, message, mtype='error'):
 
         mstring = '[' + time.strftime('%b %d %Y %H:%M:%S', time.gmtime()) + ' UTC] [' + mtype + '] ' + message

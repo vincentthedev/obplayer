@@ -189,8 +189,10 @@ class ObShow (object):
 	    if self.ctrl.has_requests():
 		return False
 	    self.media_start_time = 0
-	    self.ctrl.stop_requests()
-	    self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "break (filling spaces)")
+	    # NOTE this usually only happens when a media item fails to play, in which case we don't want to fill the
+	    # space with a pause, we want to let the fallback player take over
+	    #self.ctrl.stop_requests()
+	    #self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "break (filling spaces)")
 
     def play_current(self, present_time):
 	if self.is_paused():

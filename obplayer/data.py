@@ -273,7 +273,6 @@ class ObConfigData(ObData):
         self.add_setting('video_out_height', '720', 'int')
 
 	self.add_setting('overlay_enable', '0', 'bool')
-        self.add_setting('overlay_mode', 'auto', 'text')
 
 	self.add_setting('scheduler_enable', '1', 'bool')
         self.add_setting('sync_device_id', '1', 'int')

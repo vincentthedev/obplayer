@@ -39,9 +39,9 @@ class ObGui:
             return
 
         else:
-            global Gtk, Gdk, GdkX11, GdkPixbuf, cairo, Pango, PangoCairo
+            global Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 	    gi.require_version('Gtk', '3.0')
-	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo, Pango, PangoCairo
+	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 
         builder = Gtk.Builder()
         builder.add_from_file('obplayer/ui.glade')
@@ -59,31 +59,50 @@ class ObGui:
         self.gui_toolbar = builder.get_object('toolbar')
         self.gui_statusbar = builder.get_object('statusbar')
 
+	def do_nothing(one, two):
+	    pass
+	    print "Doing"
+
 	# DRAWING AREA
+	"""
         self.gui_drawing_area = builder.get_object('drawingarea_slideshow')
         self.gui_drawing_area_alpha = 1
-        self.gui_drawing_area.connect('draw', self.drawing_area_expose)
+        #self.gui_drawing_area.connect('draw', self.drawing_area_expose)
         self.gui_drawing_area.set_size_request(250, 250)
         self.gui_drawing_area.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
         self.gui_drawing_area.modify_bg(Gtk.StateFlags.NORMAL, gtk_black)
+        self.gui_drawing_area.realize()
+	"""
 
         self.gui_gst_area = builder.get_object('drawingarea_gst')
         self.gui_gst_area_alpha = 1
         self.gui_gst_area.set_size_request(250, 250)
+        self.gui_gst_area.connect('draw', do_nothing)
         self.gui_gst_area.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
         self.gui_gst_area.modify_bg(Gtk.StateFlags.NORMAL, gtk_black)
         self.gui_gst_area.realize()
 	self.gst_xid = self.gui_gst_area.get_window().get_xid()
 
+	"""
+	# TODO note, you changed these to refer to the drawing area instead of the viewport, so it's now a misnomer
+        #self.gui_drawing_area_viewport = builder.get_object('drawingarea_slideshow')
+        #self.gui_gst_area_viewport = builder.get_object('drawingarea_gst')
         self.gui_drawing_area_viewport = builder.get_object('drawingarea_slideshow_viewport')
         self.gui_gst_area_viewport = builder.get_object('drawingarea_gst_viewport')
 
-        self.gui_gst_area_viewport.hide()
+	# TODO for some reason this is the issue! why?
+        #self.gui_gst_area_viewport.hide()
+        #self.gui_drawing_area.hide()
+
+        #self.gui_gst_area_viewport.hide()
+        #self.gui_drawing_area_viewport.hide()
+        #self.gui_gst_area_viewport.show()
 
         self.pixbuf = False
         self.pixbuf_original = False
         self.next_pixbuf = False
         self.next_pixbuf_original = False
+	"""
 
 	# track our fullscreen pointer hide timeout event id.
         self.fullscreen_hide_pointer_id = None
@@ -110,6 +129,7 @@ class ObGui:
 	if obplayer.Config.headless:
 	    return
 
+	"""
 	obplayer.Config.setting('audio_out_visualization') == 0
 	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audio_out_visualization') == 0):
 	    self.gui_gst_area_viewport.hide()
@@ -122,6 +142,7 @@ class ObGui:
 	else:
 	    self.gui_drawing_area_viewport.hide()
 	    self.gui_gst_area_viewport.show()
+	"""
 
     def fullscreen_toggle(self, widget):
         if obplayer.Config.headless:
@@ -143,9 +164,10 @@ class ObGui:
         if self.gui_window_fullscreen == False:
             return
 
-        pix = Gdk.Pixmap(self.gui_window.window, 1, 1, 1)
-        color = Gdk.Color()
-        cursor = Gdk.Cursor(pix, pix, color, color, 0, 0)
+        #pix = Gdk.Pixmap(self.gui_window.window, 1, 1, 1)
+        #color = Gdk.Color()
+        #cursor = Gdk.Cursor(pix, pix, color, color, 0, 0)
+	cursor = Gdk.Cursor.new(Gdk.CursorType.WATCH)
         self.gui_window.get_root_window().set_cursor(cursor)
 
         self.gui_toolbar.hide()
@@ -170,6 +192,7 @@ class ObGui:
         else:
             self.gui_toolbar.hide()
 
+    """
     def pixbuf_resize_to_drawing_area(self, pixbuf):
         org_img_size = (pixbuf.get_width(), pixbuf.get_height())
         org_img_size_ratio = float(org_img_size[0]) / float(org_img_size[1])
@@ -258,54 +281,5 @@ class ObGui:
 
             self.gui_drawing_area.queue_draw()
         return True
-
-    def overlay_scroll_timer(self):
-        #GObject.timeout_add(50, self.overlay_scroll_timer)
-	self.overlay_scroll_pos += 0.01
-	if self.overlay_scroll_pos >= 1:
-	    self.overlay_scroll_pos = 0
-        GObject.timeout_add(50, self.overlay_scroll_timer)
-
-    def draw_overlay(self, context, width, height):
-	"""
-	#print str(width) + " x " + str(height)
-	#context.scale(width, height)
-	#context.scale(width / 100, height / 100)
-	#context.scale(100, 100)
-	#context.set_source_rgb(1, 0, 0)
-	#context.paint_with_alpha(1)
-	#context.select_font_face("Helvetica")
-	#context.set_font_face(None)
-	#context.set_font_size(0.05)
-	#context.move_to(0.1, 0.1)
-	#context.show_text("Hello World")
-	#context.rectangle(0, height * 0.60, width, 30)
-	#context.rectangle(0, 0.60, 1, 0.1)
-
-	context.set_source_rgb(1, 0, 0)
-	context.rectangle(0, 0.60 * height, width, 0.1 * height)
-	context.fill()
-
-	#context.scale(1.0 / width, 1.0 / height)
-	#context.translate(0, height * 0.60)
-
-	context.set_source_rgb(1, 1, 1)
-	context.translate(self.overlay_scroll_pos * width, 0.60 * height)
-	layout = PangoCairo.create_layout(context)
-	layout.set_font_description(Pango.font_description_from_string("Sans " + str(0.070 * height)))
-	layout.set_text("Hello World", -1)
-	PangoCairo.update_layout(context, layout)
-	PangoCairo.show_layout(context, layout)
-
-	#context.set_line_width(0.1)
-	#context.move_to(0, 0)
-	#context.line_to(1, 0)
-	#context.stroke()
-	"""
-
-	"""
-	pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/home/trans/Downloads/kitty.jpg", width, height)
-	Gdk.cairo_set_source_pixbuf(context, pixbuf, 0, 0)
-	context.stroke()
-	"""
+    """
 

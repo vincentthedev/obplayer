@@ -166,12 +166,13 @@ class ObAlert (object):
             os.mkdir(location)
 	filename = self.reference(self.sent, self.identifier)
 
+	brief = info.description.split('\n\n', 1)
+
 	if len(info.resources) > 0:
 	    if info.resources[0].write_file(location + "/" + filename) is False:
 		return False
 
 	elif info.description:
-	    brief = info.description.split('\n\n', 1)
 	    obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
 	    os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
 
@@ -185,6 +186,7 @@ class ObAlert (object):
 	    'media_type' : 'audio',
 	    'artist' : 'Emergency Alert',
 	    'title' : str(self.identifier),
+	    'overlay_text' : brief[0],
 	    'file_location' : location,
 	    'filename' : filename,
 	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 2

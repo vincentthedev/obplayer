@@ -160,6 +160,7 @@ class ObSync:
         obplayer.Log.log('fetching show data from server', 'sync')
 
         schedule_xml = self.sync_request('schedule')
+	#print schedule_xml
 
 	# trying to quit?
         if self.quit:

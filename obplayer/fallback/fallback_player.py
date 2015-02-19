@@ -32,7 +32,7 @@ gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstPbutils
 
 
-class ObFallbackPlayer (obplayer.ObPlayerController):
+class ObFallbackPlayer (obplayer.player.ObPlayerController):
 
     def __init__(self):
         self.media = []
