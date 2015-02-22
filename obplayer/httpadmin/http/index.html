@@ -269,10 +269,6 @@
 	    <td>Video Overlay Enabled?:</td>
 	    <td><% obplayer.Config.setting('overlay_enable') %></td>
 	  </tr>
-	  <tr>
-	    <td>Video Overlay Mode:</td>
-	    <td><% obplayer.Config.setting('overlay_mode') %></td>
-	  </tr>
 	  <tr class="padding">
 	    <td>HTTPS Enabled?:</td>
 	    <td id="https_setting"><% obplayer.Config.setting('http_admin_secure') %></td>
@@ -500,13 +496,6 @@
             <tr>
               <td>Enable Video Overlay</td>
               <td><input type="checkbox" name="overlay_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('overlay_enable') %>></td>
-            </tr>
-            <tr>
-              <td>Video Overlay Mode</td>
-              <td><select id="overlay_mode_select" name="overlay_mode">
-                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('overlay_mode','auto') %>>Auto Detect</option>
-                  <option value="cairo"<% obplayer.HTTPAdmin.form_item_selected('overlay_mode','cairo') %>>Cairo</option>
-                </select></td>
             </tr>
           </tbody>
         </table>

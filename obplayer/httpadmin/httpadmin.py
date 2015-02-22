@@ -35,7 +35,8 @@ import BaseHTTPServer
 from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
-class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+#class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ObHTTPAdmin(BaseHTTPServer.HTTPServer):
 
     def __init__(self):
 	self.root = 'obplayer/httpadmin/http'
@@ -57,7 +58,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'admin')
 
     def log(self, message):
-	if not "POST /status_info" in message:
+	if not "POST /status_info" in message and not "POST /alerts/list" in message:
             obplayer.Log.log(message, 'admin')
 
     def form_item_selected(self, setting, value):
@@ -130,13 +131,18 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	elif path == "/alerts/inject_test":
 	    if hasattr(obplayer, 'alerts'):
 		obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
+		return { 'status' : True }
+	    return { 'status' : False }
 
 	elif path == "/alerts/cancel":
 	    if hasattr(obplayer, 'alerts'):
 		for identifier in postvars['identifier[]']:
 		    obplayer.alerts.Processor.cancel_alert(identifier)
+		return { 'status' : True }
+	    return { 'status' : False }
 
 	elif path == "/alerts/list":
 	    if hasattr(obplayer, 'alerts'):
 		return obplayer.alerts.Processor.get_alerts()
+	    return { 'status' : False }
 

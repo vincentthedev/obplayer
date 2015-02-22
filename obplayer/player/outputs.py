@@ -287,7 +287,7 @@ class ObVideoOverlayBin (ObOutputBin):
     def overlay_caps_changed(self, overlay, caps):
 	self.overlay_caps = GstVideo.VideoInfo()
 	self.overlay_caps.from_caps(caps)
-	print str(self.overlay_caps.width) + " x " + str(self.overlay_caps.height)
+	#print str(self.overlay_caps.width) + " x " + str(self.overlay_caps.height)
 
     def overlay_draw(self, overlay, context, arg1, arg2):
 	self.overlay.draw_overlay(context, self.overlay_caps.width, self.overlay_caps.height)

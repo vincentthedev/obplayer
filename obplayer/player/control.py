@@ -81,7 +81,7 @@ class ObPlayer (object):
 
 	self.testctrl = self.create_controller('testsignal', 1, allow_requeue=False)
 	def testsignal_request(self, present_time):
-	    self.add_request(media_type='break', duration=5)
+	    #self.add_request(media_type='break', duration=5)
 	    self.add_request(media_type='testsignal', duration=5000)
 	self.testctrl.set_request_callback(testsignal_request)
 
@@ -256,7 +256,7 @@ class ObPlayer (object):
         obplayer.PlaylogData.playlog_add(req['media_id'], req['artist'], req['title'], time.time(), req['controller'].name, playlog_notes)
 
         obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %ss type: '%s' source: %s)" % (
-	    str(req['order_num'] + 1) if req['order_num'] else '?',
+	    str(req['order_num'] + 1) if req['order_num'] >= 0 else '?',
 	    unicode(req['artist']).encode('ascii', 'replace'),
 	    unicode(req['title']).encode('ascii', 'replace'),
 	    req['media_id'],

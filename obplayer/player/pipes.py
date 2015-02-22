@@ -260,8 +260,6 @@ class ObPlaybinPipeline (ObGstPipeline):
 	    if output not in self.mode:
 		#print self.name + " -- Connecting " + output
 		self.pipeline.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output])
-		if output == 'visual':
-		    obplayer.Gui.change_media_mode('video')
 		self.mode.add(output)
 
 	if state == Gst.State.PLAYING:
@@ -353,7 +351,6 @@ class ObTestPipeline (ObGstPipeline):
 	if 'audio' in mode:
 	    self.set_property('audio-sink', self.player.outputs['audio'])
 	if 'visual' in mode:
-	    obplayer.Gui.change_media_mode('video')
 	    self.set_property('video-sink', self.player.outputs['visual'])
 	ObPipeline.patch(self, mode)
 	self.wait_state(Gst.State.PLAYING)
@@ -529,9 +526,6 @@ class ObImagePipeline (ObGstPipeline):
 		if self.videosink:
 		    self.pipeline.add(self.videosink)
 		    self.elements[-1].link(self.videosink)
-
-		if output == 'visual':
-		    obplayer.Gui.change_media_mode('video')
 		self.mode.add(output)
 
 	if state == Gst.State.PLAYING:
@@ -647,8 +641,6 @@ class ObDecodeBinPipeline (ObGstPipeline):
 	    if output not in self.mode:
 		#print self.name + " -- Connecting " + output
 		self.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output])
-		if output == 'visual':
-		    obplayer.Gui.change_media_mode('video')
 		self.mode.add(output)
 
 	if state == Gst.State.PLAYING:

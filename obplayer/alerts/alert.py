@@ -173,8 +173,9 @@ class ObAlert (object):
 		return False
 
 	elif info.description:
-	    obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
+	    #obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
 	    os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
+	    #os.system("espeak -w %s/%s \"%s\"" % (location, filename, brief[0]))
 
 	else:
 	    return False

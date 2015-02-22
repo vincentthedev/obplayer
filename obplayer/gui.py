@@ -61,7 +61,6 @@ class ObGui:
 
 	def do_nothing(one, two):
 	    pass
-	    print "Doing"
 
 	# DRAWING AREA
 	"""
