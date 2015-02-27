@@ -492,8 +492,9 @@ class ObSync:
 
     # call sync now playing update in a separate thread.
     def now_playing_update(self, playlist_id, playlist_end, media_id, media_end, show_name):
-        t = threading.Thread(target=self.now_playing_update_thread, args=(playlist_id, playlist_end, media_id, media_end, show_name))
-        t.start()
+	if obplayer.Config.setting('sync_playlog_enable'):
+	    t = threading.Thread(target=self.now_playing_update_thread, args=(playlist_id, playlist_end, media_id, media_end, show_name))
+	    t.start()
 
     #
     # Update 'now playing' information

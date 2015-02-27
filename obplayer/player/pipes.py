@@ -492,6 +492,7 @@ class ObImagePipeline (ObGstPipeline):
 	#binding = GstController.DirectControlBinding.new(self.videobalance, 'contrast', self.control_source)
 	#self.videobalance.add_control_binding(binding)
 
+	"""
 	self.elements.append(Gst.ElementFactory.make('alpha', 'alpha'))
 	#self.elements[-1].set_property('method', 1)
 	binding = GstController.DirectControlBinding.new(self.elements[-1], 'alpha', self.control_source)
@@ -499,6 +500,16 @@ class ObImagePipeline (ObGstPipeline):
 
 	self.elements.append(Gst.ElementFactory.make('videomixer', 'videomixer'))
 	self.elements[-1].set_property('background', 1)
+	"""
+
+	"""
+	self.elements.append(Gst.ElementFactory.make('videorate', 'videorate'))
+
+	## create caps filter element to set the output video parameters
+	caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter3")
+	caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,framerate=5/1"))
+	self.elements.append(caps_filter)
+	"""
 
 	self.build_pipeline(self.elements)
 

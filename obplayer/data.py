@@ -269,8 +269,8 @@ class ObConfigData(ObData):
 
 	self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'opengl', 'text')
-        self.add_setting('video_out_width', '1280', 'int')
-        self.add_setting('video_out_height', '720', 'int')
+        self.add_setting('video_out_width', '640', 'int')
+        self.add_setting('video_out_height', '480', 'int')
 
 	self.add_setting('overlay_enable', '0', 'bool')
 
@@ -280,6 +280,7 @@ class ObConfigData(ObData):
         self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
         self.add_setting('sync_buffer', '24', 'int')
         self.add_setting('sync_showlock', '20', 'int')
+        self.add_setting('sync_playlog_enable', '1', 'bool')
         self.add_setting('sync_freq', '2', 'int')
         self.add_setting('sync_freq_emerg', '1', 'int')
         self.add_setting('sync_freq_log', '3', 'int')
@@ -821,6 +822,8 @@ class ObPlaylogData(ObData):
     # notes : any misc notes (in particular, offset if play is resumed part-way through).
     #
     def playlog_add(self, media_id, artist, title, datetime, context, notes=''):
+	if not obplayer.Config.setting('sync_playlog_enable'):
+	    return
 
         artist = self.escape(artist)
         title = self.escape(title)

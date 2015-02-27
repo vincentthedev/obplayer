@@ -52,6 +52,10 @@ class SyncShowsThread (obplayer.ObThread):
 
 class SyncPlaylogThread (obplayer.ObThread):
     def run(self):
+	if not obplayer.Config.setting('sync_playlog_enable'):
+	    self.remove_thread()
+	    return
+
 	self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
 	while not self.stopflag.wait(self.synctime):
 	    try:

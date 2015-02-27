@@ -345,6 +345,10 @@
               <td><input type="text" name="sync_showlock" value="<% obplayer.Config.setting('sync_showlock', True) %>"></td>
             </tr>
             <tr>
+              <td>Enable Playlog</td>
+              <td><input type="checkbox" name="sync_playlog_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('sync_playlog_enable') %>></td>
+            </tr>
+            <tr>
               <td>Media Sync Freq</td>
               <td><input type="text" name="sync_freq" value="<% obplayer.Config.setting('sync_freq', True) %>"></td>
             </tr>

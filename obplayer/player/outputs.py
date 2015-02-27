@@ -166,6 +166,7 @@ class ObVideoSinkBin (ObOutputBin):
 
 	## create caps filter element to set the output video parameters
 	caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter")
+	#caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw"))
 	caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
 	#caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(1280) + ",height=" + str(300)))
 	self.elements.append(caps_filter)
