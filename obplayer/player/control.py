@@ -244,7 +244,7 @@ class ObPlayer (object):
 	request_pipe.set_request(req)
 	request_pipe.start()
 
-	if req['overlay_text']:
+	if outputs.Overlay and req['overlay_text']:
 	    outputs.Overlay.set_message(req['overlay_text'])
 
 	# record the currently playing requests in the requests table (only the minimum set, so that other requests can use those outputs)
@@ -274,7 +274,7 @@ class ObPlayer (object):
 	request_pipe = self.pipes[req['media_type']]
 	request_pipe.stop()
 
-	if req['overlay_text']:
+	if outputs.Overlay and req['overlay_text']:
 	    outputs.Overlay.set_message('')
 
 	for name in self.requests.keys():
@@ -321,7 +321,8 @@ class ObPlayer (object):
 		    self.repatch_outputs('/'.join(patch_list), self.patches[output])
 		    for class_name in patch_list:
 			self.requests[class_name] = self.requests[output]
-		    outputs.Overlay.set_message(self.requests[output]['overlay_text'])
+		    if outputs.Overlay:
+			outputs.Overlay.set_message(self.requests[output]['overlay_text'])
 
     def get_controller_requests(self, ctrl):
 	return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
