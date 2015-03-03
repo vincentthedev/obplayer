@@ -24,7 +24,31 @@ import obplayer
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import GObject, Gtk, Gdk, GdkX11, GdkPixbuf, cairo, Pango, PangoCairo
+from gi.repository import GObject, Gtk, Gdk, GdkX11, GdkPixbuf, Pango, PangoCairo
+import cairo
+
+import ctypes
+import ctypes.util
+import cairo
+import sys
+
+pycairo_dll = ctypes.pydll.LoadLibrary(cairo._cairo.__file__)
+pycairo_dll.PycairoContext_FromContext.restype = ctypes.py_object
+pycairo_dll.PycairoContext_FromContext.argtypes = (ctypes.c_void_p, ctypes.py_object, ctypes.py_object)
+
+cairo_dll = ctypes.pydll.LoadLibrary(ctypes.util.find_library('cairo'))
+cairo_dll.cairo_reference.restype = ctypes.c_void_p
+cairo_dll.cairo_reference.argtypes = (ctypes.c_void_p,)
+
+def cairo_context_from_gi(gicr):
+    #assert isinstance(gicr, GObject.GBoxed)
+    offset = sys.getsizeof(object())  # size of PyObject_HEAD
+    # Pull the "boxed" pointer off out and use it as a cairo_t*
+    cr_ptr = ctypes.c_void_p.from_address(id(gicr) + offset)
+    cr = pycairo_dll.PycairoContext_FromContext(cr_ptr, cairo.Context, None)
+    # Add a new ref because the pycairo context will attempt to manage this
+    cairo_dll.cairo_reference(cr_ptr)
+    return cr
 
 
 class ObOverlay (object):
@@ -66,6 +90,7 @@ class ObOverlay (object):
 	    #context.rectangle(0, height * 0.60, width, 30)
 	    #context.rectangle(0, 0.60, 1, 0.1)
 
+	    context = cairo_context_from_gi(context)
 	    context.set_source_rgb(1, 0, 0)
 	    context.rectangle(0, 0.60 * height, width, 0.1 * height)
 	    context.fill()
