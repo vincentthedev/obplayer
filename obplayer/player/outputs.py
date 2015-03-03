@@ -182,6 +182,9 @@ class ObVideoSinkBin (ObOutputBin):
 	elif video_out_mode == 'opengl':
 	    self.videosink = Gst.ElementFactory.make("glimagesink", "videosink")
 
+	elif video_out_mode == 'egl':
+	    self.videosink = Gst.ElementFactory.make("eglglessink", "videosink")
+
 	elif video_out_mode == 'wayland':
 	    self.videosink = Gst.ElementFactory.make("waylandsink", "videosink")
 
