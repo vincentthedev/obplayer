@@ -557,6 +557,14 @@
               <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
             </tr>
             <tr>
+              <td>Play Moderately Severe Alerts</td>
+              <td><input type="checkbox" name="alerts_play_moderates" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_moderates') %>></td>
+            </tr>
+            <tr>
+              <td>Play Test Alerts</td>
+              <td><input type="checkbox" name="alerts_play_tests" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_tests') %>></td>
+            </tr>
+            <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('alerts');" value="Save"></td>
             </tr>
           </tbody>

@@ -103,7 +103,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    obplayer.Log.log("exception in " + self.name + " thread", 'error')
 		    obplayer.Log.log(traceback.format_exc(), 'error')
 	    self.close()
-	    time.sleep(2)
+	    time.sleep(5)
 
     def stop(self):
 	self.close()
@@ -194,6 +194,9 @@ class ObAlertProcessor (object):
         self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
         self.language = obplayer.Config.setting('alerts_language')
 
+        self.play_moderates = obplayer.Config.setting('alerts_play_moderates')
+        self.play_tests = obplayer.Config.setting('alerts_play_tests')
+
 	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlap', allow_overlay=True)
 	#self.ctrl.do_player_request = self.do_player_request
 
@@ -276,11 +279,15 @@ class ObAlertProcessor (object):
 
 	if alert.status == 'actual' and alert.scope == 'public':
 	    if alert.has_geocode(self.target_geocode):
+		if alert.broadcast_immediately():
+		    self.next_alert_check = time.time()
+		elif not self.play_moderates:
+		    # if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then just return
+		    return
+
 		self.set_alert_active(alert)
 		print "Active Alert:"
 		alert.print_data()
-		if alert.broadcast_immediately():
-		    self.next_alert_check = time.time()
 
     def fetch_references(self, references):
 	for (sender, identifier, timestamp) in references:

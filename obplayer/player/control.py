@@ -81,7 +81,7 @@ class ObPlayer (object):
 
 	self.testctrl = self.create_controller('testsignal', 1, allow_requeue=False)
 	def testsignal_request(self, present_time):
-	    #self.add_request(media_type='break', duration=5)
+	    self.add_request(media_type='break', duration=5)
 	    self.add_request(media_type='testsignal', duration=5000)
 	self.testctrl.set_request_callback(testsignal_request)
 

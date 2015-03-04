@@ -309,6 +309,8 @@ class ObConfigData(ObData):
 	self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
 	self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
 	self.add_setting('alerts_naad_archive2', "http://capcp2.naad-adna.pelmorex.com", 'text')
+	self.add_setting('alerts_play_moderates', '1', 'bool')
+	self.add_setting('alerts_play_tests', '0', 'bool')
 
 	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')

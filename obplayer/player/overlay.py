@@ -76,6 +76,8 @@ class ObOverlay (object):
 
     def draw_overlay(self, context, width, height):
 	if self.enabled and self.message:
+	    context = cairo_context_from_gi(context)
+
 	    #print str(width) + " x " + str(height)
 	    #context.scale(width, height)
 	    #context.scale(width / 100, height / 100)
@@ -90,7 +92,6 @@ class ObOverlay (object):
 	    #context.rectangle(0, height * 0.60, width, 30)
 	    #context.rectangle(0, 0.60, 1, 0.1)
 
-	    context = cairo_context_from_gi(context)
 	    context.set_source_rgb(1, 0, 0)
 	    context.rectangle(0, 0.60 * height, width, 0.1 * height)
 	    context.fill()
