@@ -46,6 +46,7 @@ class ObThread (threading.Thread):
 	threading.Thread.start(self)
 
     def stop(self):
+	obplayer.Log.log("stopping thread <%s>" % (str(self.name),), 'debug')
 	self.stopflag.set()
 
     @staticmethod

@@ -137,10 +137,21 @@ Site.updateAlertInfo = function()
 	$('#expired-alerts').html($('<tr><td>').html("No Expired Alerts"));
       }
 
-      var elapsed = (Date.now() / 1000) - response.last_heartbeat;
-      $('#alerts-last-heartbeat').html(Site.friendlyDuration(elapsed));
-      if(elapsed>150) $('#alerts-last-heartbeat').css('color','red');
-      else $('#alerts-last-heartbeat').css('color','black');
+      // display the last time a heartbeat was received
+      if(response.last_heartbeat==0){
+	$('#alerts-last-heartbeat').html('(none received)');
+	$('#alerts-last-heartbeat').css('color','red');
+      }
+      else{
+	var elapsed = (Date.now() / 1000) - response.last_heartbeat;
+	$('#alerts-last-heartbeat').html(Site.friendlyDuration(elapsed));
+	if(elapsed>150) $('#alerts-last-heartbeat').css('color','red');
+	else $('#alerts-last-heartbeat').css('color','black');
+      }
+
+      // display the next time alerts will be played
+      var next_check = response.next_play - (Date.now() / 1000);
+      $('#alerts-next-play').html(Site.friendlyDuration(next_check));
     },'json');
   }
 }

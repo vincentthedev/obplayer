@@ -88,7 +88,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    data = self.read_alert_data()
 		    if (data):
 			alert = obplayer.alerts.ObAlert(data)
-			alert.print_data()
+			#alert.print_data()
 			self.processor.dispatch(alert)
 
 			# TODO for testing only
@@ -179,12 +179,12 @@ class ObAlertProcessor (object):
 	self.lock = thread.allocate_lock()
 	self.next_alert_check = 0
 	self.last_heartbeat = 0
-	self.seen_alerts = { }
-	self.active_alerts = { }
-	self.expired_alerts = { }
+	self.alerts_seen = { }
+	self.alerts_active = { }
+	self.alerts_expired = { }
 
+	self.alert_queue = [ ]
 	self.dispatch_lock = thread.allocate_lock()
-	self.dispatch_queue = [ ]
 
         #self.streaming_hosts = [ "streaming1.naad-adna.pelmorex.com:8080", "streaming2.naad-adna.pelmorex.com:8080" ]
         #self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
@@ -207,27 +207,27 @@ class ObAlertProcessor (object):
 	self.fetcher = ObAlertTCPFetcher(self, self.streaming_hosts)
 	self.fetcher.start()
 
-    def add_alert(self, alert):
+    def dispatch(self, alert):
 	with self.lock:
-	    self.seen_alerts[alert.identifier] = True
+	    self.alert_queue.insert(0, alert)
 
-    def set_alert_active(self, alert):
-	if alert.active is not True:
-	    with self.lock:
-		self.active_alerts[alert.identifier] = alert
-		alert.active = True
+    def cancel_alert(self, identifier):
+	if identifier in self.alerts_active:
+	    self.mark_expired(self.alerts_active[identifier])
 
-    def set_alert_expired(self, alert):
-	if alert.active is not False:
-	    with self.lock:
-		alert.active = False
-		del self.active_alerts[alert.identifier]
-		self.expired_alerts[alert.identifier] = alert
+    def inject_alert(self, filename):
+	obplayer.Log.log("injecting test alert from file " + filename, 'alerts')
+	with open(filename, 'r') as f:
+	    data = f.read()
+	alert = obplayer.alerts.ObAlert(data)
+	alert.add_geocode(self.target_geocode)
+	#alert.print_data()
+	self.dispatch(alert)
 
     def get_alerts(self):
-	alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat }
+	alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat, 'next_play' : self.next_alert_check }
 	with self.lock:
-	    for (name, alert_list) in [ ('active', self.active_alerts), ('expired', self.expired_alerts) ]:
+	    for (name, alert_list) in [ ('active', self.alerts_active), ('expired', self.alerts_expired) ]:
 		for id in alert_list.keys():
 		    alert = alert_list[id]
 		    info = alert.get_first_info(self.language)
@@ -241,57 +241,52 @@ class ObAlertProcessor (object):
 		    })
 	return alerts
 
-    def inject_alert(self, filename):
-	obplayer.Log.log("inject test alert from file " + filename, 'alerts')
-	with open(filename, 'r') as f:
-	    data = f.read()
-	alert = obplayer.alerts.ObAlert(data)
-	alert.add_geocode(self.target_geocode)
-	alert.print_data()
-	self.dispatch(alert)
-
-    def cancel_alert(self, identifier):
-	if identifier in self.active_alerts:
-	    self.set_alert_expired(self.active_alerts[identifier])
-
-    def dispatch(self, alert):
+    def mark_seen(self, alert):
 	with self.lock:
-	    self.dispatch_queue.insert(0, alert)
+	    self.alerts_seen[alert.identifier] = True
+
+    def mark_active(self, alert):
+	if alert.active is not True:
+	    with self.lock:
+		self.alerts_active[alert.identifier] = alert
+		alert.active = True
+
+    def mark_expired(self, alert):
+	if alert.active is not False:
+	    with self.lock:
+		alert.active = False
+		del self.alerts_active[alert.identifier]
+		self.alerts_expired[alert.identifier] = alert
 
     def handle_dispatch(self, alert):
-	self.add_alert(alert)
+	self.mark_seen(alert)
 
 	# deactivate any previous alerts that are cancelled or superceeded by this alert
-	if alert.msgtype == 'update' or alert.msgtype == 'cancel':
+	if alert.msgtype in ('update', 'cancel'):
 	    for (_, identifier, _) in alert.references:
-		if identifier in self.active_alerts:
-		    self.set_alert_expired(self.active_alerts[identifier])
-
-	# TODO have a setting here so that exercise and test type alerts will be optionally displayed
+		if identifier in self.alerts_active:
+		    self.mark_expired(self.alerts_active[identifier])
 
 	if alert.status == 'system':
 	    self.last_heartbeat = time.time()
 	    self.fetch_references(alert.references)	# only fetch alerts referenced in system heartbeats
-	    #print "---- ACTIVE ----"
-	    #for a in self.active_alerts.itervalues():
-	    #	a.print_data()
-	    #print "---- END OF ACTIVE ----"
 
-	if alert.status == 'actual' and alert.scope == 'public':
-	    if alert.has_geocode(self.target_geocode):
-		if alert.broadcast_immediately():
-		    self.next_alert_check = time.time()
-		elif not self.play_moderates:
-		    # if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then just return
-		    return
+	elif alert.msgtype in ('alert', 'update'):
+	    if (alert.status == 'actual' and alert.scope == 'public') or self.play_tests is True:
+		if alert.has_geocode(self.target_geocode):
+		    if alert.broadcast_immediately():
+			self.next_alert_check = time.time()
+		    elif not self.play_moderates:
+			# if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then just return
+			return
 
-		self.set_alert_active(alert)
-		print "Active Alert:"
-		alert.print_data()
+		    self.mark_active(alert)
+		    #print "Active Alert:"
+		    #alert.print_data()
 
     def fetch_references(self, references):
 	for (sender, identifier, timestamp) in references:
-	    if not identifier in self.seen_alerts:
+	    if not identifier in self.alerts_seen:
 		(urldate, _, _) = timestamp.partition('T')
 		filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
@@ -321,30 +316,35 @@ class ObAlertProcessor (object):
 	    try:
 		present_time = time.time()
 
-		if len(self.dispatch_queue) > 0:
+		if len(self.alert_queue) > 0:
 		    alert = None
 		    with self.lock:
-			alert = self.dispatch_queue.pop()
+			alert = self.alert_queue.pop()
 
 		    with self.dispatch_lock:
 			self.handle_dispatch(alert)
 
 		if present_time > self.next_expired_check:
 		    self.next_expired_check = present_time + 30
+		    expired_list = [ ]
 		    with self.lock:
-			for alert in self.active_alerts.itervalues():
+			for alert in self.alerts_active.itervalues():
 			    if alert.is_expired():
 				obplayer.Log.log("alert %s has expired" % (obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier),), 'alerts')
-				self.set_alert_expired(alert)
+				expired_list.append(alert)
+		    for alert in expired_list:
+			self.mark_expired(alert)
 
 		if present_time > self.next_alert_check:
-		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.active_alerts),), 'alerts')
+		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 		    with self.lock:
-			for alert in self.active_alerts.itervalues():
+			for alert in self.alerts_active.itervalues():
 			    alert_media = alert.get_media_info(self.language)
 			    if alert_media:
 				alert.times_played += 1
-				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
+				# play the attention signal and then play alert message twice
+				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
+				self.ctrl.add_request(**alert_media)
 				self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
 

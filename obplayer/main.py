@@ -74,7 +74,6 @@ class ObMainApp:
 	    obplayer.Gui.create_window()
 
 	    self.load_module('player')
-	    self.load_module('httpadmin')
 
 	    if obplayer.Config.setting('alerts_enable'):
 		self.load_module('alerts')
@@ -86,6 +85,8 @@ class ObMainApp:
 	    	self.load_module('linein')
 	    if obplayer.Config.setting('live_assist_enable'):
 		self.load_module('liveassist')
+
+	    self.load_module('httpadmin')
 
 	    #### TEST CODE ####
 

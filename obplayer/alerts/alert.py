@@ -166,7 +166,7 @@ class ObAlert (object):
             os.mkdir(location)
 	filename = self.reference(self.sent, self.identifier)
 
-	brief = info.description.split('\n\n', 1)
+	brief = info.description.split('\n\n', 1) if info.description else 'null'
 
 	if len(info.resources) > 0:
 	    if info.resources[0].write_file(location + "/" + filename) is False:

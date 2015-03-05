@@ -93,21 +93,21 @@ class ObOverlay (object):
 	    #context.rectangle(0, 0.60, 1, 0.1)
 
 	    context.set_source_rgb(1, 0, 0)
-	    context.rectangle(0, 0.60 * height, width, 0.1 * height)
+	    context.rectangle(0, 0.55 * height, width, 0.15 * height)
 	    context.fill()
 
 	    #context.scale(1.0 / width, 1.0 / height)
 	    #context.translate(0, height * 0.60)
 
 	    layout = PangoCairo.create_layout(context)
-	    layout.set_font_description(Pango.font_description_from_string("Sans " + str(0.060 * height)))
+	    layout.set_font_description(Pango.font_description_from_string("Sans Condensed " + str(0.090 * height)))
 	    layout.set_text(self.message, -1)
 
 	    (layout_width, layout_height) = layout.get_pixel_size()
 	    self.scroll_wrap = 1.0 + (float(layout_width) / float(width))
 	    pos = (self.scroll_pos * width) - layout_width
 	    context.set_source_rgb(1, 1, 1)
-	    context.translate(pos, 0.60 * height)
+	    context.translate(pos, 0.55 * height)
 	    PangoCairo.update_layout(context, layout)
 	    PangoCairo.show_layout(context, layout)
 
