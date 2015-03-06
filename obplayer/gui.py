@@ -124,11 +124,11 @@ class ObGui:
     def application_shutdown(self, widget):
         obplayer.Main.quit()
 
+    """
     def change_media_mode(self, mode):
 	if obplayer.Config.headless:
 	    return
 
-	"""
 	obplayer.Config.setting('audio_out_visualization') == 0
 	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audio_out_visualization') == 0):
 	    self.gui_gst_area_viewport.hide()
@@ -141,7 +141,7 @@ class ObGui:
 	else:
 	    self.gui_drawing_area_viewport.hide()
 	    self.gui_gst_area_viewport.show()
-	"""
+    """
 
     def fullscreen_toggle(self, widget):
         if obplayer.Config.headless:
@@ -163,17 +163,15 @@ class ObGui:
         if self.gui_window_fullscreen == False:
             return
 
-        #pix = Gdk.Pixmap(self.gui_window.window, 1, 1, 1)
-        #color = Gdk.Color()
-        #cursor = Gdk.Cursor(pix, pix, color, color, 0, 0)
-	cursor = Gdk.Cursor.new(Gdk.CursorType.WATCH)
+	cursor = Gdk.Cursor.new(Gdk.CursorType.BLANK_CURSOR)
         self.gui_window.get_root_window().set_cursor(cursor)
 
         self.gui_toolbar.hide()
         return False  # GObject.timeout_add for pointer show/hide on fullscreen, using return false to avoid repeated calls.
 
     def fullscreen_show_pointer(self):
-        self.gui_window.get_root_window().set_cursor(None)
+	cursor = Gdk.Cursor.new(Gdk.CursorType.ARROW)
+        self.gui_window.get_root_window().set_cursor(cursor)
 
     def pointer_position_watch(self, widget, event):
         if self.gui_window_fullscreen == False:
