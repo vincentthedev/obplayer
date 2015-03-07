@@ -57,11 +57,11 @@ class ObPlayer (object):
 
     def player_init(self):
 	self.outputs = { }
-	self.outputs['audio'] = outputs.ObAudioSinkBin()
+	self.outputs['audio'] = outputs.ObAudioOutputBin()
 	if not obplayer.Config.headless:
-            self.outputs['visual'] = outputs.ObVideoSinkBin()
+            self.outputs['visual'] = outputs.ObVideoOutputBin()
 	else:
-            self.outputs['visual'] = Gst.ElementFactory.make('fakesink')
+            self.outputs['visual'] = outputs.ObFakeOutputBin()
 
 	self.patches = { }
 	for output in self.outputs.keys():

@@ -41,20 +41,29 @@ Overlay = None
 #
 #############################
 
-class ObOutputBin (Gst.Bin):
+class ObOutputBin (object):
+    def __init__(self):
+	self.bin = Gst.ElementFactory.make("bin")
+
+    def get_bin(self):
+	return self.bin
+
     def build_pipeline(self, elements):
 	for element in elements:
 	    obplayer.Log.log("adding element to bin: " + element.get_name(), 'debug')
-	    self.add(element)
+	    self.bin.add(element)
 	for index in range(0, len(elements) - 1):
 	    elements[index].link(elements[index + 1])
 
 
-class ObAudioSinkBin (ObOutputBin):
-    __gstmetadata__ = ( "OpenBroadcaster Audio Sink Bin", "Sink", "Custom audio sink for OpenBroadcaster", "Sari McFarland <sari@pikalabs.com>" )
-
+class ObFakeOutputBin (ObOutputBin):
     def __init__(self):
-	Gst.Bin.__init__(self)
+	self.bin = Gst.ElementFactory.make('fakesink')
+
+
+class ObAudioOutputBin (ObOutputBin):
+    def __init__(self):
+	ObOutputBin.__init__(self)
 
 	self.elements = [ ]
 
@@ -97,14 +106,12 @@ class ObAudioSinkBin (ObOutputBin):
 	self.build_pipeline(self.elements)
 
 	self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
-	self.add_pad(self.sinkpad)
+	self.bin.add_pad(self.sinkpad)
 
 
-class ObVideoSinkBin (ObOutputBin):
-    __gstmetadata__ = ( "OpenBroadcaster Video Sink Bin", "Sink", "Custom video sink for OpenBroadcaster", "Sari McFarland <sari@pikalabs.com>" )
-
+class ObVideoOutputBin (ObOutputBin):
     def __init__(self):
-	Gst.Bin.__init__(self)
+	ObOutputBin.__init__(self)
 
 	self.video_width = obplayer.Config.setting('video_out_width')
 	self.video_height = obplayer.Config.setting('video_out_height')
@@ -162,7 +169,8 @@ class ObVideoSinkBin (ObOutputBin):
 
 	## create overlay elements (if enabled)
         if obplayer.Config.setting('overlay_enable'):
-	    self.elements.append(ObVideoOverlayBin())
+	    self.overlaybin = ObVideoOverlayBin()
+	    self.elements.append(self.overlaybin.get_bin())
 
 	## create caps filter element to set the output video parameters
 	caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter")
@@ -227,14 +235,13 @@ class ObVideoSinkBin (ObOutputBin):
 
 
 	self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
-	self.add_pad(self.sinkpad)
+	self.bin.add_pad(self.sinkpad)
 
 
 class ObVideoOverlayBin (ObOutputBin):
-    __gstmetadata__ = ( "OpenBroadcaster Video Overlay Bin", "Chain", "Custom video overlay for OpenBroadcaster", "Sari McFarland <sari@pikalabs.com>" )
-
     def __init__(self):
-	Gst.Bin.__init__(self)
+	ObOutputBin.__init__(self)
+
 	from obplayer.player.overlay import ObOverlay
 	self.overlay = ObOverlay()
 	global Overlay
@@ -284,9 +291,9 @@ class ObVideoOverlayBin (ObOutputBin):
 	self.build_pipeline(self.elements)
 
 	self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
-	self.add_pad(self.sinkpad)
+	self.bin.add_pad(self.sinkpad)
 	self.srcpad = Gst.GhostPad.new('src', self.elements[-1].get_static_pad('src'))
-	self.add_pad(self.srcpad)
+	self.bin.add_pad(self.srcpad)
 
     def overlay_caps_changed(self, overlay, caps):
 	self.overlay_caps = GstVideo.VideoInfo()

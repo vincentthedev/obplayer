@@ -259,7 +259,7 @@ class ObPlaybinPipeline (ObGstPipeline):
 	for output in mode.split('/'):
 	    if output not in self.mode:
 		#print self.name + " -- Connecting " + output
-		self.pipeline.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output])
+		self.pipeline.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output].get_bin())
 		self.mode.add(output)
 
 	if state == Gst.State.PLAYING:
@@ -349,9 +349,9 @@ class ObTestPipeline (ObGstPipeline):
     def patch(self, mode):
 	self.wait_state(Gst.State.NULL)
 	if 'audio' in mode:
-	    self.set_property('audio-sink', self.player.outputs['audio'])
+	    self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
 	if 'visual' in mode:
-	    self.set_property('video-sink', self.player.outputs['visual'])
+	    self.set_property('video-sink', self.player.outputs['visual'].get_bin())
 	ObPipeline.patch(self, mode)
 	self.wait_state(Gst.State.PLAYING)
 
@@ -424,7 +424,7 @@ class ObLineInPipeline (ObGstPipeline):
     def patch(self, mode):
 	self.wait_state(Gst.State.NULL)
 	if 'audio' in mode:
-	    self.set_property('audio-sink', self.player.outputs['audio'])
+	    self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
 	ObPipeline.patch(self, mode)
 	self.wait_state(Gst.State.PLAYING)
 
@@ -533,7 +533,7 @@ class ObImagePipeline (ObGstPipeline):
 		#print self.name + " -- Connecting " + output
 		if self.videosink:
 		    self.pipeline.remove(self.videosink)
-		self.videosink = self.player.outputs[output]
+		self.videosink = self.player.outputs[output].get_bin()
 		if self.videosink:
 		    self.pipeline.add(self.videosink)
 		    self.elements[-1].link(self.videosink)
