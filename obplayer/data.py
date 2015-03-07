@@ -303,6 +303,7 @@ class ObConfigData(ObData):
 
 	self.add_setting('alerts_enable', '0', 'bool')
 	self.add_setting('alerts_language', 'english', 'text')
+	self.add_setting('alerts_voice', 'en', 'text')
 	self.add_setting('alerts_geocode', '59', 'text')
 	self.add_setting('alerts_repeat_time', '120', 'int')
 	self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')

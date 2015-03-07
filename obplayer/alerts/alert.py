@@ -181,6 +181,7 @@ class ObAlert (object):
 	    voice = 'mb-us2'
 	    if info.language.startswith('fr-'):
 		voice = 'mb-fr1'
+	    voice = obplayer.Config.setting('alerts_voice')
 	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, brief[0].encode('utf-8')))
 	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
 	    #cmd += u"\"" + brief[0] + u"\""

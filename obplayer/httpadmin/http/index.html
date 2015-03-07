@@ -533,6 +533,23 @@
 	      </td>
             </tr>
             <tr>
+              <td>Voice (for TTS)</td>
+              <td>
+		<select id="alerts_voice_select" name="alerts_voice">
+                  <option value="en"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','en') %>>en</option>
+                  <option value="mb-en1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-en1') %>>mb-en1</option>
+                  <option value="mb-us1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us1') %>>mb-us1</option>
+                  <option value="mb-us2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us2') %>>mb-us2</option>
+                  <option value="mb-us3"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us3') %>>mb-us3</option>
+                  <option value="mb-fr1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-fr1') %>>mb-fr1</option>
+                  <option value="mb-fr4"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-fr4') %>>mb-fr4</option>
+                  <option value="mb-la1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-la1') %>>mb-la1</option>
+                  <option value="mb-sw1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-sw1') %>>mb-sw1</option>
+                  <option value="mb-sw2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-sw2') %>>mb-sw2</option>
+                </select>
+	      </td>
+            </tr>
+            <tr>
               <td>Location Geocode</td>
               <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>"></td>
             </tr>
