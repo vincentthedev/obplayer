@@ -74,19 +74,18 @@ class ObMainApp:
 	    obplayer.Gui.create_window()
 
 	    self.load_module('player')
+	    self.load_module('httpadmin')
 
 	    if obplayer.Config.setting('alerts_enable'):
 		self.load_module('alerts')
-	    if obplayer.Config.setting('scheduler_enable'):
-		self.load_module('scheduler')
 	    if obplayer.Config.setting('fallback_enable'):
 	    	self.load_module('fallback')
 	    if obplayer.Config.setting('audio_in_enable'):
 	    	self.load_module('linein')
+	    if obplayer.Config.setting('scheduler_enable'):
+		self.load_module('scheduler')
 	    if obplayer.Config.setting('live_assist_enable'):
 		self.load_module('liveassist')
-
-	    self.load_module('httpadmin')
 
 	    #### TEST CODE ####
 

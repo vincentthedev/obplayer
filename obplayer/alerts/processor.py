@@ -58,7 +58,7 @@ class ObAlertFetcher (obplayer.ObThread):
 	while True:
 	    if self.buffer:
 		if self.receiving_data is False:
-		    i = self.buffer.find('<alert')
+		    i = self.buffer.find('<?xml')
 		    if i >= 0:
 			self.buffer = self.buffer[i:]
 			self.receiving_data = True
@@ -296,13 +296,14 @@ class ObAlertProcessor (object):
 			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'alerts')
 			r = requests.get(url)
 
+			r.encoding = 'utf-8'
 			# TODO for testing only
 			#print r.text
 			with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'w', encoding='utf-8') as f:
 			    f.write(r.text)
 
 			if r.status_code == 200:
-			    alert = obplayer.alerts.ObAlert(r.text.encode('utf-8'))
+			    alert = obplayer.alerts.ObAlert(r.content)
 			    self.handle_dispatch(alert)
 			    break
 		    except requests.ConnectionError:
@@ -342,9 +343,7 @@ class ObAlertProcessor (object):
 			    alert_media = alert.get_media_info(self.language)
 			    if alert_media:
 				alert.times_played += 1
-				# play the attention signal and then play alert message twice
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
-				self.ctrl.add_request(**alert_media)
 				self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
 

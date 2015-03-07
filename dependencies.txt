@@ -35,7 +35,14 @@ Dependencies are Debian/Ubuntu package names.
 
 Include if using alerts module:
 
-- festival
+- espeak
+- mbrola
+- mbrola-en1
+- mbrola-us1
+- mbrola-us2
+- mbrola-us3
+- mbrola-fr1
+- mbrola-fr4
 
 Include if sharing multiple OpenBroadcaster players with a local media library:
 

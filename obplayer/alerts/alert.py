@@ -36,6 +36,7 @@ import os
 
 import thread
 import requests
+import subprocess
 
 import gi
 gi.require_version('Gst', '1.0')
@@ -128,6 +129,8 @@ class ObAlert (object):
 	for info in self.info:
 	    if info.language == lang:
 		return info
+	if len(self.info) > 0:
+	    return self.info[0]
 	return None
 
     def has_geocode(self, code):
@@ -174,8 +177,16 @@ class ObAlert (object):
 
 	elif info.description:
 	    #obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
-	    os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
-	    #os.system("espeak -w %s/%s \"%s\"" % (location, filename, brief[0]))
+	    #os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
+	    voice = 'mb-us2'
+	    if info.language.startswith('fr-'):
+		voice = 'mb-fr1'
+	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, brief[0].encode('utf-8')))
+	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
+	    #cmd += u"\"" + brief[0] + u"\""
+	    proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '-w', location + '/' + filename ], stdin=subprocess.PIPE, close_fds=True)
+	    proc.communicate(brief[0].encode('utf-8') + " <break time=\"2s\" /> " + brief[0].encode('utf-8'))
+	    proc.wait()
 
 	else:
 	    return False
@@ -196,9 +207,6 @@ class ObAlert (object):
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
 	if self.media_info['duration'] > 120:
 	    self.media_info['duration'] = 120
-
-	obplayer.Log.log("apparent duration of alert audio: " + str(mediainfo.get_duration()) + " (" + str(mediainfo.get_duration() / Gst.SECOND) + ")", 'debug')
-	obplayer.Log.log(repr(self.media_info), 'debug')
 	return True
 
     def get_media_info(self, language):
