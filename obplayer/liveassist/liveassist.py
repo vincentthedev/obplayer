@@ -48,7 +48,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         self.log('serving live assist http on port ' + str(sa[1]))
 
     def log(self, message):
-        obplayer.Log.log(message, 'live')
+        obplayer.Log.log(message, 'debug')
 
     def handle_post(self, path, postvars):
 

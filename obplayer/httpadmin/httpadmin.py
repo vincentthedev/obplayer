@@ -59,7 +59,7 @@ class ObHTTPAdmin(BaseHTTPServer.HTTPServer):
 
     def log(self, message):
 	if not "POST /status_info" in message and not "POST /alerts/list" in message:
-            obplayer.Log.log(message, 'admin')
+            obplayer.Log.log(message, 'debug')
 
     def form_item_selected(self, setting, value):
         if obplayer.Config.setting(setting, True) == value:
