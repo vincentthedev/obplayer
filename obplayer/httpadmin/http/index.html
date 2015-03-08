@@ -523,29 +523,60 @@
               <td><input type="checkbox" name="alerts_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_enable') %>></td>
             </tr>
             <tr>
-              <td>Language</td>
+              <td>Primary Language</td>
               <td>
-		<select id="alerts_language_select" name="alerts_language">
-                  <option value="english"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','english') %>>English</option>
-                  <option value="french"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','french') %>>French</option>
-                  <option value="inuktitut"<% obplayer.HTTPAdmin.form_item_selected('alerts_language','inuktitut') %>>Inuktitut</option>
+		<select id="alerts_language_primary_select" name="alerts_language_primary">
+                  <option value="english"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_primary','english') %>>English</option>
+                  <option value="french"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_primary','french') %>>French</option>
+                  <option value="inuktitut"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_primary','inuktitut') %>>Inuktitut</option>
+                </select>
+	      </td>
+            </tr>
+            </tr>
+            <tr>
+              <td>Primary Voice (for TTS)</td>
+              <td>
+		<select id="alerts_voice_primary_select" name="alerts_voice_primary">
+                  <option value="en"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','en') %>>en</option>
+                  <option value="fr"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','fr') %>>fr</option>
+                  <option value="mb-en1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-en1') %>>mb-en1</option>
+                  <option value="mb-us1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-us1') %>>mb-us1</option>
+                  <option value="mb-us2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-us2') %>>mb-us2</option>
+                  <option value="mb-us3"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-us3') %>>mb-us3</option>
+                  <option value="mb-fr1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-fr1') %>>mb-fr1</option>
+                  <option value="mb-fr4"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-fr4') %>>mb-fr4</option>
+                  <option value="mb-la1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-la1') %>>mb-la1</option>
+                  <option value="mb-sw1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-sw1') %>>mb-sw1</option>
+                  <option value="mb-sw2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_primary','mb-sw2') %>>mb-sw2</option>
                 </select>
 	      </td>
             </tr>
             <tr>
-              <td>Voice (for TTS)</td>
+              <td>Secondary Language</td>
               <td>
-		<select id="alerts_voice_select" name="alerts_voice">
-                  <option value="en"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','en') %>>en</option>
-                  <option value="mb-en1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-en1') %>>mb-en1</option>
-                  <option value="mb-us1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us1') %>>mb-us1</option>
-                  <option value="mb-us2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us2') %>>mb-us2</option>
-                  <option value="mb-us3"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-us3') %>>mb-us3</option>
-                  <option value="mb-fr1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-fr1') %>>mb-fr1</option>
-                  <option value="mb-fr4"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-fr4') %>>mb-fr4</option>
-                  <option value="mb-la1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-la1') %>>mb-la1</option>
-                  <option value="mb-sw1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-sw1') %>>mb-sw1</option>
-                  <option value="mb-sw2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice','mb-sw2') %>>mb-sw2</option>
+		<select id="alerts_language_secondary_select" name="alerts_language_secondary">
+                  <option value=""<% obplayer.HTTPAdmin.form_item_selected('alerts_language_secondary','') %>>None</option>
+                  <option value="english"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_secondary','english') %>>English</option>
+                  <option value="french"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_secondary','french') %>>French</option>
+                  <option value="inuktitut"<% obplayer.HTTPAdmin.form_item_selected('alerts_language_secondary','inuktitut') %>>Inuktitut</option>
+                </select>
+	      </td>
+            </tr>
+            <tr>
+              <td>Secondary Voice (for TTS)</td>
+              <td>
+		<select id="alerts_voice_secondary_select" name="alerts_voice_secondary">
+                  <option value="en"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','en') %>>en</option>
+                  <option value="fr"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','fr') %>>fr</option>
+                  <option value="mb-en1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-en1') %>>mb-en1</option>
+                  <option value="mb-us1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-us1') %>>mb-us1</option>
+                  <option value="mb-us2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-us2') %>>mb-us2</option>
+                  <option value="mb-us3"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-us3') %>>mb-us3</option>
+                  <option value="mb-fr1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-fr1') %>>mb-fr1</option>
+                  <option value="mb-fr4"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-fr4') %>>mb-fr4</option>
+                  <option value="mb-la1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-la1') %>>mb-la1</option>
+                  <option value="mb-sw1"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-sw1') %>>mb-sw1</option>
+                  <option value="mb-sw2"<% obplayer.HTTPAdmin.form_item_selected('alerts_voice_secondary','mb-sw2') %>>mb-sw2</option>
                 </select>
 	      </td>
             </tr>

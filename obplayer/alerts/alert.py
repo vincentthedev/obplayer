@@ -80,7 +80,7 @@ class ObAlert (object):
     def __init__(self, xmlcode=None):
 	self.active = False
 	self.times_played = 0
-	self.media_info = None
+	self.media_info = { }
 
 	if xmlcode is not None:
 	    self.parse_cap_xml(xmlcode)
@@ -158,7 +158,7 @@ class ObAlert (object):
 		return True
 	return False
 
-    def generate_audio(self, language):
+    def generate_audio(self, language, voice=None):
 	info = self.get_first_info(language)
 	if info is None:
 	    return False
@@ -167,7 +167,7 @@ class ObAlert (object):
 	location = obplayer.ObData.get_datadir() + "/alerts"
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
-	filename = self.reference(self.sent, self.identifier)
+	filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
 
 	brief = info.description.split('\n\n', 1) if info.description else 'null'
 
@@ -178,10 +178,8 @@ class ObAlert (object):
 	elif info.description:
 	    #obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
 	    #os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
-	    voice = 'mb-us2'
-	    if info.language.startswith('fr-'):
-		voice = 'mb-fr1'
-	    voice = obplayer.Config.setting('alerts_voice')
+	    if not voice:
+		voice = 'en'
 	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, brief[0].encode('utf-8')))
 	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
 	    #cmd += u"\"" + brief[0] + u"\""
@@ -195,7 +193,7 @@ class ObAlert (object):
 	d = GstPbutils.Discoverer()
 	mediainfo = d.discover_uri("file:///%s/%s" % (location, filename))
 
-	self.media_info = {
+	self.media_info[language] = {
 	    'media_type' : 'audio',
 	    'artist' : 'Emergency Alert',
 	    'title' : str(self.identifier),
@@ -206,14 +204,14 @@ class ObAlert (object):
 	}
 
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
-	if self.media_info['duration'] > 120:
-	    self.media_info['duration'] = 120
+	if self.media_info[language]['duration'] > 120:
+	    self.media_info[language] = 120
 	return True
 
-    def get_media_info(self, language):
-	if self.media_info is None:
-	    self.generate_audio(language)
-	return self.media_info
+    def get_media_info(self, language, voice):
+	if language not in self.media_info:
+	    self.generate_audio(language, voice)
+	return self.media_info[language]
 
     @staticmethod
     def reference(timestamp, identifier):

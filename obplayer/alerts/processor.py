@@ -192,7 +192,10 @@ class ObAlertProcessor (object):
         self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
         self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
-        self.language = obplayer.Config.setting('alerts_language')
+        self.language_primary = obplayer.Config.setting('alerts_language_primary')
+        self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
+        self.voice_primary = obplayer.Config.setting('alerts_voice_primary')
+        self.voice_secondary = obplayer.Config.setting('alerts_voice_secondary')
 
         self.play_moderates = obplayer.Config.setting('alerts_play_moderates')
         self.play_tests = obplayer.Config.setting('alerts_play_tests')
@@ -230,7 +233,7 @@ class ObAlertProcessor (object):
 	    for (name, alert_list) in [ ('active', self.alerts_active), ('expired', self.alerts_expired) ]:
 		for id in alert_list.keys():
 		    alert = alert_list[id]
-		    info = alert.get_first_info(self.language)
+		    info = alert.get_first_info(self.language_primary)
 		    alerts[name].append({
 			'identifier' : alert.identifier,
 			'sender' : alert.sender,
@@ -340,11 +343,15 @@ class ObAlertProcessor (object):
 		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 		    with self.lock:
 			for alert in self.alerts_active.itervalues():
-			    alert_media = alert.get_media_info(self.language)
+			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary)
 			    if alert_media:
 				alert.times_played += 1
 				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
 				self.ctrl.add_request(**alert_media)
+				if self.language_secondary:
+				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)
+				    if alert_media:
+					self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
 
 	    except:

@@ -160,13 +160,12 @@ class ObGui:
             self.fullscreen_show_pointer()
 
     def fullscreen_hide_pointer(self):
-        if self.gui_window_fullscreen == False:
+        if self.gui_window_fullscreen != True:
             return
-
 	cursor = Gdk.Cursor.new(Gdk.CursorType.BLANK_CURSOR)
         self.gui_window.get_root_window().set_cursor(cursor)
-
         self.gui_toolbar.hide()
+	self.fullscreen_hide_pointer_id = None
         return False  # GObject.timeout_add for pointer show/hide on fullscreen, using return false to avoid repeated calls.
 
     def fullscreen_show_pointer(self):
@@ -176,16 +175,15 @@ class ObGui:
     def pointer_position_watch(self, widget, event):
         if self.gui_window_fullscreen == False:
             return
-        self.fullscreen_show_pointer()
 
         if self.fullscreen_hide_pointer_id != None:
             GObject.source_remove(self.fullscreen_hide_pointer_id)
 
+        self.fullscreen_show_pointer()
         self.fullscreen_hide_pointer_id = GObject.timeout_add(3000, self.fullscreen_hide_pointer)
 
         if event.y < 20:
             self.gui_toolbar.show()
-
         else:
             self.gui_toolbar.hide()
 

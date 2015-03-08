@@ -302,8 +302,10 @@ class ObConfigData(ObData):
 	self.add_setting('live_assist_port', '23456', 'int')
 
 	self.add_setting('alerts_enable', '0', 'bool')
-	self.add_setting('alerts_language', 'english', 'text')
-	self.add_setting('alerts_voice', 'en', 'text')
+	self.add_setting('alerts_language_primary', 'english', 'text')
+	self.add_setting('alerts_language_secondary', 'french', 'text')
+	self.add_setting('alerts_voice_primary', 'en', 'text')
+	self.add_setting('alerts_voice_secondary', 'fr', 'text')
 	self.add_setting('alerts_geocode', '59', 'text')
 	self.add_setting('alerts_repeat_time', '120', 'int')
 	self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
