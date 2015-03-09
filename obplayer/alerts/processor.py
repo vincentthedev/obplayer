@@ -275,17 +275,30 @@ class ObAlertProcessor (object):
 	    self.fetch_references(alert.references)	# only fetch alerts referenced in system heartbeats
 
 	elif alert.msgtype in ('alert', 'update'):
-	    if (alert.status == 'actual' and alert.scope == 'public') or self.play_tests is True:
-		if alert.has_geocode(self.target_geocode):
-		    if alert.broadcast_immediately():
-			self.next_alert_check = time.time()
-		    elif not self.play_moderates:
-			# if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then just return
-			return
+	    if self.match_alert_conditions(alert):
+		self.mark_active(alert)
+		#print "Active Alert:"
+		#alert.print_data()
 
-		    self.mark_active(alert)
-		    #print "Active Alert:"
-		    #alert.print_data()
+    def match_alert_conditions(self, alert):
+	if not alert.has_geocode(self.target_geocode):
+	    return False
+
+	if self.play_tests is True and alert.status == 'test':
+	    return True
+
+	if alert.status != 'actual' or alert.scope != 'public':
+	    return False
+
+	if alert.broadcast_immediately():
+	    self.next_alert_check = time.time()
+	    return True
+
+	# if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then return false
+	if self.play_moderates is True:
+	    return True
+
+	return False
 
     def fetch_references(self, references):
 	for (sender, identifier, timestamp) in references:
@@ -346,7 +359,7 @@ class ObAlertProcessor (object):
 			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary)
 			    if alert_media:
 				alert.times_played += 1
-				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title']) #, overlay_text=alert_media['overlay_text'])
+				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
 				self.ctrl.add_request(**alert_media)
 				if self.language_secondary:
 				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)

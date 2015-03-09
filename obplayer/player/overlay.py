@@ -22,6 +22,8 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 import obplayer
 
+import thread
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GObject, Gtk, Gdk, GdkX11, GdkPixbuf, Pango, PangoCairo
@@ -53,28 +55,32 @@ def cairo_context_from_gi(gicr):
 
 class ObOverlay (object):
     def __init__(self):
-	self.enabled = False
-	self.message = ''
+	self.message = None
+	self.scroll_enable = False
 	self.scroll_pos = 0.0
 	self.scroll_wrap = 1.0
+	self.lock = thread.allocate_lock()
 	GObject.timeout_add(50, self.overlay_scroll_timer)
 
     def overlay_scroll_timer(self):
-	self.scroll_pos -= 0.015
-	if self.scroll_pos <= 0.0:
-	    self.scroll_pos = self.scroll_wrap
+	with self.lock:
+	    self.scroll_pos -= 0.015
+	    if self.scroll_pos <= 0.0:
+		self.scroll_pos = self.scroll_wrap
         GObject.timeout_add(50, self.overlay_scroll_timer)
 
     def set_message(self, msg):
-	if msg == '':
-	    self.enabled = False
+	if msg:
+	    self.scroll_enable = True
+	    with self.lock:
+		if self.message != msg:
+		    self.scroll_pos = 0.05
+		self.message = msg
 	else:
-	    self.enabled = True
-	    self.scroll_pos = 0.0
-	    self.message = msg
+	    self.scroll_enable = False
 
     def draw_overlay(self, context, width, height):
-	if self.enabled and self.message:
+	if self.scroll_enable and self.message:
 	    context = cairo_context_from_gi(context)
 
 	    #print str(width) + " x " + str(height)

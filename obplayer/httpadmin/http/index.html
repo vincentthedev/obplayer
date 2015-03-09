@@ -585,8 +585,8 @@
               <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>"></td>
             </tr>
             <tr>
-              <td>Repeat Time (in seconds)</td>
-              <td><input type="text" name="alerts_repeat_time" value="<% obplayer.Config.setting('alerts_repeat_time', True) %>"></td>
+              <td>Alert Repeat Interval (in minutes)</td>
+              <td><input type="text" name="alerts_repeat_interval" value="<% obplayer.Config.setting('alerts_repeat_interval', True) %>"></td>
             </tr>
             <tr>
               <td>NAAD Stream #1 URL</td>
@@ -639,12 +639,14 @@
         <h4>Active Alerts</h4>
 
 	<div>
-	  <span>Last Heartbeat:</span>
+	  <span>Last Heartbeat Received:</span>
 	  <span id="alerts-last-heartbeat"></span>
+	  <span>min</span>
 	</div>
 	<div>
-	  <span>Next Play Check In:</span>
+	  <span>Alerts Will Play In:</span>
 	  <span id="alerts-next-play"></span>
+	  <span>min</span>
 	</div>
 	<table id="active-alerts" class="alerts-table">
 	</table>

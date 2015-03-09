@@ -169,22 +169,25 @@ class ObAlert (object):
             os.mkdir(location)
 	filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
 
-	brief = info.description.split('\n\n', 1) if info.description else 'null'
+	if info.description:
+	    parts = info.description.split('\n\n', 1)
+	    brief = parts[0]
+	else:
+	    brief = info.headline
 
 	if len(info.resources) > 0:
 	    if info.resources[0].write_file(location + "/" + filename) is False:
 		return False
 
-	elif info.description:
-	    #obplayer.Log.log("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename), 'debug')
-	    #os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
+	elif brief:
 	    if not voice:
 		voice = 'en'
+	    #os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
 	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, brief[0].encode('utf-8')))
 	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
 	    #cmd += u"\"" + brief[0] + u"\""
 	    proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '-w', location + '/' + filename ], stdin=subprocess.PIPE, close_fds=True)
-	    proc.communicate(brief[0].encode('utf-8') + " <break time=\"2s\" /> " + brief[0].encode('utf-8'))
+	    proc.communicate(brief.encode('utf-8') + " <break time=\"2s\" /> " + brief.encode('utf-8'))
 	    proc.wait()
 
 	else:
@@ -197,10 +200,10 @@ class ObAlert (object):
 	    'media_type' : 'audio',
 	    'artist' : 'Emergency Alert',
 	    'title' : str(self.identifier),
-	    'overlay_text' : brief[0],
+	    'overlay_text' : brief,
 	    'file_location' : location,
 	    'filename' : filename,
-	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 2
+	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 3
 	}
 
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
