@@ -60,7 +60,7 @@ class ObOverlay (object):
 	GObject.timeout_add(50, self.overlay_scroll_timer)
 
     def overlay_scroll_timer(self):
-	self.scroll_pos -= 0.01
+	self.scroll_pos -= 0.015
 	if self.scroll_pos <= 0.0:
 	    self.scroll_pos = self.scroll_wrap
         GObject.timeout_add(50, self.overlay_scroll_timer)
