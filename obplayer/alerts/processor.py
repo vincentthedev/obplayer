@@ -238,7 +238,7 @@ class ObAlertProcessor (object):
 			'identifier' : alert.identifier,
 			'sender' : alert.sender,
 			'sent' : alert.sent,
-			'headline' : info.headline,
+			'headline' : info.headline.capitalize(),
 			'description' : info.description,
 			'played' : alert.times_played
 		    })
@@ -346,7 +346,7 @@ class ObAlertProcessor (object):
 			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary)
 			    if alert_media:
 				alert.times_played += 1
-				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
+				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title']) #, overlay_text=alert_media['overlay_text'])
 				self.ctrl.add_request(**alert_media)
 				if self.language_secondary:
 				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)

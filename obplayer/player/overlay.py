@@ -70,8 +70,7 @@ class ObOverlay (object):
 	    self.enabled = False
 	else:
 	    self.enabled = True
-	    if self.message != msg:
-		self.scroll_pos = 0.0
+	    self.scroll_pos = 0.0
 	    self.message = msg
 
     def draw_overlay(self, context, width, height):
@@ -100,7 +99,13 @@ class ObOverlay (object):
 	    #context.translate(0, height * 0.60)
 
 	    layout = PangoCairo.create_layout(context)
-	    layout.set_font_description(Pango.font_description_from_string("Sans Condensed " + str(0.090 * height)))
+            #font = Pango.FontDescription("Arial " + str(0.090 * height))
+	    #font.set_family("Sans")
+	    #font.set_size(0.090 * height)
+	    #font.set_size(25)
+	    #font.set_stretch(Pango.Stretch.ULTRA_CONDENSED)
+	    font = Pango.font_description_from_string("Sans Condensed " + str(0.090 * height))
+	    layout.set_font_description(font)
 	    layout.set_text(self.message, -1)
 
 	    (layout_width, layout_height) = layout.get_pixel_size()
