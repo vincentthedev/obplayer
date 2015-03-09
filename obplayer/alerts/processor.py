@@ -191,7 +191,7 @@ class ObAlertProcessor (object):
         self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
         self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
         self.target_geocode = obplayer.Config.setting('alerts_geocode')
-        self.repeat_time = obplayer.Config.setting('alerts_repeat_time')
+        self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
         self.language_primary = obplayer.Config.setting('alerts_language_primary')
         self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
         self.voice_primary = obplayer.Config.setting('alerts_voice_primary')
@@ -365,7 +365,7 @@ class ObAlertProcessor (object):
 				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)
 				    if alert_media:
 					self.ctrl.add_request(**alert_media)
-		    self.next_alert_check = self.ctrl.get_requests_endtime() + self.repeat_time
+		    self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
 
 	    except:
 		obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')
