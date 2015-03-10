@@ -144,14 +144,14 @@ Site.updateAlertInfo = function()
       }
       else{
 	var elapsed = (Date.now() / 1000) - response.last_heartbeat;
-	$('#alerts-last-heartbeat').html(Site.friendlyDuration(elapsed));
+	$('#alerts-last-heartbeat').html(Site.friendlyDuration(elapsed) + " min");
 	if(elapsed>150) $('#alerts-last-heartbeat').css('color','red');
 	else $('#alerts-last-heartbeat').css('color','black');
       }
 
       // display the next time alerts will be played
       var next_check = response.next_play - (Date.now() / 1000);
-      $('#alerts-next-play').html(Site.friendlyDuration(next_check));
+      $('#alerts-next-play').html(Site.friendlyDuration(next_check) + " min");
     },'json');
   }
 }

@@ -171,7 +171,7 @@ class ObAlert (object):
 
 	if info.description:
 	    parts = info.description.split('\n\n', 1)
-	    brief = parts[0]
+	    brief = parts[0].replace('\n', ' ').replace('\r', '')
 	else:
 	    brief = info.headline
 
