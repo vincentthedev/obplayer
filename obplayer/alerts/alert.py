@@ -175,8 +175,9 @@ class ObAlert (object):
 	else:
 	    brief = info.headline
 
-	if len(info.resources) > 0:
-	    if info.resources[0].write_file(location + "/" + filename) is False:
+	resource = info.get_resource('audio')
+	if resource:
+	    if resource.write_file(location + "/" + filename) is False:
 		return False
 
 	elif brief:
@@ -289,6 +290,12 @@ class ObAlertInfo (object):
 	for param in self.parameters:
 	    if param[0] == name:
 		return param[1];
+	return None
+
+    def get_resource(self, typename):
+	for resource in self.resources:
+	    if typename in resource.mimetype:
+		return resource
 	return None
 
 
