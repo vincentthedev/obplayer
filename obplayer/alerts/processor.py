@@ -92,8 +92,8 @@ class ObAlertFetcher (obplayer.ObThread):
 			self.processor.dispatch(alert)
 
 			# TODO for testing only
-			#with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + alert.identifier + '.xml', 'w', encoding='utf-8') as f:
-			#    f.write(data)
+			with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + alert.identifier + '.xml', 'w', encoding='utf-8') as f:
+			    f.write(data)
 
 		except socket.error, e:
 		    obplayer.Log.log("Socket Error: " + str(e), 'error')

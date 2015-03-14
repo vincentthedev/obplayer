@@ -256,10 +256,10 @@ class ObConfigData(ObData):
 
     # make sure we have all our required settings. if not, add setting with default value.
     def check_defaults(self):
-        self.add_setting('audio_out_visualization', '1', 'bool')
         self.add_setting('audio_out_mode', 'auto', 'text')
         self.add_setting('audio_out_alsa_device', 'default', 'text')
         self.add_setting('audio_out_jack_name', '', 'text')
+        self.add_setting('audio_out_visualization', '1', 'bool')
         self.add_setting('gst_init_callback', '', 'text')
 
 	self.add_setting('audio_in_enable', '0', 'bool')
@@ -269,8 +269,11 @@ class ObConfigData(ObData):
 
 	self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'opengl', 'text')
-        self.add_setting('video_out_width', '640', 'int')
-        self.add_setting('video_out_height', '480', 'int')
+
+	self.add_setting('images_transitions_enable', '1', 'bool')
+        self.add_setting('images_width', '640', 'int')
+        self.add_setting('images_height', '480', 'int')
+        self.add_setting('images_framerate', '15', 'int')
 
 	self.add_setting('overlay_enable', '0', 'bool')
 

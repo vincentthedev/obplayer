@@ -483,14 +483,6 @@
                   <option value="ascii"<% obplayer.HTTPAdmin.form_item_selected('video_out_mode','ascii') %>>Coloured ASCII</option>
                 </select></td>
             </tr>
-            <tr>
-              <td>Upscale Width</td>
-              <td><input type="text" name="video_out_width" value="<% obplayer.Config.setting('video_out_width', True) %>"></td>
-            </tr>
-            <tr>
-              <td>Upscale Height</td>
-              <td><input type="text" name="video_out_height" value="<% obplayer.Config.setting('video_out_height', True) %>"></td>
-            </tr>
           </tbody>
         </table>
 
@@ -501,6 +493,29 @@
             <tr>
               <td>Enable Video Overlay</td>
               <td><input type="checkbox" name="overlay_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('overlay_enable') %>></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Image Output Settings</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Enable Image Transitions</td>
+              <td><input type="checkbox" name="images_transitions_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('images_transitions_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Fixed Width</td>
+              <td><input type="text" name="images_width" value="<% obplayer.Config.setting('images_width', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Fixed Height</td>
+              <td><input type="text" name="images_height" value="<% obplayer.Config.setting('images_height', True) %>"></td>
+            </tr>
+            <tr>
+              <td>Fixed Framerate</td>
+              <td><input type="text" name="images_framerate" value="<% obplayer.Config.setting('images_framerate', True) %>"></td>
             </tr>
           </tbody>
         </table>

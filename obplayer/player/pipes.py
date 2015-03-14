@@ -471,6 +471,11 @@ class ObImagePipeline (ObGstPipeline):
 	self.request = None
 	self.videosink = None
 
+        self.images_transitions_enable = obplayer.Config.setting('images_transitions_enable')
+	self.images_width = obplayer.Config.setting('images_width')
+	self.images_height = obplayer.Config.setting('images_height')
+	self.images_framerate = obplayer.Config.setting('images_framerate')
+
         self.pipeline = Gst.Pipeline()
 
 	#self.imagebin = Gst.parse_launch('uridecodebin uri="file:///home/trans/Downloads/kitty.jpg" ! imagefreeze ! videoconvert ! videoscale ! video/x-raw, height=1920, width=1080 ! autovideosink')
@@ -482,6 +487,18 @@ class ObImagePipeline (ObGstPipeline):
 	self.elements = [ ]
 	self.elements.append(Gst.ElementFactory.make('imagefreeze', 'imagefreeze'))
 
+	## create basic filter elements
+	self.elements.append(Gst.ElementFactory.make("videoscale", "image_scale"))
+	self.elements.append(Gst.ElementFactory.make("videoconvert", "image_convert"))
+	self.elements.append(Gst.ElementFactory.make("videorate", "image_rate"))
+
+	## create caps filter element to set the output video parameters
+	caps = Gst.ElementFactory.make('capsfilter', "image_capsfilter")
+	#caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
+	#caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=640,height=480,framerate=15/1"))
+	caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=%d,height=%d,framerate=%d/1" % (self.images_width, self.images_height, self.images_framerate)))
+	self.elements.append(caps)
+
 	#self.videobalance = Gst.ElementFactory.make('videobalance', 'videobalance')
 	#self.videobalance.set_property('videobalance', 0.0)
 	#self.elements.append(self.videobalance)
@@ -492,15 +509,14 @@ class ObImagePipeline (ObGstPipeline):
 	#binding = GstController.DirectControlBinding.new(self.videobalance, 'contrast', self.control_source)
 	#self.videobalance.add_control_binding(binding)
 
-	"""
-	self.elements.append(Gst.ElementFactory.make('alpha', 'alpha'))
-	#self.elements[-1].set_property('method', 1)
-	binding = GstController.DirectControlBinding.new(self.elements[-1], 'alpha', self.control_source)
-	self.elements[-1].add_control_binding(binding)
+	if self.images_transitions_enable:
+	    self.elements.append(Gst.ElementFactory.make('alpha', 'alpha'))
+	    #self.elements[-1].set_property('method', 1)
+	    binding = GstController.DirectControlBinding.new(self.elements[-1], 'alpha', self.control_source)
+	    self.elements[-1].add_control_binding(binding)
 
-	self.elements.append(Gst.ElementFactory.make('videomixer', 'videomixer'))
-	self.elements[-1].set_property('background', 1)
-	"""
+	    self.elements.append(Gst.ElementFactory.make('videomixer', 'videomixer'))
+	    self.elements[-1].set_property('background', 1)
 
 	"""
 	self.elements.append(Gst.ElementFactory.make('videorate', 'videorate'))
@@ -563,12 +579,13 @@ class ObImagePipeline (ObGstPipeline):
 	self.request = req
 	self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
 
-	end_time = req['end_time'] - time.time()
 	self.control_source.unset_all()
-	self.control_source.set(0, 0.0)
-	self.control_source.set(1 * Gst.SECOND, 1.0)
-	self.control_source.set((end_time - 1) * Gst.SECOND, 1.0)
-	self.control_source.set(end_time * Gst.SECOND, 0.0)
+	end_time = req['end_time'] - time.time()
+	if end_time > 0:
+	    self.control_source.set(0, 0.0)
+	    self.control_source.set(1 * Gst.SECOND, 1.0)
+	    self.control_source.set((end_time - 1) * Gst.SECOND, 1.0)
+	    self.control_source.set(end_time * Gst.SECOND, 0.0)
 
 
 

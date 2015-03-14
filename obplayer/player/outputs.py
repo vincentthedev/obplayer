@@ -113,22 +113,22 @@ class ObVideoOutputBin (ObOutputBin):
     def __init__(self):
 	ObOutputBin.__init__(self)
 
-	self.video_width = obplayer.Config.setting('video_out_width')
-	self.video_height = obplayer.Config.setting('video_out_height')
+	#self.video_width = obplayer.Config.setting('video_out_width')
+	#self.video_height = obplayer.Config.setting('video_out_height')
 
 	self.elements = [ ]
 
 	## create basic filter elements
-	self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
-	self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
+	#self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
+	#self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
 	#self.elements[-1].set_property('add-borders', True)
 	self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
-	self.elements.append(Gst.ElementFactory.make("videorate", "pre_rate"))
+	#self.elements.append(Gst.ElementFactory.make("videorate", "pre_rate"))
 
 	"""
 	## create caps filter element to set the output video parameters
 	box = Gst.ElementFactory.make('capsfilter', "capsfilter2")
-	box.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width - 100) + ",height=" + str(self.video_height - 100)))
+	box.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
 	self.elements.append(box)
 	"""
 
@@ -172,12 +172,15 @@ class ObVideoOutputBin (ObOutputBin):
 	    self.overlaybin = ObVideoOverlayBin()
 	    self.elements.append(self.overlaybin.get_bin())
 
+	"""
 	## create caps filter element to set the output video parameters
 	caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter")
 	#caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw"))
 	caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
+	#caps_filter.set_property('caps', Gst.Caps.from_string("width=" + str(self.video_width) + ",height=" + str(self.video_height)))
 	#caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(1280) + ",height=" + str(300)))
 	self.elements.append(caps_filter)
+	"""
 
 	## create video sink element
 	video_out_mode = obplayer.Config.setting('video_out_mode')
@@ -186,6 +189,7 @@ class ObVideoOutputBin (ObOutputBin):
 
 	elif video_out_mode == 'xvideo':
 	    self.videosink = Gst.ElementFactory.make("xvimagesink", "videosink")
+	    self.videosink.set_property('sync', False)
 
 	elif video_out_mode == 'opengl':
 	    self.videosink = Gst.ElementFactory.make("glimagesink", "videosink")
@@ -270,10 +274,10 @@ class ObVideoOverlayBin (ObOutputBin):
 	self.cairooverlay.connect("caps-changed", self.overlay_caps_changed)
 	self.elements.append(self.cairooverlay)
 
-	self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
-	self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
+	#self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
+	#self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
 	self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
-	self.elements.append(Gst.ElementFactory.make("videorate", "post_rate"))
+	#self.elements.append(Gst.ElementFactory.make("videorate", "post_rate"))
 
 	"""
 	# RSVG Overlay Test
