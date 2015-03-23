@@ -489,6 +489,7 @@ class ObImagePipeline (ObGstPipeline):
 
 	## create basic filter elements
 	self.elements.append(Gst.ElementFactory.make("videoscale", "image_scale"))
+	#self.elements[-1].set_property('add-borders', False)
 	self.elements.append(Gst.ElementFactory.make("videoconvert", "image_convert"))
 	self.elements.append(Gst.ElementFactory.make("videorate", "image_rate"))
 

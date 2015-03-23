@@ -127,9 +127,10 @@ class ObVideoOutputBin (ObOutputBin):
 
 	"""
 	## create caps filter element to set the output video parameters
-	box = Gst.ElementFactory.make('capsfilter', "capsfilter2")
-	box.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
-	self.elements.append(box)
+	caps = Gst.ElementFactory.make('capsfilter', "pre_capsfilter")
+	#caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
+	caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=640,height=480"))
+	self.elements.append(caps)
 	"""
 
 	#self.videobox = Gst.ElementFactory.make('videobox', "videobox")
@@ -189,7 +190,6 @@ class ObVideoOutputBin (ObOutputBin):
 
 	elif video_out_mode == 'xvideo':
 	    self.videosink = Gst.ElementFactory.make("xvimagesink", "videosink")
-	    self.videosink.set_property('sync', False)
 
 	elif video_out_mode == 'opengl':
 	    self.videosink = Gst.ElementFactory.make("glimagesink", "videosink")
@@ -214,26 +214,26 @@ class ObVideoOutputBin (ObOutputBin):
 	"""
 	self.videotestsrc = Gst.ElementFactory.make("videotestsrc", "testsrc")
 	self.videotestsrc.set_property('pattern', 5)
-	self.add(self.videotestsrc)
+	self.bin.add(self.videotestsrc)
 
 	self.caps_filter = Gst.ElementFactory.make('capsfilter', "canvas-capsfilter")
 	self.caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
-	self.add(self.caps_filter)
+	self.bin.add(self.caps_filter)
 
 	self.alpha = Gst.ElementFactory.make("alpha", "alpha")
 	self.alpha.set_property('method', 1)
-	self.add(self.alpha)
+	self.bin.add(self.alpha)
 
 	self.overlay = ObVideoOverlayBin()
-	self.add(self.overlay)
+	self.bin.add(self.overlay.bin)
 
 	self.queue = Gst.ElementFactory.make("queue", "queuetoo")
-	self.add(self.queue)
+	self.bin.add(self.queue)
 
 	self.videotestsrc.link(self.caps_filter)
 	self.caps_filter.link(self.alpha)
 	self.alpha.link(self.overlay)
-	self.overlay.link(self.queue)
+	self.overlay.bin.link(self.queue)
 	self.queue.link(self.mixer)
 	"""
 

@@ -92,8 +92,8 @@ class ObAlertFetcher (obplayer.ObThread):
 			self.processor.dispatch(alert)
 
 			# TODO for testing only
-			with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + alert.identifier + '.xml', 'w', encoding='utf-8') as f:
-			    f.write(data)
+			with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier) + '.xml', 'w', encoding='utf-8') as f:
+			    f.write(data.decode('utf-8'))
 
 		except socket.error, e:
 		    obplayer.Log.log("Socket Error: " + str(e), 'error')
@@ -227,6 +227,15 @@ class ObAlertProcessor (object):
 	#alert.print_data()
 	self.dispatch(alert)
 
+    def get_alert(self, identifier):
+	with self.lock:
+	    if identifier in self.alerts_active:
+		return self.alerts_active[identifier]
+	    elif identifier in self.alerts_expired:
+		return self.alerts_expired[identifier]
+	    else:
+		return False
+
     def get_alerts(self):
 	alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat, 'next_play' : self.next_alert_check }
 	with self.lock:
@@ -243,6 +252,33 @@ class ObAlertProcessor (object):
 			'played' : alert.times_played
 		    })
 	return alerts
+
+    def get_alert_details(self, identifier):
+	with self.lock:
+	    alert = None
+	    if identifier in self.alerts_active:
+		alert = self.alerts_active[identifier]
+	    elif identifier in self.alerts_expired:
+		alert = self.alerts_expired[identifier]
+	    else:
+		return { 'status' : False }
+
+	    alert_data = {
+		'identifier' : alert.identifier,
+		'sender' : alert.sender,
+		'sent' : alert.sent,
+		'played' : alert.times_played,
+		'info' : [ ]
+	    }
+
+	    for info in alerts.info:
+		alert_data['info'].append({
+		    'language' : info.language,
+		    'headline' : info.headline.capitalize(),
+		    'description' : info.description,
+		})
+
+	    return alert_data
 
     def mark_seen(self, alert):
 	with self.lock:

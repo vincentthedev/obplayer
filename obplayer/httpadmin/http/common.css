@@ -144,3 +144,17 @@ h2:first-child
   border: 1px solid black;
 }
 
+#alert-details table
+{
+  border: 1px solid #66f;
+  width: 100%;
+  margin: 4px;
+}
+
+#alert-details table td:first-child
+{
+  width: 8em;
+  text-align: right;
+  font-weight: bold;
+}
+

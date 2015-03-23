@@ -106,9 +106,9 @@ Site.updateAlertInfo = function()
 	  var row;
 	  row = '<tr>';
 	  row += '<td class="fit"><input type="checkbox" name="'+alerts[key].identifier+'" value="1" '+ ( $(existing).find('[name="'+alerts[key].identifier+'"]').is(':checked') ? 'checked' : '' ) +'/></td>';
-	  row += '<td>' + alerts[key].sender + "<br />" + alerts[key].identifier + "<br />" + alerts[key].sent + '</td>';
+	  row += '<td>'+alerts[key].sender+'<br />'+alerts[key].identifier+'<br />'+alerts[key].sent+'</td>';
 	  row += '<td class="center">' + alerts[key].played + '</td>';
-	  row += '<td><div class="headline">' + alerts[key].headline + '</div><div>' + alerts[key].description + '</div></td>';
+	  row += '<td><div class="headline" data-id="'+alerts[key].identifier+'">'+alerts[key].headline+'</div><div>'+alerts[key].description+'</div></td>';
 	  row += '</tr>';
 	  alert_list.push(row);
 	}
@@ -125,9 +125,9 @@ Site.updateAlertInfo = function()
 	for(var key in alerts){
 	  var row;
 	  row = '<tr>';
-	  row += '<td>' + alerts[key].sender + "<br />" + alerts[key].identifier + "<br />" + alerts[key].sent + '</td>';
-	  row += '<td class="center">' + alerts[key].played + '</td>';
-	  row += '<td><div class="headline">' + alerts[key].headline + '</div><div>' + alerts[key].description + '</div></td>';
+	  row += '<td>'+alerts[key].sender+'<br />'+alerts[key].identifier+'<br />'+alerts[key].sent+'</td>';
+	  row += '<td class="center">'+alerts[key].played+'</td>';
+	  row += '<td><div class="headline" data-id="'+alerts[key].identifier+'">'+alerts[key].headline+'</div><div>'+alerts[key].description+'</div></td>';
 	  row += '</tr>';
 	  alert_list.push(row);
 	}
@@ -354,4 +354,9 @@ $(document).ready(function()
 
   $('#alerts_inject_button').click(Site.injectAlert);
   $('#alerts_cancel_button').click(Site.cancelAlert);
+
+  $('#active-alerts, #expired-alerts').delegate('.headline', 'click', function (e) {
+    var id = $(this).attr('data-id');
+    window.open('/alertdetails.html?id='+id, '_blank', "width=500, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
+  });
 });

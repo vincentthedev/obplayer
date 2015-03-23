@@ -35,9 +35,9 @@ from cgi import parse_header, parse_multipart
 import json
 
 if python_version.startswith('3'):
-    from urllib.parse import parse_qs
+    from urllib.parse import parse_qs,urlparse
 else:
-    from urlparse import parse_qs
+    from urlparse import parse_qs,urlparse
 
 
 class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -54,17 +54,21 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         self.server.log(self.address_string() + ' ' + format % args)
 
-    def parse(self, data):
+    def parse(self, data, params=None):
 
 	ret = ''
         while data != '':
             first = data.partition('<%')
 	    ret += first[0]
             second = first[2].partition('%>')
+	    code = second[0].lstrip(' ')
 
 	    try:
-		if second[0]:
-		    ret += str(eval(second[0]))
+		if code:
+		    if code.startswith('exec '):
+			exec(code[5:])
+		    else:
+			ret += str(eval(code))
 	    except Exception as e:
 		#ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + e.__class__.__name__ + ': ' + e.args[0] + '<br>\n'
 		ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + repr(e) + '<br>\n'
@@ -105,17 +109,19 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 	self.send_content(404, 'text/plain', "404 Not Found")
 
     def do_GET(self):
+	url = urlparse(self.path)
+	params = parse_qs(url.query, keep_blank_values=True)
 
         if self.check_authorization() == False:
 	    self.send_content(401, 'text/plain', "Authorization Required", [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
             return
 
 	# handle commands sent via GET
-        if self.path.startswith('/command/'):
-	    command = self.path[9:]
+        if url.path.startswith('/command/'):
+	    command = url.path[9:]
 
 	    try:
-		command_func = getattr(self.server, 'command_' + self.path[9:])
+		command_func = getattr(self.server, 'command_' + url.path[9:])
 	    except AttributeError:
 		self.send_404()
 		return
@@ -124,11 +130,11 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 	    self.send_content(200, 'application/json', json.dumps(ret))
 	    return
 
-	if not self.is_valid_path(self.path):
+	if not self.is_valid_path(url.path):
 	    self.send_404()
 	    return
 
-	filename = self.server.root + '/' + self.path[1:]
+	filename = self.server.root + '/' + url.path[1:]
 
 	# If the path resolves to a directory, then set the filename to the index.html file inside that directory
 	if os.path.isdir(filename):
@@ -142,7 +148,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 	    with open(filename, 'r') as f:
 		contents = f.read()
 		if self.extension == 'html':
-		    contents = self.parse(contents)
+		    contents = self.parse(contents, params)
 		self.send_content(200, self.mimetype, contents)
 		return
 
