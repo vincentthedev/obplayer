@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C/DTD HTML 4.01//EN">
+<html>
+  <head>
+    <title><% obplayer.HTTPAdmin.title %></title>
+    <meta charset="utf-8" />
+    <link href="/common.css" rel="stylesheet" type="text/css"/>
+  </head>
+
+  <body>
+    <% exec alert = obplayer.alerts.Processor.get_alert(params['id'][0]) %>
+    <h2>Details of <% alert.identifier %></h2>
+
+    <div id="alert-details">
+
+      <table>
+	<tr>
+	  <td>Identifier:</td>
+	  <td><% alert.identifier %></td>
+	</tr>
+	<tr>
+	  <td>Sender:</td>
+	  <td><% alert.sender %></td>
+	</tr>
+	<tr>
+	  <td>Sent:</td>
+	  <td><% alert.sent %></td>
+	</tr>
+	<tr>
+	  <td>Codes:</td>
+	  <td><% '<br />\n'.join(alert.codes) %></td>
+	</tr>
+	<tr>
+	  <td>Status:</td>
+	  <td><% alert.status %></td>
+	</tr>
+	<tr>
+	  <td>Message Type:</td>
+	  <td><% alert.msgtype %></td>
+	</tr>
+	<tr>
+	  <td>Scope:</td>
+	  <td><% alert.scope %></td>
+	</tr>
+      </table>
+
+      <table>
+	<tr>
+	  <td>Language:</td>
+	  <td><% alert.info[0].language %></td>
+	</tr>
+	<tr>
+	  <td>Event:</td>
+	  <td><% alert.info[0].event %></td>
+	</tr>
+	<tr>
+	  <td>Urgency:</td>
+	  <td><% alert.info[0].urgency %></td>
+	</tr>
+	<tr>
+	  <td>Severity:</td>
+	  <td><% alert.info[0].severity %></td>
+	</tr>
+	<tr>
+	  <td>Certainty:</td>
+	  <td><% alert.info[0].certainty %></td>
+	</tr>
+	<tr>
+	  <td>Expires:</td>
+	  <td><% alert.info[0].expires %></td>
+	</tr>
+	<tr>
+	  <td>Sender Name:</td>
+	  <td><% alert.info[0].sender %></td>
+	</tr>
+	<tr>
+	  <td>Headline:</td>
+	  <td><% alert.info[0].headline %></td>
+	</tr>
+	<tr>
+	  <td>Description:</td>
+	  <td><% alert.info[0].description %></td>
+	</tr>
+	<tr>
+	  <td>Instruction:</td>
+	  <td><% alert.info[0].instruction %></td>
+	</tr>
+	<tr>
+	  <td>Parameters:</td>
+	  <td><% '<br />\n'.join([ "<i>" + str(name) + "</i>: <b>" + str(val) + "</b>" for (name, val) in alert.info[0].parameters ]) %></td>
+	</tr>
+	<tr>
+	  <td>Event Codes:</td>
+	  <td><% '<br />\n'.join([ "<i>" + str(name) + "</i>: <b>" + str(val) + "</b>" for (name, val) in alert.info[0].eventcodes ]) %></td>
+	</tr>
+	<tr>
+	  <td>Attached Resources:</td>
+	  <td><% '<br />\n'.join([ str(resource.uri) + " (" + str(resource.mimetype) + ": " + str(resource.size) + ")" for resource in alert.info[0].resources ]) %></td>
+	</tr>
+      </table>
+
+    </div>
+
+    <p style="font-size: 0.9em; padding-top: 1em;">OpenBroadcaster Player is released under Affero GPL v3 and may be downloaded at <a href="http://www.openbroadcaster.com/">openbroadcaster.com</a>.  View <a href="http://www.gnu.org/licenses/agpl.html">license</a>.</p>
+
+  </body>
+</html>

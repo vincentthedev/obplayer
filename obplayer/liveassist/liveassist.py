@@ -50,7 +50,9 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     def log(self, message):
         obplayer.Log.log(message, 'debug')
 
-    def handle_post(self, path, postvars):
+    def handle_post(self, path, postvars, access):
+	if not access:
+	    return { 'status' : False }
 
 	if path == '/info/current_time':
             return { 'value' : str(time.time()) }

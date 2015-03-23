@@ -232,12 +232,6 @@ class ObConfigData(ObData):
         if setting_name == 'local_media' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
             return 'The local media (approved) directory you have specified does not exist.'
 
-        if setting_name == 'local_archive' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
-            return 'The local media (archived) directory you have specified does not exist.'
-
-        if setting_name == 'local_uploads' and settings['sync_mode'] != 'remote' and os.access(setting_value, os.F_OK) == False:
-            return 'The local media (unapproved) directory you have specified does not exist.'
-
         if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
             return 'The web admin port is not valid.'
 
@@ -291,8 +285,6 @@ class ObConfigData(ObData):
         self.add_setting('sync_copy_media_to_backup', '0', 'bool')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
         self.add_setting('local_archive', '', 'text')
-        self.add_setting('local_uploads', '', 'text')
-        self.add_setting('local_media', '', 'text')
 
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')

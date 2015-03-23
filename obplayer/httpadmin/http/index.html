@@ -46,6 +46,10 @@
 	    <span id="show-summary-time"></span>
 	  </div>
 	  <div>
+	    <label>Uptime:</label>
+	    <span id="show-summary-uptime"></span>
+	  </div>
+	  <div>
 	    <label>Show Type:</label>
 	    <span id="show-summary-type"></span>
 	  </div>
@@ -190,12 +194,12 @@
 	    <td><% obplayer.Config.setting('sync_freq') %> minutes</td>
 	  </tr>
 	  <tr>
-	    <td>Emergency Sync Frequency:</td>
-	    <td><% obplayer.Config.setting('sync_freq_emerg') %></td>
+	    <td>Priority Alert Sync Frequency:</td>
+	    <td><% obplayer.Config.setting('sync_freq_emerg') %> minutes</td>
 	  </tr>
 	  <tr>
 	    <td>Log Sync Frequency:</td>
-	    <td><% obplayer.Config.setting('sync_freq_log') %></td>
+	    <td><% obplayer.Config.setting('sync_freq_log') %> minutes</td>
 	  </tr>
 	  <tr>
 	    <td>Media Sync Mode:</td>
@@ -212,14 +216,6 @@
 	  <tr class="local_media_location">
 	    <td>Media Location:</td>
 	    <td><% obplayer.Config.setting('local_media') %></td>
-	  </tr>
-	  <tr class="local_media_location">
-	    <td>Uploads (Unapproved) Location:</td>
-	    <td><% obplayer.Config.setting('local_uploads') %></td>
-	  </tr>
-	  <tr class="local_media_location">
-	    <td>Archive (Deleted) Location:</td>
-	    <td><% obplayer.Config.setting('local_archive') %></td>
 	  </tr>
 	  <tr class="padding">
 	    <td>Audio Visualization Enabled?:</td>
@@ -353,7 +349,7 @@
               <td><input type="text" name="sync_freq" value="<% obplayer.Config.setting('sync_freq', True) %>"></td>
             </tr>
             <tr>
-              <td>Emergency Sync Freq</td>
+              <td>Priority Alert Sync Freq</td>
               <td><input type="text" name="sync_freq_emerg" value="<% obplayer.Config.setting('sync_freq_emerg', True) %>"></td>
             </tr>
             <tr>
@@ -379,14 +375,6 @@
             <tr class="sync_display_adjust sync_backup sync_local">
               <td>Local Media (approved)</td>
               <td><input type="text" name="local_media" value="<% obplayer.Config.setting('local_media',True) %>"></td>
-            </tr>
-            <tr class="sync_display_adjust sync_backup sync_local">
-              <td>Local Media (unapproved)</td>
-              <td><input type="text" name="local_uploads" value="<% obplayer.Config.setting('local_uploads',True) %>"></td>
-            </tr>
-            <tr class="sync_display_adjust sync_backup sync_local">
-              <td>Local Media (archived)</td>
-              <td><input type="text" name="local_archive" value="<% obplayer.Config.setting('local_archive',True) %>"></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('sync');" value="Save"></td>
@@ -534,7 +522,7 @@
         <table class="settings">
           <tbody>
             <tr>
-              <td>Enable National Emergency Alerts</td>
+              <td>Enable Emergency Alerts</td>
               <td><input type="checkbox" name="alerts_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_enable') %>></td>
             </tr>
             <tr>

@@ -90,7 +90,11 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             username = authdata.split(':')[0]
             password = authdata.split(':')[1]
 
-            if username == self.server.username and password == self.server.password:
+	    if username == '' and password == '':
+                self.admin_access = False
+                self.authenticated = True
+            elif username == self.server.username and password == self.server.password:
+                self.admin_access = True
                 self.authenticated = True
 
         return self.authenticated
@@ -176,7 +180,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-	ret = self.server.handle_post(self.path, postvars)
+	ret = self.server.handle_post(self.path, postvars, self.admin_access)
 
         self.send_content(200, 'application/json', json.dumps(ret))
 
