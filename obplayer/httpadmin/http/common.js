@@ -95,7 +95,7 @@ Site.cancelAlert = function()
 Site.updateAlertInfo = function()
 {
   if ($('#tabs .tab[data-content="alerts"]').hasClass('selected')){
-    $.post('/alerts/list',{},function(response)
+    $.post('/alerts/list',{},function(response,status)
     {
       if(response.active.length){
 	var alerts = response.active;
@@ -152,14 +152,21 @@ Site.updateAlertInfo = function()
       // display the next time alerts will be played
       var next_check = response.next_play - (Date.now() / 1000);
       $('#alerts-next-play').html(Site.friendlyDuration(next_check) + " min");
-    },'json');
+    },'json').error(function()
+    {
+      $('#alerts-last-heartbeat').html("");
+      $('#alerts-next-play').html("");
+
+      $('#active-alerts').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
+      $('#expired-alerts').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
+    });
   }
 }
 
 Site.updateStatusInfo = function()
 {
   if($('#tabs .tab[data-content="status"]').hasClass('selected')){
-    $.post('/status_info',{},function(response)
+    $.post('/status_info',{},function(response,status)
     {
 
       if(response.show){
@@ -193,7 +200,10 @@ Site.updateStatusInfo = function()
       }
 
       Site.formatLogs(response.logs);
-    },'json');
+    },'json').error(function()
+    {
+      $('#log-data').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
+    });
   }
 }
 
