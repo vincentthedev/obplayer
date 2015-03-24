@@ -88,6 +88,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    data = self.read_alert_data()
 		    if (data):
 			alert = obplayer.alerts.ObAlert(data)
+			obplayer.Log.log("received alert " + str(alert.identifier) + " (" + str(alert.sent) + ")", 'alerts')
 			#alert.print_data()
 			self.processor.dispatch(alert)
 
