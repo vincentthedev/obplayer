@@ -229,7 +229,9 @@ class ObConfigData(ObData):
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
-        if setting_name == 'local_media' and settings['sync_mode'] != 'remote' and (setting_value == '' or os.access(setting_value, os.F_OK) == False):
+	print setting_name + " " + str(setting_value)
+	print settings['sync_mode']
+        if setting_name == 'local_media' and settings['sync_mode'] != 'remote' and setting_value != '' and os.access(setting_value, os.F_OK) == False:
             return 'The local media directory you have specified does not exist.'
 
         if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
