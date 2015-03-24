@@ -284,7 +284,7 @@ class ObConfigData(ObData):
         self.add_setting('sync_mode', 'remote', 'text')
         self.add_setting('sync_copy_media_to_backup', '0', 'bool')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
-        self.add_setting('local_archive', '', 'text')
+        self.add_setting('local_media', '', 'text')
 
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
