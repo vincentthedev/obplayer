@@ -45,6 +45,7 @@ class ObAlertFetcher (obplayer.ObThread):
 	self.socket = None
 	self.buffer = ""
 	self.receiving_data = False
+	self.last_received = 0
 
     def close(self):
 	if self.socket:
@@ -53,6 +54,7 @@ class ObAlertFetcher (obplayer.ObThread):
 	    self.socket.shutdown(socket.SHUT_WR)
 	    self.socket.close()
 	    self.socket = None
+	    self.last_received = 0
 
     def read_alert_data(self):
 	while True:
@@ -68,6 +70,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    if endtag:
 			self.buffer = remain
 			self.receiving_data = False
+			self.last_received = time.time()
 			return data + endtag
 
 	    data = self.receive()
@@ -370,6 +373,7 @@ class ObAlertProcessor (object):
 	    try:
 		present_time = time.time()
 
+		# process alerts waiting in the dispatch queue
 		if len(self.alert_queue) > 0:
 		    alert = None
 		    with self.lock:
@@ -378,6 +382,7 @@ class ObAlertProcessor (object):
 		    with self.dispatch_lock:
 			self.handle_dispatch(alert)
 
+		# deactivate alerts that have expired
 		if present_time > self.next_expired_check:
 		    self.next_expired_check = present_time + 30
 		    expired_list = [ ]
@@ -389,6 +394,7 @@ class ObAlertProcessor (object):
 		    for alert in expired_list:
 			self.mark_expired(alert)
 
+		# play active alerts
 		if present_time > self.next_alert_check:
 		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 		    with self.lock:
@@ -403,6 +409,14 @@ class ObAlertProcessor (object):
 				    if alert_media:
 					self.ctrl.add_request(**alert_media)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
+
+		# reset fetcher if we stop receiving heartbeats
+		if self.fetcher.last_received and time.time() - self.fetcher.last_received > 360:
+		    obplayer.Log.log("no heartbeat received for 6 min. resetting alert fetcher", 'error')
+		    obplayer.Log.log("DEBUG INFO:", 'debug')
+		    obplayer.Log.log("Receiving: " + str(self.fetcher.receiving_data), 'debug')
+		    obplayer.Log.log("Buffer: " + self.fetcher.buffer, 'debug')
+		    self.fetcher.close()
 
 	    except:
 		obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')

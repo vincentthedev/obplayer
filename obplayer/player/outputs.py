@@ -98,6 +98,14 @@ class ObAudioOutputBin (ObOutputBin):
         elif audio_output == 'test':
             self.audiosink = Gst.ElementFactory.make('fakesink', 'audiosink')
 
+        elif audio_output == 'shout2send':
+	    self.elements.append(Gst.ElementFactory.make("queue2", "encoder_queue"))
+	    #self.elements.append(Gst.ElementFactory.make("audioconvert", "audioconvert"))
+	    self.elements.append(Gst.ElementFactory.make("lamemp3enc", "encoder"))
+            self.audiosink = Gst.ElementFactory.make("shout2send", "audiosink")
+            self.audiosink.set_property('mount', 'stream')
+            self.audiosink.set_property('password', 'I2i89j')
+
         else:
             self.audiosink = Gst.ElementFactory.make('autoaudiosink', 'audiosink')
 
