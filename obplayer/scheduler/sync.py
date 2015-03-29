@@ -71,25 +71,22 @@ def xml_get_text(element):
 # Get direct children.  Like getElementsByTagName, but only with direct children.
 
 def xml_get_direct_children(node, tagName):
-
     children = []
-
     for e in node.childNodes:
         if e.nodeType == e.ELEMENT_NODE and e.nodeName == tagName:
             children.append(e)
-
     return children
 
-def xml_get_tag_value(node, tagName):
+def xml_get_tag_value(node, tagName, default=''):
     child = xml_get_direct_children(node, tagName)
     if len(child) <= 0:
-	return ''
+	return default
     return xml_get_text(child[0])
 
 def xml_get_media_item(node):
     media_item = {}
 
-    media_item['id'] = xml_get_tag_value(node, 'id')
+    media_item['id'] = xml_get_tag_value(node, 'id', 0)
     media_item['filename'] = xml_get_tag_value(node, 'filename')
     media_item['title'] = xml_get_tag_value(node, 'title')
     media_item['artist'] = xml_get_tag_value(node, 'artist')
@@ -104,6 +101,25 @@ def xml_get_media_item(node):
     media_item['archived'] = xml_get_tag_value(node, 'archived')
 
     return media_item
+
+def xml_get_tags(element, tag):
+    children = [ ]
+    for node in element.childNodes:
+	if node.nodeType == node.ELEMENT_NODE and node.nodeName == tag:
+	    children.append(node)
+    return children
+
+def xml_get_tag_values(element, tag):
+    values = [ ]
+    for child in xml_get_tags(element, tag):
+	values.append(xml_get_text(child))
+    return values
+
+def xml_get_first_tag_value(element, tag, default=None):
+    children = xml_get_tags(element, tag)
+    if len(children) <= 0:
+	return default
+    return xml_get_text(children[0])
 
 
 class ObSync:
@@ -184,14 +200,14 @@ class ObSync:
 
         for show in schedule.getElementsByTagName('show'):
 
-            show_id = xml_get_text(xml_get_direct_children(show, 'id')[0])
-            show_name = xml_get_text(xml_get_direct_children(show, 'name')[0])
-            show_type = xml_get_text(xml_get_direct_children(show, 'type')[0])
-            show_description = xml_get_text(xml_get_direct_children(show, 'description')[0])
-            show_date = xml_get_text(xml_get_direct_children(show, 'date')[0])
-            show_time = xml_get_text(xml_get_direct_children(show, 'time')[0])
-            show_duration = xml_get_text(xml_get_direct_children(show, 'duration')[0])
-            show_last_updated = xml_get_text(xml_get_direct_children(show, 'last_updated')[0])
+            show_id = xml_get_first_tag_value(show, 'id')
+            show_type = xml_get_first_tag_value(show, 'type')
+            show_date = xml_get_first_tag_value(show, 'date')
+            show_time = xml_get_first_tag_value(show, 'time')
+            show_name = xml_get_first_tag_value(show, 'name', '')
+            show_description = xml_get_first_tag_value(show, 'description', '')
+            show_duration = xml_get_first_tag_value(show, 'duration')
+            show_last_updated = xml_get_first_tag_value(show, 'last_updated', '')
             show_media = xml_get_direct_children(show, 'media')[0]
 
             show_liveassist = xml_get_direct_children(show, 'liveassist_buttons')
@@ -452,7 +468,7 @@ class ObSync:
     #
     def check_media(self, media):
 
-	if media['media_type'] == 'breakpoint':
+	if media['media_type'] in [ 'breakpoint', 'break', 'linein', 'testsignal' ]:
 	    return True
 
         media_fullpath = obplayer.Config.setting('remote_media') + '/' + media['file_location'][0] + '/' + media['file_location'][1] + '/' + media['filename']

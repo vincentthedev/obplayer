@@ -564,7 +564,7 @@ class ObRemoteData(ObData):
         media_item['title'] = self.escape(media_item['title'])
         media_item['file_hash'] = self.escape(media_item['file_hash'])
 
-        query = "INSERT into shows_media VALUES (null, '" + str(local_show_id) + "', '" + media_item['id'] + "','" + show_id + "','" + media_item['order'] + "','" + media_item['filename'] + "','" \
+        query = "INSERT into shows_media VALUES (null, '" + str(local_show_id) + "', '" + str(media_item['id']) + "','" + show_id + "','" + media_item['order'] + "','" + media_item['filename'] + "','" \
             + media_item['artist'] + "','" + media_item['title'] + "','" + media_item['offset'] + "','" + media_item['duration'] + "','" + media_item['type'] + "','" + media_item['file_hash'] + "','" \
             + media_item['file_size'] + "','" + media_item['file_location'] + "','" + media_item['approved'] + "','" + media_item['archived'] + "')"
         self.cur_sync_show.execute(query)
