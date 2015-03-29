@@ -431,7 +431,7 @@ class ObLineInPipeline (ObGstPipeline):
     def unpatch(self, mode):
 	self.wait_state(Gst.State.NULL)
 	if 'audio' in mode:
-	    self.set_property('audio-sink', self.fakesinks['audio'])
+	    self.set_property('audio-sink', self.fakesink)
 	ObPipeline.unpatch(self, mode)
 	if len(self.mode) > 0:
 	    self.wait_state(Gst.State.PLAYING)
