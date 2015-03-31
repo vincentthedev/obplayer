@@ -126,6 +126,7 @@ h2:first-child
 .alerts-table .headline
 {
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .alerts-table .fit

@@ -74,7 +74,7 @@ class SyncEmergThread (obplayer.ObThread):
 	self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
 	while not self.stopflag.wait(self.synctime):
 	    try:
-		obplayer.Sync.sync_emergency_broadcasts()
+		obplayer.Sync.sync_priority_broadcasts()
 	    except:
 		obplayer.Log.log("exception in " + self.name + " thread", 'error')
 		obplayer.Log.log(traceback.format_exc(), 'error')
@@ -105,14 +105,14 @@ def init():
     obplayer.Sync = ObSync()
     obplayer.Scheduler = ObScheduler()
 
-    # reset show/show_media tables, emergency tables
+    # reset show/show_media tables, priority tables
     if obplayer.Config.args.reset:
-	obplayer.Log.log('resetting show, media, and emergency data', 'data')
+	obplayer.Log.log('resetting show, media, and priority data', 'data')
 	obplayer.RemoteData.empty_table('shows')
 	obplayer.RemoteData.empty_table('shows_media')
 	obplayer.RemoteData.empty_table('groups')
 	obplayer.RemoteData.empty_table('group_items')
-	obplayer.RemoteData.empty_table('emergency_broadcasts')
+	obplayer.RemoteData.empty_table('priority_broadcasts')
 
     # determine our version from the VERSION file.  if we can do that, report the version to the server.
     if os.path.exists('VERSION'):
@@ -122,7 +122,7 @@ def init():
     # if resetting the databases, run our initial sync.  otherwise skip and setup other sync interval timers.
     if obplayer.Config.args.reset:
 	obplayer.Sync.sync_shows(True)
-	obplayer.Sync.sync_emergency_broadcasts()
+	obplayer.Sync.sync_priority_broadcasts()
 	obplayer.Sync.sync_media()
 
     # Start sync threads

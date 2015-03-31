@@ -196,7 +196,7 @@ class ObConfigData(ObData):
             return 'The show sync frequency is not valid.'
 
         if setting_name == 'sync_freq_emerg' and self.is_int(setting_value) == False:
-            return 'The emergency sync frequency is not valid.'
+            return 'The priority sync frequency is not valid.'
 
         if setting_name == 'sync_freq_playlog' and self.is_int(setting_value) == False:
             return 'The playlog sync frequency is not valid.'
@@ -211,7 +211,7 @@ class ObConfigData(ObData):
 		r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
 		r'(?::\d+)?' # optional port
 		r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-        if setting_name == 'sync_url' and url_regex.match(setting_value) == None:
+        if setting_name == 'sync_url' and setting_value and url_regex.match(setting_value) == None:
             return 'The sync URL does not appear to be valid.'
 
         if setting_name == 'alerts_naad_stream1' and url_regex.match(setting_value) == None:
@@ -391,9 +391,9 @@ class ObRemoteData(ObData):
             obplayer.Log.log('media table not found, creating', 'data')
             self.shows_media_create_table()
 
-        if self.table_exists('emergency_broadcasts') != True:
-            obplayer.Log.log('emergency broadcast table not found, creating', 'data')
-            self.emergency_broadcasts_create_table()
+        if self.table_exists('priority_broadcasts') != True:
+            obplayer.Log.log('priority broadcast table not found, creating', 'data')
+            self.priority_broadcasts_create_table()
 
         if self.table_exists('groups') != True:
             obplayer.Log.log('liveassist groups table not found, creating', 'data')
@@ -403,7 +403,7 @@ class ObRemoteData(ObData):
             obplayer.Log.log('liveassist group items table not found, creating', 'data')
             self.shows_group_items_create_table()
 
-        self.emergency_broadcasts = False
+        self.priority_broadcasts = False
 
     def backup(self):
         obplayer.Log.log('backup database to disk', 'data')
@@ -423,8 +423,8 @@ class ObRemoteData(ObData):
         self.cur.execute('CREATE TABLE shows_media (id INTEGER PRIMARY KEY, local_show_id INTEGER, media_id INTEGER, show_id INTEGER, order_num INTEGER, filename TEXT, artist TEXT, title TEXT, offset NUMERIC, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
         self.cur.execute('CREATE INDEX local_show_id_index on shows_media (local_show_id)')
 
-    def emergency_broadcasts_create_table(self):
-        self.cur.execute('CREATE TABLE emergency_broadcasts (id INTEGER PRIMARY KEY, start_timestamp INTEGER, end_timestamp INTEGER, frequency INTEGER, filename TEXT, artist TEXT, title TEXT, duration NUMERIC, media_type TEXT, media_id INTEGER, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
+    def priority_broadcasts_create_table(self):
+        self.cur.execute('CREATE TABLE priority_broadcasts (id INTEGER PRIMARY KEY, start_timestamp INTEGER, end_timestamp INTEGER, frequency INTEGER, filename TEXT, artist TEXT, title TEXT, duration NUMERIC, media_type TEXT, media_id INTEGER, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
 
     def shows_groups_create_table(self):
 	self.cur.execute('CREATE TABLE groups (id INTEGER PRIMARY KEY, local_show_id INTEGER, name TEXT)')
@@ -496,10 +496,10 @@ class ObRemoteData(ObData):
     #
     #
     #
-    # Given broadcast_id, start time, end time ('' for none), frequency, artist, title, filename, media_id, duration, and media type, update emergency broadcast database.
+    # Given broadcast_id, start time, end time ('' for none), frequency, artist, title, filename, media_id, duration, and media type, update priority broadcast database.
     # If row with broadcast_id exists, it will be updated.  Otherwise row will be added.
     #
-    def emergency_broadcast_addedit(
+    def priority_broadcast_addedit(
         self,
         broadcast_id,
         start,
@@ -529,7 +529,7 @@ class ObRemoteData(ObData):
         duration = self.escape(duration)
         media_type = self.escape(media_type)
 
-        query = "INSERT OR REPLACE into emergency_broadcasts VALUES ('" + broadcast_id + "', '" + start + "','" + end + "','" + frequency + "','" + filename + "','" + artist + "','" + title + "','" \
+        query = "INSERT OR REPLACE into priority_broadcasts VALUES ('" + broadcast_id + "', '" + start + "','" + end + "','" + frequency + "','" + filename + "','" + artist + "','" + title + "','" \
             + duration + "','" + media_type + "','" + media_id + "','" + file_hash + "','" + file_size + "','" + file_location + "','" + approved + "','" + archived + "')"
 
         self.cur_sync_emerg.execute(query)
@@ -537,9 +537,9 @@ class ObRemoteData(ObData):
 
     #
     #
-    # Given a list of emergency broadcast IDs, remove anything that isn't in there. (they are no longer needed.)
+    # Given a list of priority broadcast IDs, remove anything that isn't in there. (they are no longer needed.)
     #
-    def emergency_broadcast_remove_deleted(self, id_list):
+    def priority_broadcast_remove_deleted(self, id_list):
 
         seperator = ','
 
@@ -550,7 +550,7 @@ class ObRemoteData(ObData):
 
         not_in_string = seperator.join(id_list_string)
 
-        self.cur_sync_emerg.execute('DELETE from emergency_broadcasts WHERE id NOT IN (' + not_in_string + ')')
+        self.cur_sync_emerg.execute('DELETE from priority_broadcasts WHERE id NOT IN (' + not_in_string + ')')
 
         return True
 
@@ -598,7 +598,7 @@ class ObRemoteData(ObData):
     #
     #
     # Return a dictionary (associate array) of format returned_list[filename]=media_id for all media required by remote.
-    # This is based on the entries in shows_media and emergency_broadcasts.
+    # This is based on the entries in shows_media and priority_broadcasts.
     #
     def media_required(self):
         query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from shows_media GROUP by media_id'
@@ -610,7 +610,7 @@ class ObRemoteData(ObData):
 	    media_row = self.get_media_from_row(row)
             media_list[media_row['filename']] = media_row
 
-        query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from emergency_broadcasts GROUP by media_id'
+        query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from priority_broadcasts GROUP by media_id'
         rows = self.cur_sync_media_required.execute(query)
 
         for row in rows:
@@ -727,16 +727,16 @@ class ObRemoteData(ObData):
 
     #
     #
-    # Get all present emergency broadcasts.  Returned as associative array/dictionary.
+    # Get all present priority broadcasts.  Returned as associative array/dictionary.
     #
-    def get_emergency_broadcasts(self):
+    def get_priority_broadcasts(self):
 
 	# TODO previous broadcast array is used to get the next_play play data.
 	# will need to record id into broadcast array index to make this easier...
 
         present_time = time.time()
 
-        query = 'SELECT id,start_timestamp,end_timestamp,frequency,artist,title,filename,duration,media_type,media_id,file_location,file_size from emergency_broadcasts'
+        query = 'SELECT id,start_timestamp,end_timestamp,frequency,artist,title,filename,duration,media_type,media_id,file_location,file_size from priority_broadcasts'
         rows = self.cur_sync_emerg.execute(query)
 
         broadcasts = {}
@@ -762,14 +762,14 @@ class ObRemoteData(ObData):
             data['next_play'] = False
 
 	    # try to get next play time based on previous play time.
-            if self.emergency_broadcasts != False:
+            if self.priority_broadcasts != False:
 
-                former_data = self.emergency_broadcasts.get(str(data['id']), None)
+                former_data = self.priority_broadcasts.get(str(data['id']), None)
 
                 if former_data != None:
 
 		    # TODO why are we fetching former data and then using this other record of data...
-		    old = self.emergency_broadcasts[str(data['id'])]
+		    old = self.priority_broadcasts[str(data['id'])]
 		    if 'last_play' in old:
 			data['last_play'] = old['last_play']
 		    else:
@@ -791,11 +791,11 @@ class ObRemoteData(ObData):
             broadcasts[str(data['id'])] = data
 
         if has_broadcasts == False:
-            self.emergency_broadcasts = False
+            self.priority_broadcasts = False
             return False
         else:
 
-            self.emergency_broadcasts = broadcasts
+            self.priority_broadcasts = broadcasts
             return broadcasts
 
 
@@ -818,7 +818,7 @@ class ObPlaylogData(ObData):
     # title : title of media being played (in case information is lost in web app db)
     # datetime : unix timestamp of play start time (UTC/GMT)
     # context : what is the context of this media being played (should be 'show' or 'emerg')
-    # emerg_id : if this is an emergency broadcast, what is the emergency broadcast id?
+    # emerg_id : if this is an priority broadcast, what is the priority broadcast id?
     # notes : any misc notes (in particular, offset if play is resumed part-way through).
     #
     def playlog_add(self, media_id, artist, title, datetime, context, notes=''):

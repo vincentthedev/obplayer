@@ -343,7 +343,7 @@ class ObScheduler:
 	    self.present_show = ObShow.find_show(present_time)
 	    next_show_times = obplayer.RemoteData.get_next_show_times(present_time)
 
-	    # no show, try again in 1min30secs.  (we add the 30 seconds to let the emergency broadcaster update come through first, if applicable.
+	    # no show, try again in 1min30secs.  (we add the 30 seconds to let the priority broadcaster update come through first, if applicable.
 	    if self.present_show is None:
 		obplayer.Log.log('no show found.', 'scheduler')
 

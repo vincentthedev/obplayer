@@ -70,7 +70,7 @@ Site.injectAlert = function()
 
   $.post('/alerts/inject_test',{'alert':test_alert},function(response)
   {
-    if(response.status) $('#notice').text('Settings saved.').show();
+    if(response.status) $('#notice').text('Test alert injected successfully.').show();
     else $('#error').text(response.error).show();
   },'json');
 }
@@ -88,7 +88,7 @@ Site.cancelAlert = function()
   if(ids.length>0){
     $.post('/alerts/cancel',{'identifier[]':ids},function(response)
     {
-      if(response.status) $('#notice').text('Settings saved.').show();
+      if(response.status) $('#notice').text('Alert(s) cancelled successfully.').show();
       else $('#error').text(response.error).show();
     },'json');
   }

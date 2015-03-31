@@ -413,9 +413,6 @@ class ObAlertProcessor (object):
 		# reset fetcher if we stop receiving heartbeats
 		if self.fetcher.last_received and time.time() - self.fetcher.last_received > 360:
 		    obplayer.Log.log("no heartbeat received for 6 min. resetting alert fetcher", 'error')
-		    obplayer.Log.log("DEBUG INFO:", 'debug')
-		    obplayer.Log.log("Receiving: " + str(self.fetcher.receiving_data), 'debug')
-		    obplayer.Log.log("Buffer: " + self.fetcher.buffer, 'debug')
 		    self.fetcher.close()
 
 	    except:

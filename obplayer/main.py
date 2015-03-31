@@ -41,7 +41,7 @@ class ObMainApp:
         parser = argparse.ArgumentParser(prog='obplayer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Player')
         parser.add_argument('-f', '--fullscreen', action='store_true', help='start fullscreen', default=False)
         parser.add_argument('-m', '--minimize', action='store_true', help='start minimized', default=False)
-        parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and emergency broadcast databases', default=False)
+        parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and priority broadcast databases', default=False)
         parser.add_argument('-H', '--headless', action='store_true', help='run headless (audio only)', default=False)
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
         parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ None ])

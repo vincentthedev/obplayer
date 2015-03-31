@@ -254,15 +254,15 @@ class ObSync:
         obplayer.RemoteData.backup()
 
     #
-    # Similar to sync, but synchronizes emergency broadcast.  Showlock is not used here.
+    # Similar to sync, but synchronizes priority broadcast.  Showlock is not used here.
     #
-    def sync_emergency_broadcasts(self):
+    def sync_priority_broadcasts(self):
 
         self.emerg_sync_running = True
 
         syncfiles = {}
 
-        obplayer.Log.log('fetching emergency broadcast data from server', 'sync')
+        obplayer.Log.log('fetching priority broadcast data from server', 'sync')
 
         broadcasts_xml = self.sync_request('emerg')
 
@@ -273,7 +273,7 @@ class ObSync:
         try:
             broadcasts = xml.dom.minidom.parseString(broadcasts_xml)
         except:
-            obplayer.Log.log('unable to sync (emergency broacasts) - possible configuration or server error', 'error')
+            obplayer.Log.log('unable to sync (priority broacasts) - possible configuration or server error', 'error')
             return
 
         error = broadcasts.getElementsByTagName('error')
@@ -307,7 +307,7 @@ class ObSync:
 
             broadcast_id_list.append(broadcast_id)
 
-            obplayer.RemoteData.emergency_broadcast_addedit(
+            obplayer.RemoteData.priority_broadcast_addedit(
                 broadcast_id,
                 broadcast_start,
                 broadcast_end,
@@ -326,7 +326,7 @@ class ObSync:
                 )
 
 	# delete now-removed broadcasts.
-        obplayer.RemoteData.emergency_broadcast_remove_deleted(broadcast_id_list)
+        obplayer.RemoteData.priority_broadcast_remove_deleted(broadcast_id_list)
 
 	# update gui, sync media.
 	# self.sync_media();
@@ -334,7 +334,7 @@ class ObSync:
 
         self.emerg_sync_running = False
 
-        obplayer.RemoteData.get_emergency_broadcasts()
+        obplayer.RemoteData.get_priority_broadcasts()
 
     #
     # Sync playlog with server.
@@ -438,7 +438,7 @@ class ObSync:
     sync_media_id = False  # this is the id of the file presently being downloaded
 
     #
-    # Sync media files.  This takes a look at show_media and emergency_broadcast tables to determine the media required,
+    # Sync media files.  This takes a look at show_media and priority_broadcast tables to determine the media required,
     # then downloads that media from the web application.
     #
     def sync_media(self, delete_unused_media=True):
@@ -561,7 +561,7 @@ class ObSync:
 
     #
     # Request sync data from web application.
-    # This is used by sync (with request_type='schedule') and sync_emergency_broadcasts (with request_type='emerg').
+    # This is used by sync (with request_type='schedule') and sync_priority_broadcasts (with request_type='emerg').
     # Function outputs XML response from server.
     #
     def sync_request(self, request_type='', data=False):
@@ -569,6 +569,11 @@ class ObSync:
         global curl_response_data
         global curl_response_schedule_data
         global curl_response_emerg_data
+
+	sync_url = obplayer.Config.setting('sync_url')
+	if not sync_url:
+	    obplayer.Log.log("sync url is blank, skipping sync request", 'sync')
+	    return ''
 
         curl = pycurl.Curl()
 
@@ -582,18 +587,18 @@ class ObSync:
 
         curl.setopt(pycurl.NOSIGNAL, 1)
         curl.setopt(pycurl.USERAGENT, 'OpenBroadcaster Player')
-        curl.setopt(pycurl.URL, obplayer.Config.setting('sync_url') + '?action=' + request_type)
+        curl.setopt(pycurl.URL, sync_url + '?action=' + request_type)
         curl.setopt(pycurl.HEADER, False)
         curl.setopt(pycurl.POST, True)
         curl.setopt(pycurl.POSTFIELDS, enc_postfields)
 
         if request_type == 'schedule':
             curl.setopt(pycurl.WRITEFUNCTION, curl_response_schedule)
+
         elif request_type == 'emerg':
-
             curl.setopt(pycurl.WRITEFUNCTION, curl_response_emerg)
-        else:
 
+        else:
             curl.setopt(pycurl.WRITEFUNCTION, curl_response)
 
 	# some options so that it'll abort the transfer if the speed is too low (i.e., network problem)
@@ -615,12 +620,12 @@ class ObSync:
         if request_type == 'schedule':
             return_data = curl_response_schedule_data
             curl_response_schedule_data = ''
-        elif request_type == 'emerg':
 
+        elif request_type == 'emerg':
             return_data = curl_response_emerg_data
             curl_response_emerg_data = ''
-        else:
 
+        else:
             return_data = curl_response_data
             curl_response_data = ''
 
