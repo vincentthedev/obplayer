@@ -76,6 +76,8 @@ class ObMainApp:
 	    self.load_module('player')
 	    self.load_module('httpadmin')
 
+	    if obplayer.Config.setting('testsignal_enable'):
+	    	self.load_module('testsignal')
 	    if obplayer.Config.setting('alerts_enable'):
 		self.load_module('alerts')
 	    if obplayer.Config.setting('fallback_enable'):

@@ -79,11 +79,10 @@ class ObPlayer (object):
 	self.pipes['break'] = pipes.ObBreakPipeline('audio-break', self)
 	self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
 
-	self.testctrl = self.create_controller('testsignal', 1, allow_requeue=False)
-	def testsignal_request(self, present_time):
-	    self.add_request(media_type='break', duration=5)
-	    self.add_request(media_type='testsignal', duration=5000)
-	self.testctrl.set_request_callback(testsignal_request)
+	self.silencectrl = self.create_controller('silence', 1, allow_requeue=False)
+	def silence_request(self, present_time):
+	    self.add_request(media_type='break', duration=3600)
+	self.silencectrl.set_request_callback(silence_request)
 
     def player_quit(self):
 	for pipe_name in self.pipes.keys():

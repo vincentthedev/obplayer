@@ -317,6 +317,8 @@ class ObConfigData(ObData):
 	self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 
+	self.add_setting('testsignal_enable', '1', 'bool')
+
     def add_setting(self, name, value, datatype=None):
 
 	check_setting = self.query('SELECT name,value,type from "settings" WHERE name = "' + self.escape(name) + '"')
