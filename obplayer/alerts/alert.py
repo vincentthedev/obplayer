@@ -133,10 +133,10 @@ class ObAlert (object):
 	    return self.info[0]
 	return None
 
-    def has_geocode(self, code):
+    def has_geocode(self, codes):
 	for info in self.info:
 	    for area in info.areas:
-		if area.has_geocode(code):
+		if area.has_geocode(codes):
 		    return True
 	return False
 
@@ -318,12 +318,12 @@ class ObAlertArea (object):
 	    if code is not None:
 		self.geocodes.append([ name, code ])
 
-    def has_geocode(self, code):
+    def has_geocode(self, codes):
 	for geocode in self.geocodes:
-	    #print geocode[1]
-	    # TODO this is a bit of a hack
-	    if geocode[0] == 'profile:CAP-CP:Location:0.3' and geocode[1].startswith(code):
-		return True
+	    for code in codes:
+		# TODO this is a bit of a hack
+		if geocode[0] == 'profile:CAP-CP:Location:0.3' and geocode[1].startswith(code):
+		    return True
 	return False
 
     def add_geocode(self, code):

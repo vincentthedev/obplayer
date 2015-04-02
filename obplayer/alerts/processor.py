@@ -194,7 +194,7 @@ class ObAlertProcessor (object):
         #self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
         self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
         self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
-        self.target_geocode = obplayer.Config.setting('alerts_geocode')
+        self.target_geocodes = obplayer.Config.setting('alerts_geocode').split(',')
         self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
         self.language_primary = obplayer.Config.setting('alerts_language_primary')
         self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
@@ -227,7 +227,7 @@ class ObAlertProcessor (object):
 	with open(filename, 'r') as f:
 	    data = f.read()
 	alert = obplayer.alerts.ObAlert(data)
-	alert.add_geocode(self.target_geocode)
+	alert.add_geocode(self.target_geocodes[0])
 	#alert.print_data()
 	self.dispatch(alert)
 
@@ -321,7 +321,7 @@ class ObAlertProcessor (object):
 		#alert.print_data()
 
     def match_alert_conditions(self, alert):
-	if not alert.has_geocode(self.target_geocode):
+	if not alert.has_geocode(self.target_geocodes):
 	    return False
 
 	if self.play_tests is True and alert.status == 'test':

@@ -226,6 +226,10 @@ class ObConfigData(ObData):
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
             return 'The archive #2 URL does not appear to be valid.'
 
+	geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
+        if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
+            return 'Geocodes must be specified as a list of comma-separated numbers.'
+
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
