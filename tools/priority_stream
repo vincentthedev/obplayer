@@ -18,7 +18,10 @@ class ObPriorityStream (object):
     def __init__(self):
         parser = argparse.ArgumentParser(prog='priority_stream', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Stream audio to an icecast server only when audio is playing.")
         parser.add_argument('-D', '--alsa-device', type=str, help='Name of the ALSA device to monitor.', default='default')
-        #parser.add_argument('-C', '--channels', type=str, help='Number of channels.  1 for mono, 2 for stereo.', default='1')
+        parser.add_argument('-i', '--ip', type=str, help='Icecast server IP address.', default='127.0.0.1')
+        parser.add_argument('-P', '--port', type=str, help='Icecast server port number.', default='8000')
+        parser.add_argument('-p', '--password', type=str, help='Icecast server password.', default='')
+        parser.add_argument('-m', '--mount', type=str, help='Icecast mountpoint to send to.', default='stream')
 
         self.args = parser.parse_args()
 
@@ -49,8 +52,10 @@ class ObPriorityStream (object):
 	self.output_pipe.append(self.encoder)
 
 	self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
-	self.shout2send.set_property('password', 'I2i89j')
-	self.shout2send.set_property('mount', 'stream')
+	self.shout2send.set_property('ip', self.args.ip)
+	self.shout2send.set_property('port', int(self.args.port))
+	self.shout2send.set_property('password', self.args.password)
+	self.shout2send.set_property('mount', self.args.mount)
 	self.output_pipe.append(self.shout2send)
 
 	self.build_pipeline(self.output_pipe)
