@@ -51,8 +51,8 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         obplayer.Log.log(message, 'debug')
 
     def handle_post(self, path, postvars, access):
-	if not access:
-	    return { 'status' : False }
+	#if not access:
+	#    return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
 
 	if path == '/info/current_time':
             return { 'value' : str(time.time()) }

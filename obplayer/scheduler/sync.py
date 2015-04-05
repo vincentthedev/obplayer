@@ -279,8 +279,8 @@ class ObSync:
             show_time = xml_get_first_tag_value(show, 'time')
             show_name = xml_get_first_tag_value(show, 'name', '')
             show_description = xml_get_first_tag_value(show, 'description', '')
-            show_duration = xml_get_first_tag_value(show, 'duration')
-            show_last_updated = xml_get_first_tag_value(show, 'last_updated', '')
+            show_duration = xml_get_first_tag_value(show, 'duration', 0)
+            show_last_updated = xml_get_first_tag_value(show, 'last_updated', 0)
             show_media = xml_get_direct_children(show, 'media')[0]
 
             show_liveassist = xml_get_direct_children(show, 'liveassist_buttons')

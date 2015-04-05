@@ -79,10 +79,11 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def check_authorization(self):
 
+        self.admin_access = False
+	self.authenticated = False
+
 	if not self.server.username:
 	    return True
-
-	self.authenticated = False
 
         authdata = self.headers.getheader('Authorization')
         if type(authdata).__name__ == 'str':
