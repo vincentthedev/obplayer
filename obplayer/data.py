@@ -835,7 +835,7 @@ class ObPlaylogData(ObData):
         title = self.escape(title)
         notes = self.escape(notes)
 
-        self.con.cursor().execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(-1) + "','" + notes + "')")
+        self.con.cursor().execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(0) + "','" + notes + "')")
         return self.con.last_insert_rowid()
 
     #
