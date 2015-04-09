@@ -831,6 +831,14 @@ class ObPlaylogData(ObData):
 	if not obplayer.Config.setting('sync_playlog_enable'):
 	    return
 
+	# TODO this is a hack until we can change things server-side
+	if context == 'alerts':
+	    context = 'emerg'
+	elif context in [ 'scheduler', 'linein' ]:
+	    context = 'show'
+	else:
+	    context = 'fallback'
+
         artist = self.escape(artist)
         title = self.escape(title)
         notes = self.escape(notes)
