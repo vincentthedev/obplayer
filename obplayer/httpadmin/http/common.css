@@ -157,5 +157,10 @@ h2:first-child
   width: 8em;
   text-align: right;
   font-weight: bold;
+  vertical-align: top;
 }
 
+#alert-details table .padding td
+{
+  padding-top: 10px;
+}
