@@ -322,7 +322,7 @@ class ObAlertArea (object):
 	for geocode in self.geocodes:
 	    for code in codes:
 		# TODO this is a bit of a hack
-		if geocode[0] == 'profile:CAP-CP:Location:0.3' and geocode[1].startswith(code):
+		if geocode[0] == 'profile:CAP-CP:Location:0.3' and (geocode[1].startswith(code) or code.startswith(geocode[1])):
 		    return True
 	return False
 
