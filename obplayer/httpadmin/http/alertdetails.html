@@ -74,15 +74,15 @@
 	</tr>
 	<tr>
 	  <td>Headline:</td>
-	  <td style="text-decoration: underline;"><% alert.info[0].headline %></td>
+	  <td style="text-decoration: underline;"><% alert.info[0].headline.encode('utf-8') %></td>
 	</tr>
 	<tr class="padding">
 	  <td>Description:</td>
-	  <td><% alert.info[0].description.replace('\n', '<br />\n') %></td>
+	  <td><% alert.info[0].description.replace('\n', '<br />\n').encode('utf-8') %></td>
 	</tr>
 	<tr class="padding">
 	  <td>Instruction:</td>
-	  <td><% alert.info[0].instruction %></td>
+	  <td><% alert.info[0].instruction.encode('utf-8') %></td>
 	</tr>
 	<tr>
 	  <td>Parameters:</td>

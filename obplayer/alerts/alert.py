@@ -169,26 +169,28 @@ class ObAlert (object):
             os.mkdir(location)
 	filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
 
-	if info.description:
+	if not info.description:
+	    message_text = info.headline
+	elif not self.broadcast_immediately() and obplayer.Config.setting('alerts_truncate'):
 	    parts = info.description.split('\n\n', 1)
-	    brief = parts[0].replace('\n', ' ').replace('\r', '')
+	    message_text = parts[0].replace('\n', ' ').replace('\r', '')
 	else:
-	    brief = info.headline
+	    message_text = info.description.replace('\n', ' ').replace('\r', '')
 
 	resource = info.get_resource('audio')
 	if resource:
 	    if resource.write_file(location + "/" + filename) is False:
 		return False
 
-	elif brief:
+	elif message_text:
 	    if not voice:
 		voice = 'en'
-	    #os.system("echo \"%s\" | text2wave > %s/%s" % (brief[0], location, filename))
-	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, brief[0].encode('utf-8')))
+	    #os.system("echo \"%s\" | text2wave > %s/%s" % (message_text[0], location, filename))
+	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
 	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
-	    #cmd += u"\"" + brief[0] + u"\""
+	    #cmd += u"\"" + message_text[0] + u"\""
 	    proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '-w', location + '/' + filename ], stdin=subprocess.PIPE, close_fds=True)
-	    proc.communicate(brief.encode('utf-8') + " <break time=\"2s\" /> " + brief.encode('utf-8'))
+	    proc.communicate(message_text.encode('utf-8') + " <break time=\"2s\" /> " + message_text.encode('utf-8'))
 	    proc.wait()
 
 	else:
@@ -201,7 +203,7 @@ class ObAlert (object):
 	    'media_type' : 'audio',
 	    'artist' : 'Emergency Alert',
 	    'title' : str(self.identifier),
-	    'overlay_text' : brief,
+	    'overlay_text' : message_text,
 	    'file_location' : location,
 	    'filename' : filename,
 	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 3

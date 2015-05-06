@@ -619,6 +619,10 @@
               <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
             </tr>
             <tr>
+              <td>Truncate Long Alert Messages</td>
+              <td><input type="checkbox" name="alerts_truncate" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_truncate') %>></td>
+            </tr>
+            <tr>
               <td>Play Moderately Severe Alerts</td>
               <td><input type="checkbox" name="alerts_play_moderates" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_moderates') %>></td>
             </tr>

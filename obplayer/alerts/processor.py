@@ -319,6 +319,7 @@ class ObAlertProcessor (object):
 		self.mark_active(alert)
 		#print "Active Alert:"
 		#alert.print_data()
+		self.next_alert_check = time.time() + 20
 
     def match_alert_conditions(self, alert):
 	if not alert.has_geocode(self.target_geocodes):

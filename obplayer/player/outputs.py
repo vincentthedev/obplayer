@@ -67,6 +67,11 @@ class ObAudioOutputBin (ObOutputBin):
 
 	self.elements = [ ]
 
+	## create caps filter element to set the output audio parameters
+	caps = Gst.ElementFactory.make('capsfilter', "audiocapsfilter")
+	caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2"))
+	self.elements.append(caps)
+
 	# create filter elements
 	level = Gst.ElementFactory.make("level", "level")
         level.set_property('interval', int(0.5 * Gst.SECOND))
