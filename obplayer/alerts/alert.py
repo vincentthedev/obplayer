@@ -25,6 +25,8 @@ import obplayer
 import xml.dom.minidom
 import base64
 import hashlib
+import datetime
+import dateutil.tz
 import dateutil.parser
 
 import traceback
@@ -281,10 +283,10 @@ class ObAlertInfo (object):
 	    self.resources.append(ObAlertResource(node))
 
     def is_expired(self):
-	# TODO i don't trust this one bit
 	if self.expires:
-	    expires = time.mktime(dateutil.parser.parse(self.expires).timetuple())
-	    if time.time() > expires:
+            current = datetime.datetime.now(dateutil.tz.tzlocal())
+	    expires = dateutil.parser.parse(self.expires)
+	    if current > expires:
 		return True
 	return False
 
