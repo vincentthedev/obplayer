@@ -230,6 +230,7 @@ class ObAlertProcessor (object):
 	alert.add_geocode(self.target_geocodes[0])
 	#alert.print_data()
 	self.dispatch(alert)
+	self.next_alert_check = time.time()
 
     def get_alert(self, identifier):
 	with self.lock:
