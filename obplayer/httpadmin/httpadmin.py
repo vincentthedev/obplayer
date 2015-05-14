@@ -36,8 +36,8 @@ import BaseHTTPServer
 from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
-#class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-class ObHTTPAdmin(BaseHTTPServer.HTTPServer):
+class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+#class ObHTTPAdmin(BaseHTTPServer.HTTPServer):
 
     def __init__(self):
 	self.root = 'obplayer/httpadmin/http'
