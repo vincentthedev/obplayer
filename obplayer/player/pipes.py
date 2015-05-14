@@ -354,6 +354,8 @@ class ObTestPipeline (ObGstPipeline):
 	    self.set_property('video-sink', self.player.outputs['visual'].get_bin())
 	ObPipeline.patch(self, mode)
 	self.wait_state(Gst.State.PLAYING)
+	if obplayer.Config.setting('gst_init_callback'):
+	    os.system(obplayer.Config.setting('gst_init_callback'))
 
     def unpatch(self, mode):
 	self.wait_state(Gst.State.NULL)
@@ -364,6 +366,8 @@ class ObTestPipeline (ObGstPipeline):
 	ObPipeline.unpatch(self, mode)
 	if len(self.mode) > 0:
 	    self.wait_state(Gst.State.PLAYING)
+	    if obplayer.Config.setting('gst_init_callback'):
+		os.system(obplayer.Config.setting('gst_init_callback'))
 
 
 class ObLineInPipeline (ObGstPipeline):
@@ -426,7 +430,10 @@ class ObLineInPipeline (ObGstPipeline):
 	if 'audio' in mode:
 	    self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
 	ObPipeline.patch(self, mode)
+
 	self.wait_state(Gst.State.PLAYING)
+	if obplayer.Config.setting('gst_init_callback'):
+	    os.system(obplayer.Config.setting('gst_init_callback'))
 
     def unpatch(self, mode):
 	self.wait_state(Gst.State.NULL)
@@ -435,6 +442,8 @@ class ObLineInPipeline (ObGstPipeline):
 	ObPipeline.unpatch(self, mode)
 	if len(self.mode) > 0:
 	    self.wait_state(Gst.State.PLAYING)
+	    if obplayer.Config.setting('gst_init_callback'):
+		os.system(obplayer.Config.setting('gst_init_callback'))
 
 
 """
