@@ -40,6 +40,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     def __init__(self):
 	self.root = 'obplayer/liveassist/http'
 	self.username = None
+	self.readonly_username = None
 
         server_address = ('', obplayer.Config.setting('live_assist_port'))  # (address, port)
 

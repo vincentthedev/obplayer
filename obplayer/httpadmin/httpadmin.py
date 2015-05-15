@@ -44,6 +44,8 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         self.username = obplayer.Config.setting('http_admin_username')
         self.password = obplayer.Config.setting('http_admin_password')
+        self.readonly_username = obplayer.Config.setting('http_readonly_username')
+        self.readonly_password = obplayer.Config.setting('http_readonly_password')
         self.title = obplayer.Config.setting('http_admin_title')
 
         sslenable = obplayer.Config.setting('http_admin_secure')

@@ -82,7 +82,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.admin_access = False
 	self.authenticated = False
 
-	if not self.server.username:
+	if not self.server.username and not self.server.readonly_username:
 	    return True
 
         authdata = self.headers.getheader('Authorization')
@@ -91,7 +91,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             username = authdata.split(':')[0]
             password = authdata.split(':')[1]
 
-	    if username == '' and password == '':
+	    if username == self.server.readonly_username and password == self.server.readonly_password:
                 self.admin_access = False
                 self.authenticated = True
             elif username == self.server.username and password == self.server.password:
