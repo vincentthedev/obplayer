@@ -132,7 +132,7 @@ class ObGstPipeline (ObPipeline):
 
     def stop(self):
 	#print self.name + ": stopping"
-	self.wait_state(Gst.State.READY)
+	self.wait_state(Gst.State.NULL)
 
     def quit(self):
 	self.wait_state(Gst.State.NULL)
