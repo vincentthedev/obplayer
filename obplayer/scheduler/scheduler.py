@@ -309,7 +309,7 @@ class ObScheduler:
     def __init__(self):
 	self.lock = thread.allocate_lock()
 
-	self.ctrl = obplayer.Player.create_controller('scheduler', 50, default_play_mode='overlap', allow_overlay=False)
+	self.ctrl = obplayer.Player.create_controller('scheduler', priority=50, default_play_mode='overlap', allow_overlay=False)
 	self.ctrl.set_request_callback(self.do_player_request)
 	self.ctrl.set_update_callback(self.do_player_update)
 

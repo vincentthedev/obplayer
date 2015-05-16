@@ -90,7 +90,7 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         # shuffle the list
         random.shuffle(self.media)
 
-	self.ctrl = obplayer.Player.create_controller('fallback', 25)
+	self.ctrl = obplayer.Player.create_controller('fallback', priority=25)
 	self.ctrl.set_request_callback(self.do_player_request)
 
     # the player is asking us what to play next

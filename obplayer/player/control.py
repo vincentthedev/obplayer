@@ -79,9 +79,11 @@ class ObPlayer (object):
 	self.pipes['break'] = pipes.ObBreakPipeline('audio-break', self)
 	self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
 
-	self.silencectrl = self.create_controller('silence', 1, allow_requeue=False)
 	def silence_request(self, present_time):
+	    obplayer.Log.log("player has no requests to play; outputting silence", 'player')
 	    self.add_request(media_type='break', duration=3600)
+
+	self.silencectrl = self.create_controller('silence', priority=1, allow_requeue=False)
 	self.silencectrl.set_request_callback(silence_request)
 
     def player_quit(self):
@@ -438,7 +440,7 @@ class ObPlayerController (object):
 	else:
 	    # if requeues are not allowed and we are requeuing, then the player wont be playing the currently queued requests,
 	    # and we should get rid of them all, so that the player always calls the controllers to get new requests
-	    print "Clearing queue for source " + self.name
+	    print "Clearing queue for source " + self.name + " (" + str(len(self.queue)) + " items)"
 	    self.clear_queue()
 
     def clear_queue(self):

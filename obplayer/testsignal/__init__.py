@@ -25,9 +25,10 @@ from __future__ import absolute_import
 import obplayer
 
 def init():
-    ctrl = obplayer.Player.create_controller('testsignal', 2, allow_requeue=False)
     def testsignal_request(self, present_time):
 	self.add_request(media_type='break', duration=5)
-	self.add_request(media_type='testsignal', duration=5000)
+	self.add_request(media_type='testsignal', duration=31536000)	# duration = 1 year (ie. indefinitely)
+
+    ctrl = obplayer.Player.create_controller('testsignal', priority=2, allow_requeue=False)
     ctrl.set_request_callback(testsignal_request)
 

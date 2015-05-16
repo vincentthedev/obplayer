@@ -204,7 +204,7 @@ class ObAlertProcessor (object):
         self.play_moderates = obplayer.Config.setting('alerts_play_moderates')
         self.play_tests = obplayer.Config.setting('alerts_play_tests')
 
-	self.ctrl = obplayer.Player.create_controller('alerts', 100, default_play_mode='overlap', allow_overlay=True)
+	self.ctrl = obplayer.Player.create_controller('alerts', priority=100, default_play_mode='overlap', allow_overlay=True)
 	#self.ctrl.do_player_request = self.do_player_request
 
 	self.thread = obplayer.ObThread('ObAlertProcessor', target=self.run)
