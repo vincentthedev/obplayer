@@ -118,7 +118,7 @@ class ObConfigData(ObData):
 
 	self.headless = False
 	self.args = None
-	self.version = ''
+	self.version = open('VERSION').read().strip()
 
 	self.datadir = ObData.get_datadir()
         self.con = apsw.Connection(self.datadir + '/settings.db')

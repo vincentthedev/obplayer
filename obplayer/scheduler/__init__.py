@@ -45,7 +45,6 @@ def init():
 
     # determine our version from the VERSION file.  if we can do that, report the version to the server.
     if os.path.exists('VERSION'):
-	obplayer.Config.version = open('VERSION').read().strip()
 	VersionUpdateThread().start()
 
     # if resetting the databases, run our initial sync.  otherwise skip and setup other sync interval timers.
