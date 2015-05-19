@@ -191,9 +191,12 @@ class ObAlert (object):
 	    #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
 	    #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
 	    #cmd += u"\"" + message_text[0] + u"\""
-	    proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '-w', location + '/' + filename ], stdin=subprocess.PIPE, close_fds=True)
-	    proc.communicate(message_text.encode('utf-8') + " <break time=\"2s\" /> " + message_text.encode('utf-8'))
+	    proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+	    (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + " <break time=\"2s\" /> " + message_text.encode('utf-8') + " <break time=\"3s\" /> ")
 	    proc.wait()
+
+	    with open(location + '/' + filename, 'wb') as f:
+		f.write(stdout)
 
 	else:
 	    return False
@@ -208,7 +211,7 @@ class ObAlert (object):
 	    'overlay_text' : message_text,
 	    'file_location' : location,
 	    'filename' : filename,
-	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND)) + 3
+	    'duration' : (mediainfo.get_duration() / float(Gst.SECOND))
 	}
 
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
