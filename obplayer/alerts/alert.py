@@ -216,7 +216,7 @@ class ObAlert (object):
 
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
 	if self.media_info[language]['duration'] > 120:
-	    self.media_info[language] = 120
+	    self.media_info[language]['duration'] = 120
 	return True
 
     def get_media_info(self, language, voice):

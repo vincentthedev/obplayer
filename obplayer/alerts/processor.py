@@ -196,6 +196,7 @@ class ObAlertProcessor (object):
         self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
         self.target_geocodes = obplayer.Config.setting('alerts_geocode').split(',')
         self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
+        self.repeat_times = obplayer.Config.setting('alerts_repeat_times')
         self.language_primary = obplayer.Config.setting('alerts_language_primary')
         self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
         self.voice_primary = obplayer.Config.setting('alerts_voice_primary')
@@ -399,6 +400,7 @@ class ObAlertProcessor (object):
 		# play active alerts
 		if present_time > self.next_alert_check:
 		    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
+		    expired_list = [ ]
 		    with self.lock:
 			for alert in self.alerts_active.itervalues():
 			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary)
@@ -410,6 +412,10 @@ class ObAlertProcessor (object):
 				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)
 				    if alert_media:
 					self.ctrl.add_request(**alert_media)
+				if self.repeat_times > 0 and alert.times_played >= self.repeat_times:
+				    expired_list.append(alert)
+		    for alert in expired_list:
+			self.mark_expired(alert)
 		    self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
 
 		# reset fetcher if we stop receiving heartbeats
