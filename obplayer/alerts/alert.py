@@ -81,6 +81,7 @@ def xml_get_first_tag_value(element, tag, default=None):
 class ObAlert (object):
     def __init__(self, xmlcode=None):
 	self.active = False
+	self.max_plays = 0
 	self.times_played = 0
 	self.media_info = { }
 

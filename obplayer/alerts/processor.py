@@ -229,9 +229,9 @@ class ObAlertProcessor (object):
 	    data = f.read()
 	alert = obplayer.alerts.ObAlert(data)
 	alert.add_geocode(self.target_geocodes[0])
+	alert.max_plays = 1
 	#alert.print_data()
 	self.dispatch(alert)
-	self.next_alert_check = time.time()
 
     def get_alert(self, identifier):
 	with self.lock:
@@ -334,7 +334,8 @@ class ObAlertProcessor (object):
 	    return False
 
 	if alert.broadcast_immediately():
-	    self.next_alert_check = time.time()
+	    # TODO this now happens elsewhere
+	    #self.next_alert_check = time.time()
 	    return True
 
 	# if the broadcast immediately flag is not set and we aren't playing moderate severity alerts, then return false
@@ -412,7 +413,7 @@ class ObAlertProcessor (object):
 				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)
 				    if alert_media:
 					self.ctrl.add_request(**alert_media)
-				if self.repeat_times > 0 and alert.times_played >= self.repeat_times:
+				if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
 				    expired_list.append(alert)
 		    for alert in expired_list:
 			self.mark_expired(alert)
