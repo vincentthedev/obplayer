@@ -51,7 +51,7 @@ class ObAlertFetcher (obplayer.ObThread):
 	if self.socket:
 	    addr, port = self.socket.getsockname()
 	    obplayer.Log.log("closing socket %s:%s" % (addr, port), 'alerts')
-	    self.socket.shutdown(socket.SHUT_WR)
+	    self.socket.shutdown(socket.SHUT_RDWR)
 	    self.socket.close()
 	    self.socket = None
 	    self.last_received = 0
@@ -133,6 +133,7 @@ class ObAlertTCPFetcher (ObAlertFetcher):
 
 		    try:
 			self.socket = socket.socket(af, socktype, proto)
+			#self.socket.settimeout(360.0)
 		    except socket.error as msg:
 			self.socket = None
 			continue
