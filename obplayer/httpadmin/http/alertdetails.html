@@ -8,6 +8,7 @@
 
   <body>
     <% exec alert = obplayer.alerts.Processor.get_alert(params['id'][0]) %>
+    <% exec alert_info = alert.get_first_info(obplayer.alerts.Processor.language_primary) %>
     <h2>Details of <% alert.identifier %></h2>
 
     <div id="alert-details">
@@ -46,55 +47,55 @@
       <table>
 	<tr>
 	  <td>Language:</td>
-	  <td><% alert.info[0].language %></td>
+	  <td><% alert_info.language %></td>
 	</tr>
 	<tr>
 	  <td>Event:</td>
-	  <td><% alert.info[0].event %></td>
+	  <td><% alert_info.event %></td>
 	</tr>
 	<tr>
 	  <td>Urgency:</td>
-	  <td><% alert.info[0].urgency %></td>
+	  <td><% alert_info.urgency %></td>
 	</tr>
 	<tr>
 	  <td>Severity:</td>
-	  <td><% alert.info[0].severity %></td>
+	  <td><% alert_info.severity %></td>
 	</tr>
 	<tr>
 	  <td>Certainty:</td>
-	  <td><% alert.info[0].certainty %></td>
+	  <td><% alert_info.certainty %></td>
 	</tr>
 	<tr>
 	  <td>Expires:</td>
-	  <td><% alert.info[0].expires %></td>
+	  <td><% alert_info.expires %></td>
 	</tr>
 	<tr>
 	  <td>Sender Name:</td>
-	  <td><% alert.info[0].sender %></td>
+	  <td><% alert_info.sender %></td>
 	</tr>
 	<tr>
 	  <td>Headline:</td>
-	  <td style="text-decoration: underline;"><% alert.info[0].headline.encode('utf-8') %></td>
+	  <td style="text-decoration: underline;"><% alert_info.headline %></td>
 	</tr>
 	<tr class="padding">
 	  <td>Description:</td>
-	  <td><% alert.info[0].description.replace('\n', '<br />\n').encode('utf-8') %></td>
+	  <td><% alert_info.description.replace('\n', '<br />\n') %></td>
 	</tr>
 	<tr class="padding">
 	  <td>Instruction:</td>
-	  <td><% alert.info[0].instruction.encode('utf-8') %></td>
+	  <td><% alert_info.instruction.encode('utf-8') %></td>
 	</tr>
 	<tr>
 	  <td>Parameters:</td>
-	  <td><% '<br />\n'.join([ "<i>" + str(name) + "</i>: <b>" + str(val) + "</b>" for (name, val) in alert.info[0].parameters ]) %></td>
+	  <td><% u'<br />\n'.join([ u"<i>" + unicode(name) + u"</i>: <b>" + unicode(val) + u"</b>" for (name, val) in alert_info.parameters ]) %></td>
 	</tr>
 	<tr>
 	  <td>Event Codes:</td>
-	  <td><% '<br />\n'.join([ "<i>" + str(name) + "</i>: <b>" + str(val) + "</b>" for (name, val) in alert.info[0].eventcodes ]) %></td>
+	  <td><% u'<br />\n'.join([ u"<i>" + unicode(name) + u"</i>: <b>" + unicode(val) + u"</b>" for (name, val) in alert_info.eventcodes ]) %></td>
 	</tr>
 	<tr>
 	  <td>Attached Resources:</td>
-	  <td><% '<br />\n'.join([ str(resource.uri) + " (" + str(resource.mimetype) + ": " + str(resource.size) + ")" for resource in alert.info[0].resources ]) %></td>
+	  <td><% u'<br />\n'.join([ unicode(resource.uri) + u" (" + unicode(resource.mimetype) + u": " + unicode(resource.size) + u")" for resource in alert_info.resources ]) %></td>
 	</tr>
       </table>
 

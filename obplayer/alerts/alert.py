@@ -127,12 +127,12 @@ class ObAlert (object):
 		infos.append(info)
 	return infos
 
-    def get_first_info(self, language):
+    def get_first_info(self, language, bestmatch=True):
 	lang = self.lang_ref(language)
 	for info in self.info:
 	    if info.language == lang:
 		return info
-	if len(self.info) > 0:
+	if bestmatch and len(self.info) > 0:
 	    return self.info[0]
 	return None
 
@@ -162,8 +162,9 @@ class ObAlert (object):
 	return False
 
     def generate_audio(self, language, voice=None):
-	info = self.get_first_info(language)
+	info = self.get_first_info(language, bestmatch=False)
 	if info is None:
+	    self.media_info[language] = None
 	    return False
 
 	# TODO there needs to be a better way to get the datadir
@@ -216,14 +217,18 @@ class ObAlert (object):
 	}
 
 	# the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
-	if self.media_info[language]['duration'] > 120:
-	    self.media_info[language]['duration'] = 120
+	if self.media_info[language]['duration'] > 120.0:
+	    self.media_info[language]['duration'] = 120.0
 	return True
 
-    def get_media_info(self, language, voice):
-	if language not in self.media_info:
-	    self.generate_audio(language, voice)
-	return self.media_info[language]
+    def get_media_info(self, primary_language, primary_voice, secondary_language, secondary_voice):
+	if primary_language not in self.media_info:
+	    self.generate_audio(primary_language, primary_voice)
+	if secondary_language and secondary_language not in self.media_info:
+	    self.generate_audio(secondary_language, secondary_voice)
+	if self.media_info[primary_language] is None:
+	    return { 'primary' : self.media_info[secondary_language], 'secondary' : None }
+	return { 'primary': self.media_info[primary_language], 'secondary' : self.media_info[secondary_language] if secondary_language else None }
 
     @staticmethod
     def reference(timestamp, identifier):
