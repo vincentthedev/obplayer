@@ -51,8 +51,12 @@ class ObAlertFetcher (obplayer.ObThread):
 	if self.socket:
 	    addr, port = self.socket.getsockname()
 	    obplayer.Log.log("closing socket %s:%s" % (addr, port), 'alerts')
-	    self.socket.shutdown(socket.SHUT_RDWR)
-	    self.socket.close()
+            try:
+	        self.socket.shutdown(socket.SHUT_RDWR)
+	        self.socket.close()
+            except:
+		obplayer.Log.log("exception in " + self.name + " thread", 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 	    self.socket = None
 	    self.last_received = 0
 

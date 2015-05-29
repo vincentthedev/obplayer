@@ -237,6 +237,17 @@ class ObPlayer (object):
 	    print repr(self.requests['visual'])
 	    print ""
 
+        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %ss type: '%s' source: %s)" % (
+	    str(req['order_num'] + 1) if req['order_num'] >= 0 else '?',
+	    unicode(req['artist']).encode('ascii', 'replace'),
+	    unicode(req['title']).encode('ascii', 'replace'),
+	    req['media_id'],
+	    unicode(req['filename']).encode('ascii', 'replace'),
+	    str(req['duration']),
+	    req['media_type'],
+	    req['controller'].name
+	), 'player')
+
 	# change the patches as needed
 	self.repatch_outputs(patch_class, req['media_type'])
 
@@ -255,17 +266,6 @@ class ObPlayer (object):
 	# write entry into play log.
         playlog_notes = 'resuming at ' + str(time.time() - req['start_time']) + 's'
         obplayer.PlaylogData.playlog_add(req['media_id'], req['artist'], req['title'], time.time(), req['controller'].name, playlog_notes)
-
-        obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %ss type: '%s' source: %s)" % (
-	    str(req['order_num'] + 1) if req['order_num'] >= 0 else '?',
-	    unicode(req['artist']).encode('ascii', 'replace'),
-	    unicode(req['title']).encode('ascii', 'replace'),
-	    req['media_id'],
-	    unicode(req['filename']).encode('ascii', 'replace'),
-	    str(req['duration']),
-	    req['media_type'],
-	    req['controller'].name
-	), 'player')
 
     def stop_request(self, output):
 	if self.requests[output] == None:
