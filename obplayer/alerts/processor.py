@@ -95,7 +95,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    data = self.read_alert_data()
 		    if (data):
 			alert = obplayer.alerts.ObAlert(data)
-			obplayer.Log.log("received alert " + str(alert.identifier) + " (" + str(alert.sent) + ")", 'alerts')
+			obplayer.Log.log("received alert " + str(alert.identifier) + " (" + str(alert.sent) + ")", 'debug')
 			#alert.print_data()
 			self.processor.dispatch(alert)
 
@@ -331,7 +331,7 @@ class ObAlertProcessor (object):
 		for host in self.archive_hosts:
 		    url = "%s/%s/%s.xml" % (host, urldate, filename)
 		    try:
-			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'alerts')
+			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
 			r = requests.get(url)
 
 			r.encoding = 'utf-8'
