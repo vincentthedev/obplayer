@@ -68,7 +68,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		    if code.startswith('exec '):
 			exec(code[5:])
 		    else:
-			ret += str(eval(code))
+			ret += unicode(eval(code)).encode('utf-8')
 	    except Exception as e:
 		#ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + e.__class__.__name__ + ': ' + e.args[0] + '<br>\n'
 		ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + repr(e) + '<br>\n'

@@ -121,11 +121,6 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 		return obplayer.alerts.Processor.get_alerts()
 	    return { 'status' : False }
 
-	elif path == "/alerts/details":
-	    if hasattr(obplayer, 'alerts'):
-		return obplayer.alerts.Processor.get_alert_details(postvars['id'][0])
-	    return { 'status' : False }
-
 	else:
 	    if not access:
 		return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }

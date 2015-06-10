@@ -26,8 +26,6 @@ import pycurl
 import urllib
 
 import xml.dom.minidom
-from xml.dom.minidom import Node
-from xml.dom.minidom import getDOMImplementation
 
 import os
 import time
@@ -233,7 +231,8 @@ class ObSync:
         try:
             curl.perform()
         except:
-            pass
+	    obplayer.Log.log("exception in VersionUpdate thread", 'error')
+	    obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 
@@ -435,7 +434,7 @@ class ObSync:
         entries = obplayer.PlaylogData.playlog_entries_since(last_timestamp)
 
 	# get DOM implementation to create new XML document.
-        impl = getDOMImplementation()
+        impl = xml.dom.minidom.getDOMImplementation()
 
         doc = impl.createDocument(None, 'obconnect', None)
         playlog = doc.createElement('playlog')
@@ -503,8 +502,8 @@ class ObSync:
 
         if post_status_text == 'success':
             obplayer.PlaylogData.remove_playlog_entries_since(highest_id)
-        else:
 
+        else:
             obplayer.Log.log('unable to submit playlog at this time', 'error')
 
     sync_media_required = False  # set to true if sync_media should do a sync.
@@ -628,7 +627,8 @@ class ObSync:
         try:
             curl.perform()
         except:
-            pass
+	    obplayer.Log.log("exception in NowPlayingUpdate thread", 'error')
+	    obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 
@@ -684,9 +684,12 @@ class ObSync:
 
         try:
             curl.perform()
-        except pycurl.error, error:
-            (errno, errstr) = error
-            obplayer.Log.log('network error: ' + errstr, 'error')
+        #except pycurl.error, error:
+        #    (errno, errstr) = error
+        #    obplayer.Log.log('network error: ' + errstr, 'error')
+	except:
+	    obplayer.Log.log("exception in sync " + request_type + " thread", 'error')
+	    obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 

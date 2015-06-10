@@ -51,8 +51,12 @@ class ObAlertFetcher (obplayer.ObThread):
 	if self.socket:
 	    addr, port = self.socket.getsockname()
 	    obplayer.Log.log("closing socket %s:%s" % (addr, port), 'alerts')
-	    self.socket.shutdown(socket.SHUT_WR)
-	    self.socket.close()
+            try:
+	        self.socket.shutdown(socket.SHUT_RDWR)
+	        self.socket.close()
+            except:
+		obplayer.Log.log("exception in " + self.name + " thread", 'error')
+		obplayer.Log.log(traceback.format_exc(), 'error')
 	    self.socket = None
 	    self.last_received = 0
 
@@ -91,7 +95,7 @@ class ObAlertFetcher (obplayer.ObThread):
 		    data = self.read_alert_data()
 		    if (data):
 			alert = obplayer.alerts.ObAlert(data)
-			obplayer.Log.log("received alert " + str(alert.identifier) + " (" + str(alert.sent) + ")", 'alerts')
+			obplayer.Log.log("received alert " + str(alert.identifier) + " (" + str(alert.sent) + ")", 'debug')
 			#alert.print_data()
 			self.processor.dispatch(alert)
 
@@ -133,6 +137,7 @@ class ObAlertTCPFetcher (ObAlertFetcher):
 
 		    try:
 			self.socket = socket.socket(af, socktype, proto)
+			#self.socket.settimeout(360.0)
 		    except socket.error as msg:
 			self.socket = None
 			continue
@@ -259,33 +264,6 @@ class ObAlertProcessor (object):
 		    })
 	return alerts
 
-    def get_alert_details(self, identifier):
-	with self.lock:
-	    alert = None
-	    if identifier in self.alerts_active:
-		alert = self.alerts_active[identifier]
-	    elif identifier in self.alerts_expired:
-		alert = self.alerts_expired[identifier]
-	    else:
-		return { 'status' : False }
-
-	    alert_data = {
-		'identifier' : alert.identifier,
-		'sender' : alert.sender,
-		'sent' : alert.sent,
-		'played' : alert.times_played,
-		'info' : [ ]
-	    }
-
-	    for info in alerts.info:
-		alert_data['info'].append({
-		    'language' : info.language,
-		    'headline' : info.headline.capitalize(),
-		    'description' : info.description,
-		})
-
-	    return alert_data
-
     def mark_seen(self, alert):
 	with self.lock:
 	    self.alerts_seen[alert.identifier] = True
@@ -353,7 +331,7 @@ class ObAlertProcessor (object):
 		for host in self.archive_hosts:
 		    url = "%s/%s/%s.xml" % (host, urldate, filename)
 		    try:
-			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'alerts')
+			obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
 			r = requests.get(url)
 
 			r.encoding = 'utf-8'
@@ -404,15 +382,13 @@ class ObAlertProcessor (object):
 		    expired_list = [ ]
 		    with self.lock:
 			for alert in self.alerts_active.itervalues():
-			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary)
-			    if alert_media:
+			    alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
+			    if alert_media['primary']:
 				alert.times_played += 1
-				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['artist'], title=alert_media['title'], overlay_text=alert_media['overlay_text'])
-				self.ctrl.add_request(**alert_media)
-				if self.language_secondary:
-				    alert_media = alert.get_media_info(self.language_secondary, self.voice_secondary)
-				    if alert_media:
-					self.ctrl.add_request(**alert_media)
+				self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['artist'], title=alert_media['primary']['title'], overlay_text=alert_media['primary']['overlay_text'])
+				self.ctrl.add_request(**alert_media['primary'])
+				if alert_media['secondary']:
+				    self.ctrl.add_request(**alert_media['secondary'])
 				if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
 				    expired_list.append(alert)
 		    for alert in expired_list:
