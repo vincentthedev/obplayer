@@ -799,6 +799,10 @@
               <td><input type="password" name="http_readonly_password" value="<% obplayer.Config.setting('http_readonly_password',True) %>"></td>
             </tr>
             <tr>
+              <td>Allow Fullscreen/Quit for Read-Only User</td>
+              <td><input type="checkbox" name="http_readonly_allow_restart" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_readonly_allow_restart') %>></td>
+            </tr>
+            <tr>
               <td>Dashboard Title</td>
               <td><input type="text" name="http_admin_title" value="<% obplayer.Config.setting('http_admin_title',True) %>"></td>
             </tr>

@@ -131,7 +131,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.send_404()
 		return
 
-	    ret = command_func()
+	    ret = command_func(self.admin_access)
 	    self.send_content(200, 'application/json', json.dumps(ret))
 	    return
 

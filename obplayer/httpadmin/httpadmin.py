@@ -46,6 +46,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         self.password = obplayer.Config.setting('http_admin_password')
         self.readonly_username = obplayer.Config.setting('http_readonly_username')
         self.readonly_password = obplayer.Config.setting('http_readonly_password')
+        self.readonly_allow_restart = obplayer.Config.setting('http_readonly_allow_restart')
         self.title = obplayer.Config.setting('http_admin_title')
 
         sslenable = obplayer.Config.setting('http_admin_secure')
@@ -84,11 +85,16 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 	else:
 	    return 'Off'
 
-    def command_restart(self):
+    def command_restart(self, access):
+        if not self.readonly_allow_restart and not access:
+            return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
 	os.kill(os.getpid(), signal.SIGINT)
 	return { 'status' : True }
 
-    def command_fstoggle(self):
+    def command_fstoggle(self, access):
+        if not self.readonly_allow_restart and not access:
+            return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest", 'fullscreen' : 'N/A' }
+
 	if obplayer.Config.headless:
 	    return { 'status' : False, 'fullscreen' : 'N/A' }
 	else:
