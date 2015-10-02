@@ -407,6 +407,7 @@ class ObSync:
         self.emerg_sync_running = False
 
         obplayer.RemoteData.get_priority_broadcasts()
+        obplayer.PriorityBroadcaster.check_update()
 
     #
     # Sync playlog with server.

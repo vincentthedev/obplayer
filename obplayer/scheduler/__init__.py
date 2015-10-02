@@ -24,6 +24,7 @@ from __future__ import absolute_import
 
 from obplayer.scheduler.scheduler import *
 from obplayer.scheduler.sync import *
+from obplayer.scheduler.priority import *
 
 Sync = None
 Scheduler = None
@@ -33,6 +34,7 @@ def init():
 
     obplayer.Sync = ObSync()
     obplayer.Scheduler = ObScheduler()
+    obplayer.PriorityBroadcaster = ObPriorityBroadcaster()
 
     # reset show/show_media tables, priority tables
     if obplayer.Config.args.reset:
