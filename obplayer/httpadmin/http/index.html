@@ -248,6 +248,10 @@
 	    <td>Gstreamer Init Callback:</td>
 	    <td><% obplayer.Config.setting('gst_init_callback') %></td>
 	  </tr>
+	  <tr>
+	    <td>Audio Logging Enabled?:</td>
+	    <td><% obplayer.Config.setting('audiolog_enable') %></td>
+	  </tr>
 
 	  <tr class="padding">
 	    <td>Audio Input Enabled?:</td>
@@ -375,6 +379,10 @@
 	    <td>HTTP Read-Only Password:</td>
 	    <td>(hidden)</td>
 	  </tr>
+	  <tr>
+	    <td>HTTP Read-Only User Allowed to Fullsrceen/Quit?:</td>
+	    <td><% obplayer.Config.setting('http_readonly_allow_restart') %></td>
+	  </tr>
 
 	  <tr class="padding">
 	    <td>Live Assist Enabled?:</td>
@@ -488,6 +496,7 @@
                   <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('audio_out_mode','jack') %>>JACK</option>
                   <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('audio_out_mode','oss') %>>OSS</option>
                   <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('audio_out_mode','pulse') %>>Pulse Audio</option>
+                  <option value="shout2send"<% obplayer.HTTPAdmin.form_item_selected('audio_out_mode','shout2send') %>>Shoutcast</option>
                   <option value="test"<% obplayer.HTTPAdmin.form_item_selected('audio_out_mode','test') %>>No Output</option>
                 </select></td>
             </tr>
@@ -499,6 +508,22 @@
               <td>Jack Port Name</td>
               <td><input type="text" name="audio_out_jack_name" value="<% obplayer.Config.setting('audio_out_jack_name',True) %>"></td>
             </tr>
+            <tr id="audio_out_shout2send_ip_row">
+              <td>Shoutcast IP</td>
+              <td><input type="text" name="audio_out_shout2send_ip" value="<% obplayer.Config.setting('audio_out_shout2send_ip',True) %>"></td>
+            </tr>
+            <tr id="audio_out_shout2send_port_row">
+              <td>Shoutcast Port</td>
+              <td><input type="text" name="audio_out_shout2send_port" value="<% obplayer.Config.setting('audio_out_shout2send_port',True) %>"></td>
+            </tr>
+            <tr id="audio_out_shout2send_mount_row">
+              <td>Shoutcast Mountpoint</td>
+              <td><input type="text" name="audio_out_shout2send_mount" value="<% obplayer.Config.setting('audio_out_shout2send_mount',True) %>"></td>
+            </tr>
+            <tr id="audio_out_shout2send_password_row">
+              <td>Shoutcast Password</td>
+              <td><input type="password" name="audio_out_shout2send_password" value="<% obplayer.Config.setting('audio_out_shout2send_password',True) %>"></td>
+            </tr>
             <tr>
               <td>Enable Audio Visualization</td>
               <td><input type="checkbox" name="audio_out_visualization" value="1"<% obplayer.HTTPAdmin.form_item_checked('audio_out_visualization') %>></td>
@@ -506,6 +531,10 @@
             <tr>
               <td>Gstreamer Init Callback</td>
               <td><input type="text" name="gst_init_callback" value="<% obplayer.Config.setting('gst_init_callback',False) %>"></td>
+            </tr>
+            <tr>
+              <td>Enable Audio Logging</td>
+              <td><input type="checkbox" name="audiolog_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('audiolog_enable') %>></td>
             </tr>
           </tbody>
         </table>
@@ -526,7 +555,7 @@
                   <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('audio_in_mode','jack') %>>JACK</option>
                   <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('audio_in_mode','oss') %>>OSS</option>
                   <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('audio_in_mode','pulse') %>>Pulse Audio</option>
-                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('audio_in_mode','test') %>>No Output</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('audio_in_mode','test') %>>No Input</option>
                 </select></td>
             </tr>
             <tr id="audio_in_alsa_device_row">
