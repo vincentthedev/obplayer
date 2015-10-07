@@ -44,106 +44,113 @@ class ObMainApp:
         parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and priority broadcast databases', default=False)
         parser.add_argument('-H', '--headless', action='store_true', help='run headless (audio only)', default=False)
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
-        parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ None ])
+        parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ '~/.openbroadcaster' ])
         parser.add_argument('--disable-http', action='store_true', help='disables the http admin', default=False)
 
         self.args = parser.parse_args()
+        obplayer.ObData.set_datadir(self.args.configdir[0])
 
-	obplayer.Log = obplayer.ObLog()
-	obplayer.Log.set_debug(self.args.debug)
+        obplayer.Log = obplayer.ObLog()
+        obplayer.Log.set_debug(self.args.debug)
 
-	obplayer.ObData.set_datadir(self.args.configdir[0])
-	obplayer.Config = obplayer.ObConfigData()
-	obplayer.RemoteData = obplayer.ObRemoteData()
-	obplayer.PlaylogData = obplayer.ObPlaylogData()
+        obplayer.Config = obplayer.ObConfigData()
+        obplayer.Config.args = self.args
 
-	obplayer.Config.args = self.args
-	if self.args.headless is True:
-	    obplayer.Config.headless = self.args.headless
+        if self.args.headless is True:
+            obplayer.Config.headless = self.args.headless
 
-	obplayer.Main = self
+        obplayer.Main = self
 
     def start(self):
 
-	signal.signal(signal.SIGINT, self.sigint_handler)
+        signal.signal(signal.SIGINT, self.sigint_handler)
 
-	try:
-	    self.loop = GObject.MainLoop()
+        try:
+            self.loop = GObject.MainLoop()
 
-	    obplayer.Gui = obplayer.ObGui()
-	    obplayer.Gui.create_window()
+            obplayer.Gui = obplayer.ObGui()
+            obplayer.Gui.create_window()
 
-	    self.load_module('player')
-	    self.load_module('httpadmin')
+            self.load_module('player')
+            self.load_module('httpadmin')
 
-	    if obplayer.Config.setting('testsignal_enable'):
-	    	self.load_module('testsignal')
-	    if obplayer.Config.setting('alerts_enable'):
-		self.load_module('alerts')
-	    if obplayer.Config.setting('fallback_enable'):
-	    	self.load_module('fallback')
-	    if obplayer.Config.setting('audio_in_enable'):
-	    	self.load_module('linein')
-	    if obplayer.Config.setting('scheduler_enable'):
-		self.load_module('scheduler')
-	    if obplayer.Config.setting('live_assist_enable'):
-		self.load_module('liveassist')
+            if obplayer.Config.setting('testsignal_enable'):
+                    self.load_module('testsignal')
+            if obplayer.Config.setting('alerts_enable'):
+                self.load_module('alerts')
+            if obplayer.Config.setting('fallback_enable'):
+                    self.load_module('fallback')
+            if obplayer.Config.setting('audio_in_enable'):
+                    self.load_module('linein')
+            if obplayer.Config.setting('scheduler_enable'):
+                self.load_module('scheduler')
+            if obplayer.Config.setting('live_assist_enable'):
+                self.load_module('liveassist')
+            if obplayer.Config.setting('audiolog_enable'):
+                self.load_module('audiolog')
 
-	    #### TEST CODE ####
+            #### TEST CODE ####
 
-	    #time.sleep(2)
+            #time.sleep(2)
 
-	    #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/2example_CAPCP_with_Embedded_Large_Audio_File(2).xml")
-	    #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
-	    #obplayer.alerts.Processor.dispatch(alert)
+            #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/2example_CAPCP_with_Embedded_Large_Audio_File(2).xml")
+            #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
+            #obplayer.alerts.Processor.dispatch(alert)
 
-	    #ctrl = obplayer.Player.create_controller('testsource', 30, default_play_mode='overlap')
-	    #ctrl.add_request(media_type='testsignal', duration=5)
-	    #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
-	    #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
-	    #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
-	    #ctrl.add_request(media_type='image', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=30)
-	    #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
-	    #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
-	    #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
+            #ctrl = obplayer.Player.create_controller('testsource', 30, default_play_mode='overlap')
+            #ctrl.add_request(media_type='testsignal', duration=5)
+            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
+            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='image', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=30)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+            #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
 
-	    #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
-	    #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
-	    #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
+            #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
+            #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
+            #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
 
-	    #### END TEST CODE ####
+            #### END TEST CODE ####
 
-	    obplayer.Player.start_player()
-	    self.loop.run()
-	except KeyboardInterrupt:
-	    print "Keyboard Interrupt"
-	except:
-	    obplayer.Log.log("exception occurred in main thead. Terminating...", 'error')
-	    obplayer.Log.log(traceback.format_exc(), 'error')
+            obplayer.Player.start_player()
+            self.loop.run()
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt")
+        except:
+            obplayer.Log.log("exception occurred in main thead. Terminating...", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
 
-	self.application_shutdown()
+        self.application_shutdown()
 
     def quit(self):
-	self.loop.quit()
+        self.loop.quit()
 
     def sigint_handler(self, signal, frame):
-	self.quit()
+        self.quit()
 
     def application_shutdown(self):
-	# backup our main db to disk.
-        obplayer.RemoteData.backup()
+        obplayer.Log.log("shutting down player...", 'debug')
 
-	# send stop signals to all threads
-	obplayer.ObThread.stop_all()
+        # stop the audio logger.
+        if hasattr(obplayer, 'AudioLog'):
+            obplayer.AudioLog.stop()
 
-	# wait for all threads to complete
-	obplayer.ObThread.join_all()
+        # backup our main db to disk.
+        if hasattr(obplayer, 'RemoteData'):
+            obplayer.RemoteData.backup()
 
-	# quit main thread.
+        # send stop signals to all threads
+        obplayer.ObThread.stop_all()
+
+        # wait for all threads to complete
+        obplayer.ObThread.join_all()
+
+        # quit main thread.
         sys.exit(0)
 
     def load_module(self, name):
-	obplayer.Log.log('loading module ' + name, 'module')
-	exec 'import obplayer.%s; obplayer.%s.init()' % (name, name)
+        obplayer.Log.log('loading module ' + name, 'module')
+        exec('import obplayer.%s; obplayer.%s.init()' % (name, name))
 
 

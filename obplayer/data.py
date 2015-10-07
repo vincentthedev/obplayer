@@ -23,58 +23,80 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import apsw
-import string
-import time
 import os
 import os.path
 import re
+import traceback
 
 
-class ObData:
-    datadir = '~/.openbroadcaster'
+class ObData (object):
+    datadir = None
 
-    @staticmethod
-    def set_datadir(basedir):
-	if basedir is not None:
-	    ObData.datadir = basedir
+    @classmethod
+    def set_datadir(cls, name):
+        cls.datadir = os.path.expanduser(name)
 
-    @staticmethod
-    def get_datadir(subdir=None):
-        datadir = os.path.expanduser(ObData.datadir)
+        if os.access(cls.datadir, os.F_OK) == False:
+            os.mkdir(cls.datadir)
 
-        if os.access(datadir, os.F_OK) == False:
-            os.mkdir(datadir)
+        if os.access(cls.datadir + '/alerts', os.F_OK) == False:
+            os.mkdir(cls.datadir + '/alerts')
 
-        if os.access(datadir + '/alerts', os.F_OK) == False:
-            os.mkdir(datadir + '/alerts')
+        if os.access(cls.datadir + '/audiologs', os.F_OK) == False:
+            os.mkdir(cls.datadir + '/audiologs')
 
-        if os.access(datadir + '/media', os.F_OK) == False:
-            os.mkdir(datadir + '/media')
+        if os.access(cls.datadir + '/media', os.F_OK) == False:
+            os.mkdir(cls.datadir + '/media')
 
-        if os.access(datadir + '/logs', os.F_OK) == False:
-            os.mkdir(datadir + '/logs')
+        if os.access(cls.datadir + '/logs', os.F_OK) == False:
+            os.mkdir(cls.datadir + '/logs')
 
-        if os.access(datadir + '/fallback_media', os.F_OK) == False:
-            os.mkdir(datadir + '/fallback_media')
+        if os.access(cls.datadir + '/fallback_media', os.F_OK) == False:
+            os.mkdir(cls.datadir + '/fallback_media')
 
-	if subdir:
-	    return os.path.join(datadir, subdir)
-	return datadir
+    @classmethod
+    def get_datadir(cls, subdir=None):
+        if subdir:
+            return os.path.join(cls.datadir, subdir)
+        return cls.datadir
 
-    def table_exists(self, name):
-        for row in self.cur.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = '" + name + "' UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = '" + name + "'"):
+
+    def __init__(self):
+        self.db = None
+
+    def open_db(self, filename):
+        return apsw.Connection(filename)
+
+    def table_exists(self, table):
+        for row in self.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name = ? UNION ALL SELECT name FROM sqlite_temp_master WHERE type IN ('table','view') AND name = ?", (table, table)):
             return True
         return False
 
-    def empty_table(self, name):
-        self.cur.execute('DELETE from ' + name)
+    def empty_table(self, table):
+        self.execute("DELETE from " + table)
 
-    def escape(self, what):
-        return_what = string.replace(what, "'", "''")
-        return return_what
+    def execute(self, query, bindings=None):
+        return self.db.cursor().execute(query, bindings)
+
+    # run query, return dict.
+    def query(self, query, bindings=None):
+        cursor = self.db.cursor().execute(query, bindings)
+
+        try:
+            cols = cursor.getdescription()
+        except apsw.ExecutionCompleteError:
+            return [ ]
+
+        return_array = [ ]
+        for row in cursor:
+            rowdata = { col[0] : row[i] for (i, col) in enumerate(cols) }
+            return_array.append(rowdata)
+        return return_array
+
+    def escape(self, text):
+        return text.replace("'", "''")
 
     def row_addedit(self, table, data):
-
         column_list = []
         value_list = []
 
@@ -82,51 +104,27 @@ class ObData:
             column_list.append("'" + self.escape(str(key)) + "'")
             value_list.append("'" + self.escape(str(value)) + "'")
 
-        column_list_string = ','.join(column_list)
-        value_list_string = ','.join(value_list)
-
-	# this is INSERT or REPLACE, so if we have (for example) ID set in data, then it will edit. Otherwise it will insert.
-	# Other unique keys may cause replace (edit) so be careful.
-        self.cur.execute('INSERT or REPLACE into ' + table + ' ( ' + column_list_string + ' ) VALUES ( ' + value_list_string + ' )')
-        return self.con.last_insert_rowid()
-
-    #
-    # run query, return dict.
-    def query(self, query, thread='main'):
-
-        cols = None
-        return_array = []
-
-        for row in self.cur.execute(query):
-            if cols == None:
-                cols = self.cur.getdescription()
-
-            count = 0
-            rowdata = {}
-            for col in cols:
-                rowdata[col[0]] = row[count]
-                count = count + 1
-
-            return_array.append(rowdata)
-
-        return return_array
+        # this is INSERT or REPLACE, so if we have (for example) ID set in data, then it will edit. Otherwise it will insert.
+        # Other unique keys may cause replace (edit) so be careful.
+        self.execute("INSERT or REPLACE into " + table + " ( " + ','.join(column_list) + " ) VALUES ( " + ','.join(value_list) + " )")
+        return self.db.last_insert_rowid()
 
 
-class ObConfigData(ObData):
+
+class ObConfigData (ObData):
 
     def __init__(self):
+        ObData.__init__(self)
 
-	self.headless = False
-	self.args = None
-	self.version = open('VERSION').read().strip()
+        self.headless = False
+        self.args = None
+        self.version = open('VERSION').read().strip()
 
-	self.datadir = ObData.get_datadir()
-        self.con = apsw.Connection(self.datadir + '/settings.db')
-        self.cur = self.con.cursor()
+        self.db = self.open_db(self.datadir + '/settings.db')
 
-        if self.table_exists('settings') != True:
-	    self.cur.execute('CREATE TABLE settings (id INTEGER PRIMARY KEY, name TEXT, value TEXT, type TEXT)')
-	    self.cur.execute('CREATE UNIQUE INDEX name_index on settings(name)')
+        if not self.table_exists('settings'):
+            self.execute("CREATE TABLE settings (id INTEGER PRIMARY KEY, name TEXT, value TEXT, type TEXT)")
+            self.execute("CREATE UNIQUE INDEX name_index on settings(name)")
 
         self.check_defaults()
 
@@ -146,12 +144,12 @@ class ObConfigData(ObData):
             self.settings_cache[row['name']] = value
             self.settings_type[row['name']] = datatype
 
-	# keep track of settings as they have been edited.
-	# they don't take effect until restart, but we want to keep track of them for subsequent edits.
+        # keep track of settings as they have been edited.
+        # they don't take effect until restart, but we want to keep track of them for subsequent edits.
         self.settings_edit_cache = self.settings_cache.copy()
 
-	if not self.setting("video_out_enable"):
-	    self.headless = True
+        if not self.setting("video_out_enable"):
+            self.headless = True
 
     def validate_settings(self, settings):
         for (setting_name, setting_value) in settings.iteritems():
@@ -168,7 +166,7 @@ class ObConfigData(ObData):
 
     def validate_setting(self, setting_name, setting_value, settings=None):
 
-	# if we don't have a batch of settings we're checking, use our settings cache.
+        # if we don't have a batch of settings we're checking, use our settings cache.
         if settings == None:
             settings = self.settings_cache
 
@@ -177,11 +175,11 @@ class ObConfigData(ObData):
         except:
             return 'One or more setting names were not valid.' + setting_name
 
-	# disabled for now - this was locking the UI while waiting to timeout (if network problems)
-	# try:
-	# urllib.urlopen(settings['sync_url']);
-	# except IOError:
-	# error = 'The SYNC URL you have provided does not appear to be valid.';
+        # disabled for now - this was locking the UI while waiting to timeout (if network problems)
+        # try:
+        # urllib.urlopen(settings['sync_url']);
+        # except IOError:
+        # error = 'The SYNC URL you have provided does not appear to be valid.';
 
         if setting_name == 'sync_device_id' and self.is_int(setting_value) == False:
             return 'The device ID is not valid.'
@@ -204,13 +202,13 @@ class ObConfigData(ObData):
         if setting_name == 'sync_device_password' and setting_value == '':
             return 'A device password is required.'
 
-	url_regex = re.compile(
-		r'^(?:http|ftp)s?://' # http:// or https://
-		r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-		r'localhost|' #localhost...
-		r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-		r'(?::\d+)?' # optional port
-		r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        url_regex = re.compile(
+                r'^(?:http|ftp)s?://' # http:// or https://
+                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+                r'localhost|' #localhost...
+                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+                r'(?::\d+)?' # optional port
+                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         if setting_name == 'sync_url' and setting_value and url_regex.match(setting_value) == None:
             return 'The sync URL does not appear to be valid.'
 
@@ -226,7 +224,7 @@ class ObConfigData(ObData):
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
             return 'The archive #2 URL does not appear to be valid.'
 
-	geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
+        geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
             return 'Geocodes must be specified as a list of comma-separated numbers.'
 
@@ -242,8 +240,8 @@ class ObConfigData(ObData):
         if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'To use the web admin with SSL, a valid certiciate file is required.'
 
-	if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
-	    return 'Live Assist and HTTP Admin cannot use the same port.'
+        if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
+            return 'Live Assist and HTTP Admin cannot use the same port.'
 
         return None
 
@@ -257,25 +255,36 @@ class ObConfigData(ObData):
         self.add_setting('audio_out_mode', 'auto', 'text')
         self.add_setting('audio_out_alsa_device', 'default', 'text')
         self.add_setting('audio_out_jack_name', '', 'text')
+        self.add_setting('audio_out_shout2send_ip', '127.0.0.1', 'text')
+        self.add_setting('audio_out_shout2send_port', '8000', 'int')
+        self.add_setting('audio_out_shout2send_mount', 'stream', 'text')
+        self.add_setting('audio_out_shout2send_password', 'hackme', 'text')
         self.add_setting('audio_out_visualization', '1', 'bool')
         self.add_setting('gst_init_callback', '', 'text')
 
-	self.add_setting('audio_in_enable', '0', 'bool')
+        self.add_setting('audio_in_enable', '0', 'bool')
         self.add_setting('audio_in_mode', 'auto', 'text')
         self.add_setting('audio_in_alsa_device', 'default', 'text')
         self.add_setting('audio_in_jack_name', '', 'text')
 
-	self.add_setting('video_out_enable', '1', 'bool')
+        self.add_setting('mic_in_enable', '0', 'bool')
+        self.add_setting('mic_in_mode', 'auto', 'text')
+        self.add_setting('mic_in_alsa_device', 'default', 'text')
+        self.add_setting('mic_in_jack_name', '', 'text')
+
+        self.add_setting('audiolog_enable', '0', 'bool')
+
+        self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'auto', 'text')
 
-	self.add_setting('images_transitions_enable', '1', 'bool')
+        self.add_setting('images_transitions_enable', '1', 'bool')
         self.add_setting('images_width', '640', 'int')
         self.add_setting('images_height', '480', 'int')
         self.add_setting('images_framerate', '15', 'int')
 
-	self.add_setting('overlay_enable', '0', 'bool')
+        self.add_setting('overlay_enable', '0', 'bool')
 
-	self.add_setting('scheduler_enable', '1', 'bool')
+        self.add_setting('scheduler_enable', '1', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
         self.add_setting('sync_device_password', 'password', 'text')
         self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
@@ -300,35 +309,35 @@ class ObConfigData(ObData):
         self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
 
-	self.add_setting('live_assist_enable', '0', 'bool')
-	self.add_setting('live_assist_port', '23456', 'int')
+        self.add_setting('live_assist_enable', '0', 'bool')
+        self.add_setting('live_assist_port', '23456', 'int')
 
-	self.add_setting('alerts_enable', '0', 'bool')
-	self.add_setting('alerts_language_primary', 'english', 'text')
-	self.add_setting('alerts_language_secondary', 'french', 'text')
-	self.add_setting('alerts_voice_primary', 'en', 'text')
-	self.add_setting('alerts_voice_secondary', 'fr', 'text')
-	self.add_setting('alerts_geocode', '59', 'text')
-	self.add_setting('alerts_repeat_interval', '30', 'int')
-	self.add_setting('alerts_repeat_times', '0', 'int')
-	self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
-	self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
-	self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
-	self.add_setting('alerts_naad_archive2', "http://capcp2.naad-adna.pelmorex.com", 'text')
-	self.add_setting('alerts_truncate', '0', 'bool')
-	self.add_setting('alerts_play_moderates', '1', 'bool')
-	self.add_setting('alerts_play_tests', '0', 'bool')
+        self.add_setting('alerts_enable', '0', 'bool')
+        self.add_setting('alerts_language_primary', 'english', 'text')
+        self.add_setting('alerts_language_secondary', 'french', 'text')
+        self.add_setting('alerts_voice_primary', 'en', 'text')
+        self.add_setting('alerts_voice_secondary', 'fr', 'text')
+        self.add_setting('alerts_geocode', '59', 'text')
+        self.add_setting('alerts_repeat_interval', '30', 'int')
+        self.add_setting('alerts_repeat_times', '0', 'int')
+        self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
+        self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
+        self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
+        self.add_setting('alerts_naad_archive2', "http://capcp2.naad-adna.pelmorex.com", 'text')
+        self.add_setting('alerts_truncate', '0', 'bool')
+        self.add_setting('alerts_play_moderates', '1', 'bool')
+        self.add_setting('alerts_play_tests', '0', 'bool')
 
-	self.add_setting('fallback_enable', '1', 'bool')
+        self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 
-	self.add_setting('testsignal_enable', '1', 'bool')
+        self.add_setting('testsignal_enable', '1', 'bool')
 
     def add_setting(self, name, value, datatype=None):
 
-	check_setting = self.query('SELECT name,value,type from "settings" WHERE name = "' + self.escape(name) + '"')
-	if len(check_setting):
-	    return
+        check_setting = self.query("SELECT name,value,type from 'settings' WHERE name = '" + self.escape(name) + "'")
+        if len(check_setting):
+            return
 
         data = {}
         data['name'] = name
@@ -340,7 +349,7 @@ class ObConfigData(ObData):
         self.row_addedit('settings', data)
 
     def setting(self, name, use_edit_cache=False):
-	settings = self.settings_edit_cache if use_edit_cache else self.settings_cache
+        settings = self.settings_edit_cache if use_edit_cache else self.settings_cache
         try:
             return settings[name]
         except:
@@ -359,527 +368,5 @@ class ObConfigData(ObData):
                 self.settings_edit_cache[name] = bool(int(value))
             else:
                 self.settings_edit_cache[name] = str(value)
-
-
-class ObRemoteData(ObData):
-
-    def __init__(self):
-
-	self.datadir = ObData.get_datadir()
-
-	# our main database, stored in memory.
-        self.con = apsw.Connection(':memory:')
-
-	# load our backup database from file. check integrity.  if the database doesn't exist, it will be created/empty - no problem, tables are checked/created below.
-        backup_icheck = []
-        backup = apsw.Connection(self.datadir + '/data.db')
-        backup_cur = backup.cursor()
-        for row in backup_cur.execute('PRAGMA integrity_check'):
-            backup_icheck.extend(row)
-
-        if '\n'.join(backup_icheck) != 'ok':
-            obplayer.Log.log('backup file bad, ignoring.', 'data')
-        else:
-
-            obplayer.Log.log('restoring database from file', 'data')
-            with self.con.backup('main', backup, 'main') as backup:
-                backup.step()
-            obplayer.Log.log('done restoring database', 'data')
-
-        backup.close()
-
-	# used by sync thread. (need separate cursor for each thread to use)
-        self.cur = self.con.cursor()
-        self.cur_sync_show = self.con.cursor()
-        self.cur_sync_emerg = self.con.cursor()
-        self.cur_sync_media_required = self.con.cursor()
-
-        if self.table_exists('shows') != True:
-            obplayer.Log.log('shows table not found, creating', 'data')
-            self.shows_create_table()
-
-        if self.table_exists('shows_media') != True:
-            obplayer.Log.log('media table not found, creating', 'data')
-            self.shows_media_create_table()
-
-        if self.table_exists('priority_broadcasts') != True:
-            obplayer.Log.log('priority broadcast table not found, creating', 'data')
-            self.priority_broadcasts_create_table()
-
-        if self.table_exists('groups') != True:
-            obplayer.Log.log('liveassist groups table not found, creating', 'data')
-            self.shows_groups_create_table()
-
-        if self.table_exists('group_items') != True:
-            obplayer.Log.log('liveassist group items table not found, creating', 'data')
-            self.shows_group_items_create_table()
-
-        self.priority_broadcasts = False
-
-    def backup(self):
-        obplayer.Log.log('backup database to disk', 'data')
-        backupcon = apsw.Connection(self.datadir + '/data.db')
-
-        with backupcon.backup('main', self.con, 'main') as backup:
-            backup.step()
-
-        backupcon.close()
-        obplayer.Log.log('done backing up', 'data')
-
-    def shows_create_table(self):
-        self.cur.execute('CREATE TABLE shows (id INTEGER PRIMARY KEY, show_id INTEGER, name TEXT, type TEXT, description TEXT, datetime NUMERIC UNIQUE, duration NUMERIC, last_updated NUMERIC)')
-        self.cur.execute('CREATE UNIQUE INDEX datetime_index on shows (datetime)')
-
-    def shows_media_create_table(self):
-        self.cur.execute('CREATE TABLE shows_media (id INTEGER PRIMARY KEY, local_show_id INTEGER, media_id INTEGER, show_id INTEGER, order_num INTEGER, filename TEXT, artist TEXT, title TEXT, offset NUMERIC, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
-        self.cur.execute('CREATE INDEX local_show_id_index on shows_media (local_show_id)')
-
-    def priority_broadcasts_create_table(self):
-        self.cur.execute('CREATE TABLE priority_broadcasts (id INTEGER PRIMARY KEY, start_timestamp INTEGER, end_timestamp INTEGER, frequency INTEGER, filename TEXT, artist TEXT, title TEXT, duration NUMERIC, media_type TEXT, media_id INTEGER, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
-
-    def shows_groups_create_table(self):
-	self.cur.execute('CREATE TABLE groups (id INTEGER PRIMARY KEY, local_show_id INTEGER, name TEXT)')
-        self.cur.execute('CREATE INDEX groups_local_show_id_index on groups (local_show_id)')
-
-    def shows_group_items_create_table(self):
-        self.cur.execute('CREATE TABLE group_items (id INTEGER PRIMARY KEY, group_id INTEGER, media_id INTEGER, order_num INTEGER, filename TEXT, artist TEXT, title TEXT, duration NUMERIC, media_type TEXT, file_hash TEXT, file_size INT, file_location TEXT, approved INT, archived INT)')
-        self.cur.execute('CREATE INDEX group_id_index on group_items (group_id)')
-
-    #
-    # Given show_id, name, description, datetime, and duration, add entry to show database.  If entry exists, edit if required.
-    # Return false if edit not required.  Return lastrowid otherwise.
-    #
-    def show_addedit(self, show_id, name, show_type, description, datetime, duration, last_updated):
-
-        name = self.escape(name)
-        description = self.escape(description)
-
-	# determine whether there is already a show in this slot.
-        rows = self.cur_sync_show.execute("SELECT show_id,last_updated,id,duration from shows where datetime='" + str(datetime) + "'")
-        for row in rows:
-
-	    # if update not required, return false.
-            if int(row[0]) == int(show_id) and int(row[1]) == int(last_updated) and float(row[3]) == float(duration):
-                return False
-            else:
-		# if we have a match, but update is required, delete entry + associated media.
-                self.cur_sync_show.execute("DELETE from shows_media where local_show_id='" + str(row[2]) + "'")
-
-	# now add the show... (media not added here, but added by sync script)
-        self.cur_sync_show.execute("INSERT or REPLACE into shows VALUES (null, '" + show_id + "','" + name + "','" + show_type + "','" + description + "','" + str(datetime) + "','" + duration + "','" + str(last_updated)
-                                   + "')")
-        return self.con.last_insert_rowid()
-
-    #
-    #
-    # Given a list of timestamps, delete all shows with a timestamp not in this list.  (Clean out shows that have been removed).
-    # DO NOT remove shows within starting within 'ignore_limit' (since these fall within 'showlock').
-    #
-    def show_remove_deleted(self, timestamps, ignore_limit):
-
-        seperator = ','
-
-	# convert our timestamp list to string values.
-        timestamps_string = []
-        for timestamp in timestamps:
-            timestamps_string.append(str(timestamp))
-
-        not_in_string = seperator.join(timestamps_string)
-
-        rows = self.query('SELECT id from shows WHERE datetime NOT IN (' + not_in_string + ') and datetime > ' + str(ignore_limit), 'sync_show')
-
-        for row in rows:
-            self.cur_sync_show.execute('DELETE from shows where id=' + str(row['id']))
-            self.cur_sync_show.execute('DELETE from shows_media where local_show_id=' + str(row['id']))
-
-        return True
-
-    # remove shows that are over, and associated media.
-    def show_remove_old(self):
-        rows = self.query('SELECT id from shows WHERE (datetime+duration) < ' + str(time.time()), 'sync_show')
-
-        for row in rows:
-            self.cur_sync_show.execute('DELETE from shows where id=' + str(row['id']))
-            self.cur_sync_show.execute('DELETE from shows_media where local_show_id=' + str(row['id']))
-
-        return True
-
-    #
-    #
-    #
-    # Given broadcast_id, start time, end time ('' for none), frequency, artist, title, filename, media_id, duration, and media type, update priority broadcast database.
-    # If row with broadcast_id exists, it will be updated.  Otherwise row will be added.
-    #
-    def priority_broadcast_addedit(
-        self,
-        broadcast_id,
-        start,
-        end,
-        frequency,
-        artist,
-        title,
-        filename,
-        media_id,
-        duration,
-        media_type,
-        file_hash,
-        file_size,
-        file_location,
-        approved,
-        archived,
-        ):
-
-        broadcast_id = self.escape(broadcast_id)
-        start = self.escape(start)
-        end = self.escape(end)
-        frequency = self.escape(frequency)
-        artist = self.escape(artist)
-        title = self.escape(title)
-        filename = self.escape(filename)
-        media_id = self.escape(media_id)
-        duration = self.escape(duration)
-        media_type = self.escape(media_type)
-
-        query = "INSERT OR REPLACE into priority_broadcasts VALUES ('" + broadcast_id + "', '" + start + "','" + end + "','" + frequency + "','" + filename + "','" + artist + "','" + title + "','" \
-            + duration + "','" + media_type + "','" + media_id + "','" + file_hash + "','" + file_size + "','" + file_location + "','" + approved + "','" + archived + "')"
-
-        self.cur_sync_emerg.execute(query)
-        return self.con.last_insert_rowid()
-
-    #
-    #
-    # Given a list of priority broadcast IDs, remove anything that isn't in there. (they are no longer needed.)
-    #
-    def priority_broadcast_remove_deleted(self, id_list):
-
-        seperator = ','
-
-	# convert our timestamp list to string values.
-        id_list_string = []
-        for broadcast_id in id_list:
-            id_list_string.append(str(broadcast_id))
-
-        not_in_string = seperator.join(id_list_string)
-
-        self.cur_sync_emerg.execute('DELETE from priority_broadcasts WHERE id NOT IN (' + not_in_string + ')')
-
-        return True
-
-    #
-    # Given media id, show id, order number, filename, artist, title, duration, and media type, add show media.
-    #
-    def show_media_add(self, local_show_id, show_id, media_item):
-
-        media_item['filename'] = self.escape(media_item['filename'])
-        media_item['artist'] = self.escape(media_item['artist'])
-        media_item['title'] = self.escape(media_item['title'])
-        media_item['file_hash'] = self.escape(media_item['file_hash'])
-
-        query = "INSERT into shows_media VALUES (null, '" + str(local_show_id) + "', '" + str(media_item['id']) + "','" + show_id + "','" + media_item['order'] + "','" + media_item['filename'] + "','" \
-            + media_item['artist'] + "','" + media_item['title'] + "','" + media_item['offset'] + "','" + media_item['duration'] + "','" + media_item['type'] + "','" + media_item['file_hash'] + "','" \
-            + media_item['file_size'] + "','" + media_item['file_location'] + "','" + media_item['approved'] + "','" + media_item['archived'] + "')"
-        self.cur_sync_show.execute(query)
-        return self.con.last_insert_rowid()
-
-    def group_remove_old(self, local_show_id):
-        rows = self.query('SELECT id from groups WHERE local_show_id=' + str(local_show_id))
-	for row in rows:
-            self.cur_sync_show.execute('DELETE from group_items where group_id=' + str(row['id']))
-            self.cur_sync_show.execute('DELETE from groups where id=' + str(row['id']))
-
-    def group_add(self, local_show_id, name):
-
-	query = "INSERT into groups VALUES (null, '" + str(local_show_id) + "','" + name + "')"
-        self.cur_sync_show.execute(query)
-        return self.con.last_insert_rowid()
-
-    def group_item_add(self, group_id, media_item):
-
-        media_item['filename'] = self.escape(media_item['filename'])
-        media_item['artist'] = self.escape(media_item['artist'])
-        media_item['title'] = self.escape(media_item['title'])
-        media_item['file_hash'] = self.escape(media_item['file_hash'])
-
-        query = "INSERT into group_items VALUES (null, '" + str(group_id) + "', '" + media_item['id'] + "','" + media_item['order'] + "','" + media_item['filename'] + "','" \
-            + media_item['artist'] + "','" + media_item['title'] + "','" + media_item['duration'] + "','" + media_item['type'] + "','" + media_item['file_hash'] + "','" \
-            + media_item['file_size'] + "','" + media_item['file_location'] + "','" + media_item['approved'] + "','" + media_item['archived'] + "')"
-        self.cur_sync_show.execute(query)
-        return self.con.last_insert_rowid()
-
-    #
-    #
-    # Return a dictionary (associate array) of format returned_list[filename]=media_id for all media required by remote.
-    # This is based on the entries in shows_media and priority_broadcasts.
-    #
-    def media_required(self):
-        query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from shows_media GROUP by media_id'
-        rows = self.cur_sync_media_required.execute(query)
-
-        media_list = {}
-
-        for row in rows:
-	    media_row = self.get_media_from_row(row)
-            media_list[media_row['filename']] = media_row
-
-        query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from priority_broadcasts GROUP by media_id'
-        rows = self.cur_sync_media_required.execute(query)
-
-        for row in rows:
-	    media_row = self.get_media_from_row(row)
-            media_list[media_row['filename']] = media_row
-
-        query = 'SELECT filename,media_id,file_hash,file_location,approved,archived,file_size,media_type from group_items GROUP by media_id'
-        rows = self.cur_sync_media_required.execute(query)
-
-        for row in rows:
-	    media_row = self.get_media_from_row(row)
-            media_list[media_row['filename']] = media_row
-
-        return media_list
-
-    @staticmethod
-    def get_media_from_row(row):
-	media_row = {}
-	media_row['filename'] = row[0]
-	media_row['media_id'] = row[1]
-	media_row['file_hash'] = row[2]
-	media_row['file_size'] = row[6]
-	media_row['file_location'] = row[3]
-	media_row['approved'] = row[4]
-	media_row['archived'] = row[5]
-	media_row['media_type'] = row[7]
-	return media_row
-
-    #
-    #
-    # Given the present time, return the present show (associate array/dictionary).
-    #
-    def get_present_show(self, present_timestamp):
-
-        rows = self.query('SELECT * from shows where datetime <= ' + str(present_timestamp) + ' order by datetime desc limit 1')
-
-        for (rindex, row) in enumerate(rows):
-
-            show_start_timestamp = row['datetime']
-            show_end_timestamp = show_start_timestamp + float(row['duration'])
-
-            if present_timestamp < show_end_timestamp:
-                rows[rindex]['start_time'] = show_start_timestamp
-                rows[rindex]['end_time'] = show_end_timestamp
-                return rows[rindex]
-
-        return None
-
-    #
-    # Given the present time, return the next show.  Returned as associative array/dictionary.
-    #
-    def get_next_show_times(self, present_timestamp):
-
-        rows = self.query('SELECT datetime,duration from shows where datetime > ' + str(present_timestamp) + ' order by datetime limit 1')
-
-        for (rindex, row) in enumerate(rows):
-
-            show_start_timestamp = row['datetime']
-            show_end_timestamp = show_start_timestamp + float(row['duration'])
-
-            if present_timestamp < show_end_timestamp:
-                rows[rindex]['start_time'] = show_start_timestamp
-                rows[rindex]['end_time'] = show_end_timestamp
-                return rows[rindex]
-
-        return None
-
-    def load_groups(self, local_show_id):
-
-        group_rows = self.query('SELECT * from groups WHERE local_show_id=' + str(local_show_id))
-
-	groups = [ ]
-	for group_row in group_rows:
-	    item_rows = self.query('SELECT * from group_items WHERE group_id=' + str(group_row['id']))
-
-	    group_items = [ ]
-	    for item_row in item_rows:
-		group_items.append(item_row)
-
-	    groups.append({ 'id' : group_row['id'], 'local_show_id' : group_row['local_show_id'], 'name' : group_row['name'], 'items' : group_items })
-
-	return groups
-
-    #
-    #
-    # Get a list of the show media given a show id. Returned as associative array/dictionary.
-    #
-    def get_show_media(self, local_show_id):
-        query = "SELECT filename,order_num,duration,media_type,artist,title,media_id,file_location,offset,file_size from shows_media where local_show_id='" + str(local_show_id) + "' order by offset"
-        rows = self.cur.execute(query)
-
-        media = []
-
-        for row in rows:
-            media_data = {}
-            media_data['filename'] = row[0]
-            media_data['order_num'] = row[1]
-            media_data['offset'] = row[8]
-            media_data['duration'] = row[2]
-            media_data['type'] = row[3]
-            media_data['artist'] = row[4]
-            media_data['title'] = row[5]
-            media_data['media_id'] = row[6]
-            media_data['file_location'] = row[7]
-            media_data['media_type'] = row[3]
-            media_data['file_size'] = row[9]
-
-            media.append(media_data)
-
-        if len(media) <= 0:
-            return None
-        else:
-            return media
-
-    #
-    #
-    # Get all present priority broadcasts.  Returned as associative array/dictionary.
-    #
-    def get_priority_broadcasts(self):
-
-	# TODO previous broadcast array is used to get the next_play play data.
-	# will need to record id into broadcast array index to make this easier...
-
-        present_time = time.time()
-
-        query = 'SELECT id,start_timestamp,end_timestamp,frequency,artist,title,filename,duration,media_type,media_id,file_location,file_size from priority_broadcasts'
-        rows = self.cur_sync_emerg.execute(query)
-
-        broadcasts = {}
-
-        has_broadcasts = False
-
-        for row in rows:
-            data = {}
-            data['id'] = row[0]
-            data['start'] = row[1]
-            data['end'] = row[2]
-            data['frequency'] = row[3]
-            data['artist'] = row[4]
-            data['title'] = row[5]
-            data['filename'] = row[6]
-            data['duration'] = row[7]
-            data['type'] = row[8]
-            data['media_type'] = row[8]
-            data['media_id'] = row[9]
-            data['file_location'] = row[10]
-            data['file_size'] = row[11]
-
-            data['next_play'] = False
-
-	    # try to get next play time based on previous play time.
-            if self.priority_broadcasts != False:
-
-                former_data = self.priority_broadcasts.get(str(data['id']), None)
-
-                if former_data != None:
-
-		    # TODO why are we fetching former data and then using this other record of data...
-		    old = self.priority_broadcasts[str(data['id'])]
-		    if 'last_play' in old:
-			data['last_play'] = old['last_play']
-		    else:
-			data['last_play'] = 0
-                    check_next_play = data['last_play'] + data['frequency']
-
-                    if check_next_play >= present_time:
-                        data['next_play'] = check_next_play
-
-	    # if we don't have a next play time, get it in a more usual way.
-            if data['next_play'] == False:
-                if data['start'] < present_time:
-                    data['next_play'] = present_time
-                else:
-                    data['next_play'] = data['start']
-
-            has_broadcasts = True
-
-            broadcasts[str(data['id'])] = data
-
-        if has_broadcasts == False:
-            self.priority_broadcasts = False
-            return False
-        else:
-
-            self.priority_broadcasts = broadcasts
-            return broadcasts
-
-
-class ObPlaylogData(ObData):
-
-    def __init__(self):
-	self.datadir = ObData.get_datadir()
-
-        self.con = apsw.Connection(self.datadir + '/playlog.db')
-        self.cur = self.con.cursor()
-
-        if self.table_exists('playlog') != True:
-	    self.cur.execute('CREATE TABLE playlog (id INTEGER PRIMARY KEY, media_id NUMERIC, artist TEXT, title TEXT, datetime NUMERIC, context TEXT, emerg_id NUMERIC, notes TEXT)')
-
-    #
-    # Add entry to play log.
-    #
-    # media_id : id of media being played (to match web app database)
-    # artist : name of artist being played (in case information is lost in web app db)
-    # title : title of media being played (in case information is lost in web app db)
-    # datetime : unix timestamp of play start time (UTC/GMT)
-    # context : what is the context of this media being played (should be 'show' or 'emerg')
-    # emerg_id : if this is an priority broadcast, what is the priority broadcast id?
-    # notes : any misc notes (in particular, offset if play is resumed part-way through).
-    #
-    def playlog_add(self, media_id, artist, title, datetime, context, notes=''):
-	if not obplayer.Config.setting('sync_playlog_enable'):
-	    return
-
-	# TODO this is a hack until we can change things server-side
-	if context == 'alerts':
-	    context = 'emerg'
-	elif context in [ 'scheduler', 'linein' ]:
-	    context = 'show'
-	else:
-	    context = 'fallback'
-
-        artist = self.escape(artist)
-        title = self.escape(title)
-        notes = self.escape(notes)
-
-        self.con.cursor().execute("INSERT INTO playlog VALUES (null, '" + str(media_id) + "','" + artist + "','" + title + "','" + str(datetime) + "','" + context + "','" + str(0) + "','" + notes + "')")
-        return self.con.last_insert_rowid()
-
-    #
-    # Get playlog from given timestamp (used for syncing with web app database)
-    #
-    def playlog_entries_since(self, timestamp):
-
-        rows = self.con.cursor().execute("SELECT id,media_id,artist,title,datetime,context,emerg_id,notes from playlog WHERE datetime > '" + str(timestamp) + "'")
-
-        return_array = []
-        for row in rows:
-
-            log = {}
-            log['id'] = row[0]
-            log['media_id'] = row[1]
-            log['artist'] = row[2]
-            log['title'] = row[3]
-            log['datetime'] = row[4]
-            log['context'] = row[5]
-            log['emerg_id'] = row[6]
-            log['notes'] = row[7]
-
-            return_array.append(log)
-
-        return return_array
-
-    #
-    # Remove playlog entries since ID (used after a successful sync with web app database)
-    #
-    def remove_playlog_entries_since(self, entryid):
-        self.con.cursor().execute('DELETE from playlog WHERE id <= ' + str(entryid))
-        return True
 
 

@@ -26,7 +26,7 @@ import obplayer
 
 def init():
     def linein_request(self, present_time):
-	self.add_request(media_type='linein', duration=31536000)	# duration = 1 year (ie. indefinitely)
+        self.add_request(media_type='linein', duration=31536000)        # duration = 1 year (ie. indefinitely)
 
     ctrl = obplayer.Player.create_controller('linein', priority=10, allow_requeue=False)
     ctrl.set_request_callback(linein_request)

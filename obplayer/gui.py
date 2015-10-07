@@ -40,30 +40,30 @@ class ObGui:
 
         else:
             global Gtk, Gdk, GdkX11, GdkPixbuf, cairo
-	    gi.require_version('Gtk', '3.0')
-	    from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
+            gi.require_version('Gtk', '3.0')
+            from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 
         builder = Gtk.Builder()
         builder.add_from_file('obplayer/ui.glade')
 
-	# SET SOME COLORS
+        # SET SOME COLORS
         gtk_black = Gdk.Color(0, 0, 0)
 
-	# MAIN WINDOW
+        # MAIN WINDOW
         self.gui_window = builder.get_object('main_window')
         self.gui_window.set_title('Openbroadcaster GTK Player')
         self.gui_window.resize(640, 480)
         self.gui_window_fullscreen = False
 
-	# MISC WIDGETS
+        # MISC WIDGETS
         self.gui_toolbar = builder.get_object('toolbar')
         self.gui_statusbar = builder.get_object('statusbar')
 
-	def do_nothing(one, two):
-	    pass
+        def do_nothing(one, two):
+            pass
 
-	# DRAWING AREA
-	"""
+        # DRAWING AREA
+        """
         self.gui_drawing_area = builder.get_object('drawingarea_slideshow')
         self.gui_drawing_area_alpha = 1
         #self.gui_drawing_area.connect('draw', self.drawing_area_expose)
@@ -71,7 +71,7 @@ class ObGui:
         self.gui_drawing_area.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
         self.gui_drawing_area.modify_bg(Gtk.StateFlags.NORMAL, gtk_black)
         self.gui_drawing_area.realize()
-	"""
+        """
 
         self.gui_gst_area = builder.get_object('drawingarea_gst')
         self.gui_gst_area_alpha = 1
@@ -80,16 +80,16 @@ class ObGui:
         self.gui_gst_area.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
         self.gui_gst_area.modify_bg(Gtk.StateFlags.NORMAL, gtk_black)
         self.gui_gst_area.realize()
-	self.gst_xid = self.gui_gst_area.get_window().get_xid()
+        self.gst_xid = self.gui_gst_area.get_window().get_xid()
 
-	"""
-	# TODO note, you changed these to refer to the drawing area instead of the viewport, so it's now a misnomer
+        """
+        # TODO note, you changed these to refer to the drawing area instead of the viewport, so it's now a misnomer
         #self.gui_drawing_area_viewport = builder.get_object('drawingarea_slideshow')
         #self.gui_gst_area_viewport = builder.get_object('drawingarea_gst')
         self.gui_drawing_area_viewport = builder.get_object('drawingarea_slideshow_viewport')
         self.gui_gst_area_viewport = builder.get_object('drawingarea_gst_viewport')
 
-	# TODO for some reason this is the issue! why?
+        # TODO for some reason this is the issue! why?
         #self.gui_gst_area_viewport.hide()
         #self.gui_drawing_area.hide()
 
@@ -101,46 +101,46 @@ class ObGui:
         self.pixbuf_original = False
         self.next_pixbuf = False
         self.next_pixbuf_original = False
-	"""
+        """
 
-	# track our fullscreen pointer hide timeout event id.
+        # track our fullscreen pointer hide timeout event id.
         self.fullscreen_hide_pointer_id = None
 
-	# connect signals
+        # connect signals
         builder.connect_signals(self)
 
-	# start minimized?
+        # start minimized?
         if obplayer.Config.args.minimize:
             self.gui_window.iconify()
 
-	# go fullscreen?
+        # go fullscreen?
         if obplayer.Config.args.fullscreen:
-	    self.fullscreen_toggle(None)
+            self.fullscreen_toggle(None)
 
-	# show main window.
-	if obplayer.Config.headless == False:
-	    self.gui_window.show()
+        # show main window.
+        if obplayer.Config.headless == False:
+            self.gui_window.show()
 
     def application_shutdown(self, widget):
         obplayer.Main.quit()
 
     """
     def change_media_mode(self, mode):
-	if obplayer.Config.headless:
-	    return
+        if obplayer.Config.headless:
+            return
 
-	obplayer.Config.setting('audio_out_visualization') == 0
-	if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audio_out_visualization') == 0):
-	    self.gui_gst_area_viewport.hide()
-	    # if the image area is not currently visible, then clear what was previous displayed on the image area
-	    if not self.gui_drawing_area_viewport.is_visible():
-		self.pixbuf = False
-		self.pixbuf_original = False
-	    self.gui_drawing_area_viewport.show()
+        obplayer.Config.setting('audio_out_visualization') == 0
+        if mode == 'image' or (mode == 'audio' and obplayer.Config.setting('audio_out_visualization') == 0):
+            self.gui_gst_area_viewport.hide()
+            # if the image area is not currently visible, then clear what was previous displayed on the image area
+            if not self.gui_drawing_area_viewport.is_visible():
+                self.pixbuf = False
+                self.pixbuf_original = False
+            self.gui_drawing_area_viewport.show()
 
-	else:
-	    self.gui_drawing_area_viewport.hide()
-	    self.gui_gst_area_viewport.show()
+        else:
+            self.gui_drawing_area_viewport.hide()
+            self.gui_gst_area_viewport.show()
     """
 
     def fullscreen_toggle(self, widget):
@@ -162,14 +162,14 @@ class ObGui:
     def fullscreen_hide_pointer(self):
         if self.gui_window_fullscreen != True:
             return
-	cursor = Gdk.Cursor.new(Gdk.CursorType.BLANK_CURSOR)
+        cursor = Gdk.Cursor.new(Gdk.CursorType.BLANK_CURSOR)
         self.gui_window.get_root_window().set_cursor(cursor)
         self.gui_toolbar.hide()
-	self.fullscreen_hide_pointer_id = None
+        self.fullscreen_hide_pointer_id = None
         return False  # GObject.timeout_add for pointer show/hide on fullscreen, using return false to avoid repeated calls.
 
     def fullscreen_show_pointer(self):
-	cursor = Gdk.Cursor.new(Gdk.CursorType.ARROW)
+        cursor = Gdk.Cursor.new(Gdk.CursorType.ARROW)
         self.gui_window.get_root_window().set_cursor(cursor)
 
     def pointer_position_watch(self, widget, event):
@@ -221,7 +221,7 @@ class ObGui:
                 offset_y = 0
 
             self.cairo = da.get_window().cairo_create()
-	    Gdk.cairo_set_source_pixbuf(self.cairo, self.pixbuf, offset_x, offset_y)
+            Gdk.cairo_set_source_pixbuf(self.cairo, self.pixbuf, offset_x, offset_y)
             self.cairo.paint_with_alpha(self.gui_drawing_area_alpha)
             self.cairo.stroke()
         else:

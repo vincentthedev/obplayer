@@ -25,89 +25,89 @@ class ObPriorityStream (object):
 
         self.args = parser.parse_args()
 
-	self.create_pipeline()
+        self.create_pipeline()
 
     def create_pipeline(self):
-	self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline()
 
-	self.input_pipe = [ ]
+        self.input_pipe = [ ]
 
-	self.audio_input = Gst.ElementFactory.make("alsasrc", "alsasrc")
-	self.audio_input.set_property('device', self.args.alsa_device)
-	self.input_pipe.append(self.audio_input)
+        self.audio_input = Gst.ElementFactory.make("alsasrc", "alsasrc")
+        self.audio_input.set_property('device', self.args.alsa_device)
+        self.input_pipe.append(self.audio_input)
 
-	self.level = Gst.ElementFactory.make("level", "level")
-	self.level.set_property('message', True)
-	self.level.set_property('interval', int(1.0 * Gst.SECOND))
-	self.input_pipe.append(self.level)
+        self.level = Gst.ElementFactory.make("level", "level")
+        self.level.set_property('message', True)
+        self.level.set_property('interval', int(1.0 * Gst.SECOND))
+        self.input_pipe.append(self.level)
 
-	self.selector = Gst.ElementFactory.make("valve", "selector")
-	self.input_pipe.append(self.selector)
+        self.selector = Gst.ElementFactory.make("valve", "selector")
+        self.input_pipe.append(self.selector)
 
-	self.build_pipeline(self.input_pipe)
-
-
-	self.output_pipe = [ ]
-	self.encoder = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
-	self.output_pipe.append(self.encoder)
-
-	self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
-	self.shout2send.set_property('ip', self.args.ip)
-	self.shout2send.set_property('port', int(self.args.port))
-	self.shout2send.set_property('password', self.args.password)
-	self.shout2send.set_property('mount', self.args.mount)
-	self.output_pipe.append(self.shout2send)
-
-	self.build_pipeline(self.output_pipe)
-
-	self.selector.link(self.encoder)
+        self.build_pipeline(self.input_pipe)
 
 
-	"""
-	self.fake_pipe = [ ]
-	self.fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
-	self.fake_pipe.append(self.fakesink)
+        self.output_pipe = [ ]
+        self.encoder = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
+        self.output_pipe.append(self.encoder)
 
-	self.build_pipeline(self.fake_pipe)
+        self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
+        self.shout2send.set_property('ip', self.args.ip)
+        self.shout2send.set_property('port', int(self.args.port))
+        self.shout2send.set_property('password', self.args.password)
+        self.shout2send.set_property('mount', self.args.mount)
+        self.output_pipe.append(self.shout2send)
 
-	self.selector.link(self.fakesink)
-	"""
+        self.build_pipeline(self.output_pipe)
+
+        self.selector.link(self.encoder)
 
 
-	#self.selector.set_property('active-pad', self.selector.get_request_pad('sink0'))
+        """
+        self.fake_pipe = [ ]
+        self.fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
+        self.fake_pipe.append(self.fakesink)
 
-	self.is_dropping = True
-	self.selector.set_property('drop', True)
+        self.build_pipeline(self.fake_pipe)
 
-	self.pipeline.get_bus().add_signal_watch()
-	self.pipeline.get_bus().connect('message::element', self.detect_silence)
+        self.selector.link(self.fakesink)
+        """
+
+
+        #self.selector.set_property('active-pad', self.selector.get_request_pad('sink0'))
+
+        self.is_dropping = True
+        self.selector.set_property('drop', True)
+
+        self.pipeline.get_bus().add_signal_watch()
+        self.pipeline.get_bus().connect('message::element', self.detect_silence)
 
     def build_pipeline(self, elements):
-	for element in elements:
-	    #print "adding element to bin: " + element.get_name()
-	    self.pipeline.add(element)
-	for index in range(0, len(elements) - 1):
-	    elements[index].link(elements[index + 1])
+        for element in elements:
+            #print "adding element to bin: " + element.get_name()
+            self.pipeline.add(element)
+        for index in range(0, len(elements) - 1):
+            elements[index].link(elements[index + 1])
 
     def start(self):
-	self.pipeline.set_state(Gst.State.PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
     def stop(self):
-	self.pipeline.set_state(Gst.State.NULL)
+        self.pipeline.set_state(Gst.State.NULL)
 
     def detect_silence(self, bus, message, *args):
-	peak = message.get_structure().get_value('peak')
-	if peak[0] < -28:
-	    if not self.is_dropping:
-		self.is_dropping = True
-		self.selector.set_property('drop', True)
-		print "now dropping buffers"
-	else:
-	    if self.is_dropping:
-		self.is_dropping = False
-		self.selector.set_property('drop', False)
-		print "now outputting buffers"
-	return True
+        peak = message.get_structure().get_value('peak')
+        if peak[0] < -28:
+            if not self.is_dropping:
+                self.is_dropping = True
+                self.selector.set_property('drop', True)
+                print "now dropping buffers"
+        else:
+            if self.is_dropping:
+                self.is_dropping = False
+                self.selector.set_property('drop', False)
+                print "now outputting buffers"
+        return True
 
 
 def main():
@@ -117,9 +117,9 @@ def main():
     stream.start()
 
     try:
-	mainloop.run()
+        mainloop.run()
     except KeyboardInterrupt:
-	pass
+        pass
 
     stream.stop()
     sys.exit(0)

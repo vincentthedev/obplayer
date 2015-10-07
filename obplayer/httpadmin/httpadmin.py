@@ -30,17 +30,22 @@ import signal
 import subprocess
 
 import OpenSSL
-import SocketServer
-import BaseHTTPServer
+
+if sys.version.startswith('3'):
+    import socketserver as SocketServer
+    import http.server as BaseHTTPServer
+else:
+    import SocketServer
+    import BaseHTTPServer
 
 from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
 
 
 class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-#class ObHTTPAdmin(BaseHTTPServer.HTTPServer):
+    daemon_threads = True
 
     def __init__(self):
-	self.root = 'obplayer/httpadmin/http'
+        self.root = 'obplayer/httpadmin/http'
 
         self.username = obplayer.Config.setting('http_admin_username')
         self.password = obplayer.Config.setting('http_admin_password')
@@ -54,15 +59,15 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
 
-	BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
-	if sslenable:
-	    self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+        BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
+        if sslenable:
+            self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
 
         sa = self.socket.getsockname()
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'admin')
 
     def log(self, message):
-	if not "POST /status_info" in message and not "POST /alerts/list" in message:
+        if not "POST /status_info" in message and not "POST /alerts/list" in message:
             obplayer.Log.log(message, 'debug')
 
     def form_item_selected(self, setting, value):
@@ -78,87 +83,87 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
             return ''
 
     def fullscreen_status(self):
-	if obplayer.Config.headless:
-	    return 'N/A'
-	elif obplayer.Gui.gui_window_fullscreen:
-	    return 'On'
-	else:
-	    return 'Off'
+        if obplayer.Config.headless:
+            return 'N/A'
+        elif obplayer.Gui.gui_window_fullscreen:
+            return 'On'
+        else:
+            return 'Off'
 
     def command_restart(self, access):
         if not self.readonly_allow_restart and not access:
             return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
-	os.kill(os.getpid(), signal.SIGINT)
-	return { 'status' : True }
+        os.kill(os.getpid(), signal.SIGINT)
+        return { 'status' : True }
 
     def command_fstoggle(self, access):
         if not self.readonly_allow_restart and not access:
             return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest", 'fullscreen' : 'N/A' }
 
-	if obplayer.Config.headless:
-	    return { 'status' : False, 'fullscreen' : 'N/A' }
-	else:
-	    obplayer.Gui.fullscreen_toggle(None)
-	    return { 'status' : True, 'fullscreen' : 'On' if obplayer.Gui.gui_window_fullscreen else 'Off' }
+        if obplayer.Config.headless:
+            return { 'status' : False, 'fullscreen' : 'N/A' }
+        else:
+            obplayer.Gui.fullscreen_toggle(None)
+            return { 'status' : True, 'fullscreen' : 'On' if obplayer.Gui.gui_window_fullscreen else 'Off' }
 
     def handle_post(self, path, postvars, access):
         error = None
 
-	if path == "/status_info":
-	    proc = subprocess.Popen([ "uptime", "-p" ], stdout=subprocess.PIPE)
-	    (uptime, _) = proc.communicate()
+        if path == "/status_info":
+            proc = subprocess.Popen([ "uptime", "-p" ], stdout=subprocess.PIPE)
+            (uptime, _) = proc.communicate()
 
-	    requests = obplayer.Player.get_requests()
-	    select_keys = [ 'media_type', 'end_time', 'filename', 'duration', 'media_id', 'order_num', 'artist', 'title' ]
+            requests = obplayer.Player.get_requests()
+            select_keys = [ 'media_type', 'end_time', 'filename', 'duration', 'media_id', 'order_num', 'artist', 'title' ]
 
-	    data = { }
-	    data['time'] = time.time()
-	    data['uptime'] = uptime
-	    for stream in requests.keys():
-		data[stream] = { key: requests[stream][key] for key in requests[stream].keys() if key in select_keys }
-	    data['audio_levels'] = obplayer.Player.get_audio_levels()
-	    if hasattr(obplayer, 'scheduler'):
-		data['show'] = obplayer.Scheduler.get_show_info()
-	    data['logs'] = obplayer.Log.get_log()
-	    return data
+            data = { }
+            data['time'] = time.time()
+            data['uptime'] = uptime
+            for stream in requests.keys():
+                data[stream] = { key: requests[stream][key] for key in requests[stream].keys() if key in select_keys }
+            data['audio_levels'] = obplayer.Player.get_audio_levels()
+            if hasattr(obplayer, 'scheduler'):
+                data['show'] = obplayer.Scheduler.get_show_info()
+            data['logs'] = obplayer.Log.get_log()
+            return data
 
-	elif path == "/alerts/list":
-	    if hasattr(obplayer, 'alerts'):
-		return obplayer.alerts.Processor.get_alerts()
-	    return { 'status' : False }
+        elif path == "/alerts/list":
+            if hasattr(obplayer, 'alerts'):
+                return obplayer.alerts.Processor.get_alerts()
+            return { 'status' : False }
 
-	else:
-	    if not access:
-		return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
+        else:
+            if not access:
+                return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
 
-	    if path == "/save":
-		# run through each setting and make sure it's valid. if not, complain.
-		for key in postvars:
-		    setting_name = key
-		    setting_value = postvars[key][0]
+            if path == "/save":
+                # run through each setting and make sure it's valid. if not, complain.
+                for key in postvars:
+                    setting_name = key
+                    setting_value = postvars[key][0]
 
-		    error = obplayer.Config.validate_setting(setting_name, setting_value)
+                    error = obplayer.Config.validate_setting(setting_name, setting_value)
 
-		    if error != None:
-			return { 'status' : False, 'error' : error }
+                    if error != None:
+                        return { 'status' : False, 'error' : error }
 
-		# we didn't get an errors on validate, so update each setting now.
-		for key in postvars:
-		    setting_name = key
-		    setting_value = postvars[key][0]
-		    obplayer.Config.set(setting_name, setting_value)
+                # we didn't get an errors on validate, so update each setting now.
+                for key in postvars:
+                    setting_name = key
+                    setting_value = postvars[key][0]
+                    obplayer.Config.set(setting_name, setting_value)
 
-		return { 'status' : True }
+                return { 'status' : True }
 
-	    elif path == "/alerts/inject_test":
-		if hasattr(obplayer, 'alerts'):
-		    obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
-		    return { 'status' : True }
-		return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
+            elif path == "/alerts/inject_test":
+                if hasattr(obplayer, 'alerts'):
+                    obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
+                    return { 'status' : True }
+                return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
 
-	    elif path == "/alerts/cancel":
-		if hasattr(obplayer, 'alerts'):
-		    for identifier in postvars['identifier[]']:
-			obplayer.alerts.Processor.cancel_alert(identifier)
-		    return { 'status' : True }
-		return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
+            elif path == "/alerts/cancel":
+                if hasattr(obplayer, 'alerts'):
+                    for identifier in postvars['identifier[]']:
+                        obplayer.alerts.Processor.cancel_alert(identifier)
+                    return { 'status' : True }
+                return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }

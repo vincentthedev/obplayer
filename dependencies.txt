@@ -35,6 +35,13 @@ Dependencies are Debian/Ubuntu package names.
 - ubuntu-restricted-addons
 - ubuntu-restricted-extras 
 
+
+Recommended if using for CATV:
+
+- gstreamer1.0-vaapi
+- mesa-vdpau-drivers
+
+
 Include if using alerts module:
 
 - espeak
@@ -46,8 +53,10 @@ Include if using alerts module:
 - mbrola-fr1
 - mbrola-fr4
 
+
 Include if sharing multiple OpenBroadcaster players with a local media library:
 
 - cifs-utils
 - smbfs
+
 

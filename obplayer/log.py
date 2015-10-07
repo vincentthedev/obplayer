@@ -23,7 +23,7 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import time
-import thread
+import threading
 
 MAX_BACKLOG = 2000
 
@@ -33,25 +33,25 @@ MAX_BACKLOG = 2000
 #
 class ObLog:
     def __init__(self):
-	self.datadir = obplayer.ObData.get_datadir()
-	self.logbuffer = []
-	self.debug = False
+        self.datadir = obplayer.ObData.get_datadir()
+        self.logbuffer = []
+        self.debug = False
 
         self.logdate = False
         self.logfile = False
 
-	self.lock = thread.allocate_lock()
+        self.lock = threading.Lock()
 
     def set_debug(self, flag):
-	self.debug = flag
+        self.debug = flag
 
     def log(self, message, mtype='error'):
 
         mstring = '[' + time.strftime('%b %d %Y %H:%M:%S', time.gmtime()) + ' UTC] [' + mtype + '] ' + message
 
-	self.lock.acquire()
+        self.lock.acquire()
 
-	# write to log file. (filename is present date).
+        # write to log file. (filename is present date).
         if self.logdate != time.strftime('%Y.%m.%d'):
             self.logdate = time.strftime('%Y.%m.%d')
 
@@ -61,24 +61,24 @@ class ObLog:
             self.logfile = open(self.datadir + '/logs/' + self.logdate + '.obplayer.log', 'a', 1)
         self.logfile.write(mstring + '\n')
 
-	self.logbuffer.append(mstring)
-	if len(self.logbuffer) > MAX_BACKLOG:
-	    self.logbuffer.pop(0)
+        self.logbuffer.append(mstring)
+        if len(self.logbuffer) > MAX_BACKLOG:
+            self.logbuffer.pop(0)
 
-	if self.debug:
-	    print mstring
+        if self.debug:
+            print(mstring)
 
-	self.lock.release()
+        self.lock.release()
 
         return True
 
     def get_log(self):
-	return self.logbuffer
+        return self.logbuffer
 
     def get_in_hms(seconds):
-	hours = int(seconds) / 3600
-	seconds -= 3600 * hours
-	minutes = seconds / 60
-	seconds -= 60 * minutes
-	return "%02d:%02d:%02d" % (hours, minutes, seconds)
+        hours = int(seconds) / 3600
+        seconds -= 3600 * hours
+        minutes = seconds / 60
+        seconds -= 60 * minutes
+        return "%02d:%02d:%02d" % (hours, minutes, seconds)
 

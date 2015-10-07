@@ -31,30 +31,30 @@ class ObRecorder:
             print 'Destination directory does not exist, or write permission denied.'
             exit(1)
 
-	self.date = time.strftime('%Y-%m-%d-%H')
+        self.date = time.strftime('%Y-%m-%d-%H')
 
     def start(self):
         outfile = self.args.dest + '/' + time.strftime('%Y-%m-%d_%H:%M:%S') + '.ogg'
 
-	launchcmd = 'alsasrc device=' + self.args.alsa_device \
-		    + ' ! audioconvert ! audioresample ' \
-		    + ' ! audio/x-raw, rate=' + self.args.sample_rate + ', channels=' + self.args.channels \
-		    + ' ! queue ! vorbisenc quality=0.0 ! oggmux ! queue ! filesink location=' + outfile
+        launchcmd = 'alsasrc device=' + self.args.alsa_device \
+                    + ' ! audioconvert ! audioresample ' \
+                    + ' ! audio/x-raw, rate=' + self.args.sample_rate + ', channels=' + self.args.channels \
+                    + ' ! queue ! vorbisenc quality=0.0 ! oggmux ! queue ! filesink location=' + outfile
 
         self.pipeline = Gst.parse_launch(launchcmd)
         self.pipeline.set_state(Gst.State.PLAYING)
-	self.log_rotate()
+        self.log_rotate()
 
     def stop(self):
         self.pipeline.set_state(Gst.State.NULL)
         del self.pipeline
 
     def log_rotate(self):
-	if self.date != time.strftime('%Y-%m-%d-%H'):
-	    self.date = time.strftime('%Y-%m-%d-%H')
-	    self.stop()
-	    self.start()
-	GObject.timeout_add(1.0, self.log_rotate)
+        if self.date != time.strftime('%Y-%m-%d-%H'):
+            self.date = time.strftime('%Y-%m-%d-%H')
+            self.stop()
+            self.start()
+        GObject.timeout_add(1.0, self.log_rotate)
 
 
 def main():
@@ -64,9 +64,9 @@ def main():
     record.start()
 
     try:
-	mainloop.run()
+        mainloop.run()
     except KeyboardInterrupt:
-	pass
+        pass
 
     record.stop()
     sys.exit(0)

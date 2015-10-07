@@ -22,7 +22,6 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 import obplayer
 
-import thread
 import threading
 
 import traceback
@@ -31,47 +30,47 @@ class ObThread (threading.Thread):
     threads = []
 
     def __init__(self, name=None, target=None):
-	if name is None:
-	    name = self.__class__.__name__
-	threading.Thread.__init__(self, None, None, name)
-	ObThread.threads.insert(0, self)
-	self.stopflag = threading.Event()
-	self.target = target
+        if name is None:
+            name = self.__class__.__name__
+        threading.Thread.__init__(self, None, None, name)
+        ObThread.threads.insert(0, self)
+        self.stopflag = threading.Event()
+        self.target = target
 
     def remove_thread(self):
-	ObThread.threads.remove(self)
+        ObThread.threads.remove(self)
 
     def start(self):
-	obplayer.Log.log("starting thread <%s>" % (str(self.name),), 'debug')
-	threading.Thread.start(self)
+        obplayer.Log.log("starting thread <%s>" % (str(self.name),), 'debug')
+        threading.Thread.start(self)
 
     def stop(self):
-	obplayer.Log.log("stopping thread <%s>" % (str(self.name),), 'debug')
-	self.stopflag.set()
+        obplayer.Log.log("stopping thread <%s>" % (str(self.name),), 'debug')
+        self.stopflag.set()
 
     @staticmethod
     def stop_all():
-	for t in ObThread.threads:
-	    t.stop()
+        for t in ObThread.threads:
+            t.stop()
 
     @staticmethod
     def join_all():
-	for t in ObThread.threads:
-	    if t.daemon is False:
-		t.join()
-		obplayer.Log.log("thread <%s> has joined successfully" % (str(t.name),), 'debug')
-	    else:
-		obplayer.Log.log("thread <%s> is daemon, skipping" % (str(t.name),), 'debug')
+        for t in ObThread.threads:
+            if t.daemon is False:
+                t.join()
+                obplayer.Log.log("thread <%s> has joined successfully" % (str(t.name),), 'debug')
+            else:
+                obplayer.Log.log("thread <%s> is daemon, skipping" % (str(t.name),), 'debug')
 
     def run(self):
-	try:
-	    if self.target:
-		self.target()
-	    else:
-		self.try_run()
-	except:
-	    obplayer.Log.log("exception occurred in thread " + str(self.name) + ":", 'error')
-	    obplayer.Log.log(traceback.format_exc(), 'error')
-	finally:
-	    del self.target
+        try:
+            if self.target:
+                self.target()
+            else:
+                self.try_run()
+        except:
+            obplayer.Log.log("exception occurred in thread " + str(self.name) + ":", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
+        finally:
+            del self.target
 

@@ -23,13 +23,17 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import os
-import magic
+import sys
 import time
+import magic
 import random
 
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstPbutils
+
+if sys.version.startswith('3'):
+    unicode = str
 
 
 class ObFallbackPlayer (obplayer.player.ObPlayerController):
@@ -67,22 +71,22 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
                 filetype = m.file(os.path.join(dirname, filename)).split(';')[0]
 
                 if filetype in self.media_types:
-		    d = GstPbutils.Discoverer()
-		    mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
+                    d = GstPbutils.Discoverer()
+                    mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
 
-		    media_type = None
-		    for stream in mediainfo.get_video_streams():
-			if stream.is_image():
-			    media_type = 'image'
-			else:
-			    media_type = 'video'
-			    break
-		    if not media_type and len(mediainfo.get_audio_streams()) > 0:
-			media_type = 'audio'
+                    media_type = None
+                    for stream in mediainfo.get_video_streams():
+                        if stream.is_image():
+                            media_type = 'image'
+                        else:
+                            media_type = 'video'
+                            break
+                    if not media_type and len(mediainfo.get_audio_streams()) > 0:
+                        media_type = 'audio'
 
-		    if media_type:
-			# we discovered some more fallback media, add to our media list.
-			self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
+                    if media_type:
+                        # we discovered some more fallback media, add to our media list.
+                        self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
 
                 if filetype in self.image_types:
                     self.media.append([ dirname, filename, 'image', self.image_duration ])
@@ -90,27 +94,27 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         # shuffle the list
         random.shuffle(self.media)
 
-	self.ctrl = obplayer.Player.create_controller('fallback', priority=25)
-	self.ctrl.set_request_callback(self.do_player_request)
+        self.ctrl = obplayer.Player.create_controller('fallback', priority=25)
+        self.ctrl.set_request_callback(self.do_player_request)
 
     # the player is asking us what to play next
     def do_player_request(self, ctrl, present_time):
-	if len(self.media) == 0:
-	    return False
+        if len(self.media) == 0:
+            return False
 
         if self.play_index >= len(self.media):
             self.play_index = 0
             random.shuffle(self.media)  # shuffle again to create a new order for next time.
 
-	ctrl.add_request(
-	    media_type = unicode(self.media[self.play_index][2]),
-	    file_location = unicode(self.media[self.play_index][0]),
-	    filename = unicode(self.media[self.play_index][1]),
-	    duration = self.media[self.play_index][3],
-	    order_num = self.play_index,
-	    artist = u'unknown',
-	    title = unicode(self.media[self.play_index][1])
-	)
+        ctrl.add_request(
+            media_type = unicode(self.media[self.play_index][2]),
+            file_location = unicode(self.media[self.play_index][0]),
+            filename = unicode(self.media[self.play_index][1]),
+            duration = self.media[self.play_index][3],
+            order_num = self.play_index,
+            artist = u'unknown',
+            title = unicode(self.media[self.play_index][1])
+        )
 
         self.play_index = self.play_index + 1
 

@@ -24,15 +24,12 @@ from __future__ import absolute_import
 
 from obplayer.task import ObThread
 from obplayer.log import ObLog
-from obplayer.data import ObData, ObConfigData, ObRemoteData, ObPlaylogData
+from obplayer.data import ObData, ObConfigData
 from obplayer.main import ObMainApp
 from obplayer.gui import ObGui
 
 Log = None
-
 Config = None
-RemoteData = None
-PlaylogData = None
 
 Gui = None
 Main = None

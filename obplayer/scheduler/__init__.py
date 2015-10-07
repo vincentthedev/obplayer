@@ -22,38 +22,41 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import 
 
-from obplayer.scheduler.scheduler import *
-from obplayer.scheduler.sync import *
-from obplayer.scheduler.priority import *
+import obplayer
 
-Sync = None
-Scheduler = None
+from .scheduler import ObScheduler
+from .sync import ObSync, VersionUpdateThread, SyncShowsThread, SyncEmergThread, SyncMediaThread, SyncPlaylogThread
+from .priority import ObPriorityBroadcaster
+from .data import ObRemoteData
+
+#Sync = None
+#Scheduler = None
 
 def init():
-    global Sync, Scheduler
+    #global Sync, Scheduler
 
     obplayer.Sync = ObSync()
     obplayer.Scheduler = ObScheduler()
     obplayer.PriorityBroadcaster = ObPriorityBroadcaster()
+    obplayer.RemoteData = ObRemoteData()
 
     # reset show/show_media tables, priority tables
     if obplayer.Config.args.reset:
-	obplayer.Log.log('resetting show, media, and priority data', 'data')
-	obplayer.RemoteData.empty_table('shows')
-	obplayer.RemoteData.empty_table('shows_media')
-	obplayer.RemoteData.empty_table('groups')
-	obplayer.RemoteData.empty_table('group_items')
-	obplayer.RemoteData.empty_table('priority_broadcasts')
+        obplayer.Log.log('resetting show, media, and priority data', 'data')
+        obplayer.RemoteData.empty_table('shows')
+        obplayer.RemoteData.empty_table('shows_media')
+        obplayer.RemoteData.empty_table('groups')
+        obplayer.RemoteData.empty_table('group_items')
+        obplayer.RemoteData.empty_table('priority_broadcasts')
 
-    # determine our version from the VERSION file.  if we can do that, report the version to the server.
-    if os.path.exists('VERSION'):
-	VersionUpdateThread().start()
+    # report the player version number to the server if possible
+    VersionUpdateThread().start()
 
     # if resetting the databases, run our initial sync.  otherwise skip and setup other sync interval timers.
     if obplayer.Config.args.reset:
-	obplayer.Sync.sync_shows(True)
-	obplayer.Sync.sync_priority_broadcasts()
-	obplayer.Sync.sync_media()
+        obplayer.Sync.sync_shows(True)
+        obplayer.Sync.sync_priority_broadcasts()
+        obplayer.Sync.sync_media()
 
     # Start sync threads
     SyncShowsThread().start()

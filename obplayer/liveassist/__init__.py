@@ -28,14 +28,14 @@ LiveAssist = None
 
 class LiveAssistThread (obplayer.ObThread):
     def try_run(self):
-	obplayer.LiveAssist = ObLiveAssist()
+        obplayer.LiveAssist = ObLiveAssist()
         obplayer.LiveAssist.serve_forever()
 
     def stop(self):
-	if obplayer.LiveAssist:
-	    obplayer.LiveAssist.shutdown()
+        if obplayer.LiveAssist:
+            obplayer.LiveAssist.shutdown()
 
 def init():
     if obplayer.Config.setting('live_assist_enable'):
-	LiveAssistThread().start()
+        LiveAssistThread().start()
 

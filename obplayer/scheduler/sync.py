@@ -23,7 +23,6 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import pycurl
-import urllib
 
 import xml.dom.minidom
 
@@ -36,9 +35,15 @@ import calendar
 import threading
 import traceback
 
-curl_response_data = ''
-curl_response_schedule_data = ''
-curl_response_emerg_data = ''
+if sys.version.startswith('3'):
+    import urllib.parse as urllib
+else:
+    import urllib
+
+
+curl_response_data = b''
+curl_response_schedule_data = b''
+curl_response_emerg_data = b''
 
 
 def curl_response(buf):
@@ -79,7 +84,7 @@ def xml_get_direct_children(node, tagName):
 def xml_get_tag_value(node, tagName, default=''):
     child = xml_get_direct_children(node, tagName)
     if len(child) <= 0:
-	return default
+        return default
     return xml_get_text(child[0])
 
 def xml_get_media_item(node):
@@ -104,99 +109,103 @@ def xml_get_media_item(node):
 def xml_get_tags(element, tag):
     children = [ ]
     for node in element.childNodes:
-	if node.nodeType == node.ELEMENT_NODE and node.nodeName == tag:
-	    children.append(node)
+        if node.nodeType == node.ELEMENT_NODE and node.nodeName == tag:
+            children.append(node)
     return children
 
 def xml_get_tag_values(element, tag):
     values = [ ]
     for child in xml_get_tags(element, tag):
-	values.append(xml_get_text(child))
+        values.append(xml_get_text(child))
     return values
 
 def xml_get_first_tag_value(element, tag, default=None):
     children = xml_get_tags(element, tag)
     if len(children) <= 0:
-	return default
+        return default
     return xml_get_text(children[0])
 
 
 
 class VersionUpdateThread (obplayer.ObThread):
     def try_run(self):
-	obplayer.Sync.version_update()
-	self.remove_thread()
+        if obplayer.Config.version:
+            obplayer.Sync.version_update()
+        self.remove_thread()
 
 
 class SyncShowsThread (obplayer.ObThread):
     def run(self):
-	self.synctime = int(60 * obplayer.Config.setting('sync_freq'))
-	while not self.stopflag.wait(self.synctime):
-	    try:
-		obplayer.Sync.sync_shows()
-	    except:
-		obplayer.Log.log("exception in " + self.name + " thread", 'error')
-		obplayer.Log.log(traceback.format_exc(), 'error')
+        self.synctime = int(60 * obplayer.Config.setting('sync_freq'))
+        while True:
+            try:
+                obplayer.Sync.sync_shows()
+            except:
+                obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
+
+            if self.stopflag.wait(self.synctime):
+                break
 
     # TODO this is temporary until you can have Sync check the stop flags directly
     def stop(self):
-	obplayer.ObThread.stop(self)
-	obplayer.Sync.quit = True
+        obplayer.ObThread.stop(self)
+        obplayer.Sync.quit = True
 
 
 class SyncPlaylogThread (obplayer.ObThread):
     def run(self):
-	if not obplayer.Config.setting('sync_playlog_enable'):
-	    self.remove_thread()
-	    return
+        if not obplayer.Config.setting('sync_playlog_enable'):
+            self.remove_thread()
+            return
 
-	self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
-	while not self.stopflag.wait(self.synctime):
-	    try:
-		obplayer.Sync.sync_playlog()
-	    except:
-		obplayer.Log.log("exception in " + self.name + " thread", 'error')
-		obplayer.Log.log(traceback.format_exc(), 'error')
+        self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
+        while not self.stopflag.wait(self.synctime):
+            try:
+                obplayer.Sync.sync_playlog()
+            except:
+                obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
-	obplayer.ObThread.stop(self)
-	obplayer.Sync.quit = True
+        obplayer.ObThread.stop(self)
+        obplayer.Sync.quit = True
 
 
 class SyncEmergThread (obplayer.ObThread):
     def run(self):
-	self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
-	while not self.stopflag.wait(self.synctime):
-	    try:
-		obplayer.Sync.sync_priority_broadcasts()
-	    except:
-		obplayer.Log.log("exception in " + self.name + " thread", 'error')
-		obplayer.Log.log(traceback.format_exc(), 'error')
+        self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
+        while not self.stopflag.wait(self.synctime):
+            try:
+                obplayer.Sync.sync_priority_broadcasts()
+            except:
+                obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
-	obplayer.ObThread.stop(self)
-	obplayer.Sync.quit = True
+        obplayer.ObThread.stop(self)
+        obplayer.Sync.quit = True
 
 
 class SyncMediaThread (obplayer.ObThread):
     def run(self):
-	self.synctime = int(5)
-	while not self.stopflag.wait(self.synctime):
-	    try:
-		obplayer.Sync.sync_media()
-	    except:
-		obplayer.Log.log("exception in " + self.name + " thread", 'error')
-		obplayer.Log.log(traceback.format_exc(), 'error')
+        self.synctime = int(5)
+        while not self.stopflag.wait(self.synctime):
+            try:
+                obplayer.Sync.sync_media()
+            except:
+                obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def stop(self):
-	obplayer.ObThread.stop(self)
-	obplayer.Sync.quit = True
+        obplayer.ObThread.stop(self)
+        obplayer.Sync.quit = True
 
 
 class ObSync:
 
     def __init__(self):
-	self.quit = False
+        self.quit = False
         self.emerg_sync_running = False
 
     def curl_progress(self, download_t, download_d, upload_t, upload_d):
@@ -231,8 +240,8 @@ class ObSync:
         try:
             curl.perform()
         except:
-	    obplayer.Log.log("exception in VersionUpdate thread", 'error')
-	    obplayer.Log.log(traceback.format_exc(), 'error')
+            obplayer.Log.log("exception in VersionUpdate thread", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 
@@ -248,9 +257,14 @@ class ObSync:
         obplayer.Log.log('fetching show data from server', 'sync')
 
         schedule_xml = self.sync_request('schedule')
-	#print schedule_xml
 
-	# trying to quit?
+        # TODO for debugging purposes, write schedule to file
+        #with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
+        #    f.write(schedule_xml)
+        #print schedule_xml
+
+
+        # trying to quit?
         if self.quit:
             return
 
@@ -283,14 +297,14 @@ class ObSync:
             show_media = xml_get_direct_children(show, 'media')[0]
 
             show_liveassist = xml_get_direct_children(show, 'liveassist_buttons')
-	    if show_liveassist:
-		show_liveassist = show_liveassist[0]
+            if show_liveassist:
+                show_liveassist = show_liveassist[0]
 
             show_start_datetime = time.strptime(show_date + ' ' + show_time, '%Y-%m-%d %H:%M:%S')
-	    # show_start_timestamp=time.mktime(show_start_datetime) - time.timezone;
+            # show_start_timestamp=time.mktime(show_start_datetime) - time.timezone;
             show_start_timestamp = calendar.timegm(show_start_datetime)
 
-	    # only consider shows that are beyond the showlock time (unless ignore_showlock)
+            # only consider shows that are beyond the showlock time (unless ignore_showlock)
             if ignore_showlock or show_start_timestamp - cutoff_time > 0:
 
                 local_show_id = obplayer.RemoteData.show_addedit(show_id, show_name, show_type, show_description, show_start_timestamp, show_duration, show_last_updated)
@@ -303,17 +317,17 @@ class ObSync:
                         media_item = xml_get_media_item(media)
                         obplayer.RemoteData.show_media_add(local_show_id, show_id, media_item)
 
-		    if show_liveassist:
+                    if show_liveassist:
 
-			obplayer.RemoteData.group_remove_old(local_show_id)
-			for group in xml_get_direct_children(show_liveassist, 'group'):
-			    group_name = xml_get_text(xml_get_direct_children(group, 'name')[0])
-			    media_list = xml_get_direct_children(group, 'media')[0]
-			    group_id = obplayer.RemoteData.group_add(local_show_id, group_name)
+                        obplayer.RemoteData.group_remove_old(local_show_id)
+                        for group in xml_get_direct_children(show_liveassist, 'group'):
+                            group_name = xml_get_text(xml_get_direct_children(group, 'name')[0])
+                            media_list = xml_get_direct_children(group, 'media')[0]
+                            group_id = obplayer.RemoteData.group_add(local_show_id, group_name)
 
-			    for media in xml_get_direct_children(media_list, 'item'):
-				media_item = xml_get_media_item(media)
-				obplayer.RemoteData.group_item_add(group_id, media_item)
+                            for media in xml_get_direct_children(media_list, 'item'):
+                                media_item = xml_get_media_item(media)
+                                obplayer.RemoteData.group_item_add(group_id, media_item)
 
         obplayer.RemoteData.show_remove_deleted(start_times_list, cutoff_time)
         obplayer.RemoteData.show_remove_old()
@@ -322,7 +336,7 @@ class ObSync:
 
         self.sync_media_required = True
 
-	# backup database to disk.
+        # backup database to disk.
         obplayer.RemoteData.backup()
 
     #
@@ -338,7 +352,7 @@ class ObSync:
 
         broadcasts_xml = self.sync_request('emerg')
 
-	# trying to quit?
+        # trying to quit?
         if self.quit:
             return
 
@@ -355,9 +369,9 @@ class ObSync:
             obplayer.Log.log('Unable to sync with server.  (' + error_msg + ')', 'error')
             return
 
-	# self.log.log('writing data to database');
+        # self.log.log('writing data to database');
 
-	# setup our broadcaster id list, used to remove deleted items from db after adding below.
+        # setup our broadcaster id list, used to remove deleted items from db after adding below.
         broadcast_id_list = []
 
         for broadcast in broadcasts.getElementsByTagName('broadcast'):
@@ -397,11 +411,11 @@ class ObSync:
                 broadcast_archived,
                 )
 
-	# delete now-removed broadcasts.
+        # delete now-removed broadcasts.
         obplayer.RemoteData.priority_broadcast_remove_deleted(broadcast_id_list)
 
-	# update gui, sync media.
-	# self.sync_media();
+        # update gui, sync media.
+        # self.sync_media();
         self.sync_media_required = True
 
         self.emerg_sync_running = False
@@ -418,10 +432,10 @@ class ObSync:
 
         obplayer.Log.log('syncing playlog with server', 'sync')
 
-	# determine from what point the server is missing playlog entries.
+        # determine from what point the server is missing playlog entries.
         status_xml = self.sync_request('playlog_status')
 
-	# trying to quit? sync request was cancelled.
+        # trying to quit? sync request was cancelled.
         if self.quit:
             return
 
@@ -432,9 +446,9 @@ class ObSync:
             obplayer.Log.log('unable to sync (playlog) - possible configuration or server error', 'error')
             return
 
-        entries = obplayer.PlaylogData.playlog_entries_since(last_timestamp)
+        entries = obplayer.PlaylogData.get_entries_since(last_timestamp)
 
-	# get DOM implementation to create new XML document.
+        # get DOM implementation to create new XML document.
         impl = xml.dom.minidom.getDOMImplementation()
 
         doc = impl.createDocument(None, 'obconnect', None)
@@ -483,7 +497,7 @@ class ObSync:
 
             playlog.appendChild(xmlentry)
 
-	    # keep track of highest ID, we will remove everything of this ID and lower if post is a success.
+            # keep track of highest ID, we will remove everything of this ID and lower if post is a success.
             if highest_id < entry['id']:
                 highest_id = entry['id']
 
@@ -491,7 +505,7 @@ class ObSync:
 
         response_xml = self.sync_request('playlog_post', postxml)
 
-	# trying to quit? sync requestes was cancelled.
+        # trying to quit? sync requestes was cancelled.
         if self.quit:
             return
 
@@ -502,7 +516,7 @@ class ObSync:
             post_status_text = ''
 
         if post_status_text == 'success':
-            obplayer.PlaylogData.remove_playlog_entries_since(highest_id)
+            obplayer.PlaylogData.remove_entries_since(highest_id)
 
         else:
             obplayer.Log.log('unable to submit playlog at this time', 'error')
@@ -541,12 +555,12 @@ class ObSync:
     #
     def check_media(self, media):
 
-	if media['media_type'] in [ 'breakpoint', 'break', 'linein', 'testsignal' ]:
-	    return True
+        if media['media_type'] in [ 'breakpoint', 'break', 'linein', 'testsignal' ]:
+            return True
 
         media_fullpath = obplayer.Config.setting('remote_media') + '/' + media['file_location'][0] + '/' + media['file_location'][1] + '/' + media['filename']
 
-	# TODO provide file hash check (slow) as an option.
+        # TODO provide file hash check (slow) as an option.
 
         if os.path.exists(media_fullpath):
             localfile_size = os.path.getsize(media_fullpath)
@@ -581,9 +595,9 @@ class ObSync:
 
     # call sync now playing update in a separate thread.
     def now_playing_update(self, playlist_id, playlist_end, media_id, media_end, show_name):
-	if obplayer.Config.setting('sync_playlog_enable'):
-	    t = threading.Thread(target=self.now_playing_update_thread, args=(playlist_id, playlist_end, media_id, media_end, show_name))
-	    t.start()
+        if obplayer.Config.setting('sync_playlog_enable'):
+            t = threading.Thread(target=self.now_playing_update_thread, args=(playlist_id, playlist_end, media_id, media_end, show_name))
+            t.start()
 
     #
     # Update 'now playing' information
@@ -618,6 +632,7 @@ class ObSync:
         curl.setopt(pycurl.HEADER, False)
         curl.setopt(pycurl.POST, True)
         curl.setopt(pycurl.POSTFIELDS, enc_postfields)
+        #curl.setopt(pycurl.FOLLOWLOCATION, 1)
 
         curl.setopt(pycurl.LOW_SPEED_LIMIT, 10)
         curl.setopt(pycurl.LOW_SPEED_TIME, 60)
@@ -628,8 +643,8 @@ class ObSync:
         try:
             curl.perform()
         except:
-	    obplayer.Log.log("exception in NowPlayingUpdate thread", 'error')
-	    obplayer.Log.log(traceback.format_exc(), 'error')
+            obplayer.Log.log("exception in NowPlayingUpdate thread", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 
@@ -644,10 +659,10 @@ class ObSync:
         global curl_response_schedule_data
         global curl_response_emerg_data
 
-	sync_url = obplayer.Config.setting('sync_url')
-	if not sync_url:
-	    obplayer.Log.log("sync url is blank, skipping sync request", 'sync')
-	    return ''
+        sync_url = obplayer.Config.setting('sync_url')
+        if not sync_url:
+            obplayer.Log.log("sync url is blank, skipping sync request", 'sync')
+            return ''
 
         curl = pycurl.Curl()
 
@@ -675,8 +690,8 @@ class ObSync:
         else:
             curl.setopt(pycurl.WRITEFUNCTION, curl_response)
 
-	# some options so that it'll abort the transfer if the speed is too low (i.e., network problem)
-	# low speed abort set to 0.01Kbytes/s for 60 seconds).
+        # some options so that it'll abort the transfer if the speed is too low (i.e., network problem)
+        # low speed abort set to 0.01Kbytes/s for 60 seconds).
         curl.setopt(pycurl.LOW_SPEED_LIMIT, 10)
         curl.setopt(pycurl.LOW_SPEED_TIME, 60)
 
@@ -685,12 +700,12 @@ class ObSync:
 
         try:
             curl.perform()
-        #except pycurl.error, error:
+        #except pycurl.error as error:
         #    (errno, errstr) = error
         #    obplayer.Log.log('network error: ' + errstr, 'error')
-	except:
-	    obplayer.Log.log("exception in sync " + request_type + " thread", 'error')
-	    obplayer.Log.log(traceback.format_exc(), 'error')
+        except:
+            obplayer.Log.log("exception in sync " + request_type + " thread", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
 
@@ -723,22 +738,22 @@ class ObSync:
         approved = media['approved']
         archived = media['archived']
 
-	#
-	# create subdirs in media if required.
+        #
+        # create subdirs in media if required.
 
         if os.path.isdir(obplayer.Config.setting('remote_media') + '/' + file_location[0]) == False:
-            os.mkdir(obplayer.Config.setting('remote_media') + '/' + file_location[0], 0755)
+            os.mkdir(obplayer.Config.setting('remote_media') + '/' + file_location[0], 0o755)
 
         if os.path.isdir(obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1]) == False:
-            os.mkdir(obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1], 0755)
+            os.mkdir(obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1], 0o755)
 
         fetch_from_http = False
 
-	# what is our desired output file name?
+        # what is our desired output file name?
 
         media_outfilename = obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1] + '/' + filename
 
-	# determine our sync mode - if local or backup, look in local location first.
+        # determine our sync mode - if local or backup, look in local location first.
 
         sync_mode = obplayer.Config.setting('sync_mode')
         if sync_mode == 'remote':
@@ -753,11 +768,11 @@ class ObSync:
             else:
                 local_media_location = obplayer.Config.setting('local_media')
 
-	    # see if local file exists, and if hash matches.
+            # see if local file exists, and if hash matches.
 
             local_fullpath = local_media_location + '/' + file_location[0] + '/' + file_location[1] + '/' + filename
 
-	    # TODO provide hash match (slow) as an option.
+            # TODO provide hash match (slow) as an option.
 
             if os.path.exists(local_fullpath):
                 local_exists = True
@@ -802,7 +817,7 @@ class ObSync:
             curl.setopt(pycurl.NOPROGRESS, 0)
             curl.setopt(pycurl.PROGRESSFUNCTION, self.curl_progress)
 
-	    # TODO, if a perform fails, then we need to make sure sync will try again shortly (i.e. 90 seconds)
+            # TODO, if a perform fails, then we need to make sure sync will try again shortly (i.e. 90 seconds)
             try:
                 curl.perform()
                 file_download_complete = True
@@ -813,24 +828,24 @@ class ObSync:
             outfile.close()
             curl.close()
 
-	    # trying to quit? don't copy to backup because we probably aborted the transfer.
+            # trying to quit? don't copy to backup because we probably aborted the transfer.
             if self.quit:
                 return
 
-	    # if file download complete and we're on 'backup' mode, copy the downloaded file to our backup repository to keep it up to date.
-	    # also check to make sure this setting is selected
+            # if file download complete and we're on 'backup' mode, copy the downloaded file to our backup repository to keep it up to date.
+            # also check to make sure this setting is selected
 
             if obplayer.Config.setting('sync_copy_media_to_backup') and file_download_complete and sync_mode == 'backup' and os.path.exists(media_outfilename) and os.path.getsize(media_outfilename) == file_size:
-		# create our dirs in the backup location if required
+                # create our dirs in the backup location if required
                 if os.path.isdir(local_media_location + '/' + file_location[0]) == False:
-                    os.mkdir(local_media_location + '/' + file_location[0], 0755)
+                    os.mkdir(local_media_location + '/' + file_location[0], 0o755)
 
                 if os.path.isdir(local_media_location + '/' + file_location[0] + '/' + file_location[1]) == False:
-                    os.mkdir(local_media_location + '/' + file_location[0] + '/' + file_location[1], 0755)
+                    os.mkdir(local_media_location + '/' + file_location[0] + '/' + file_location[1], 0o755)
 
                 obplayer.Log.log('copying downloaded file to backup location', 'sync')
 
-		# copy newly downloaded file to backup
+                # copy newly downloaded file to backup
                 shutil.copy(media_outfilename, local_fullpath)
 
     #

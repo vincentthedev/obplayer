@@ -31,13 +31,13 @@ class ObRecorder:
             exit(1)
 
     def start(self):
-	# determine filename...
+        # determine filename...
         outfile = self.args.dest + '/' + time.strftime('%Y-%m-%d_%H:%M:%S') + '.flac'
 
-	launchcmd = 'alsasrc device=' + self.args.alsa_device \
-		    + ' ! audioconvert ! audioresample ' \
-		    + ' ! audio/x-raw, rate=' + self.args.sample_rate + ', channels=' + self.args.channels \
-		    + ' ! queue ! flacenc quality=5 ! filesink location=' + outfile
+        launchcmd = 'alsasrc device=' + self.args.alsa_device \
+                    + ' ! audioconvert ! audioresample ' \
+                    + ' ! audio/x-raw, rate=' + self.args.sample_rate + ', channels=' + self.args.channels \
+                    + ' ! queue ! flacenc quality=5 ! filesink location=' + outfile
 
         self.pipeline = Gst.parse_launch(launchcmd)
         self.pipeline.set_state(Gst.State.PLAYING)
@@ -54,9 +54,9 @@ def main():
     record.start()
 
     try:
-	mainloop.run()
+        mainloop.run()
     except KeyboardInterrupt:
-	pass
+        pass
 
     record.stop()
     sys.exit(0)

@@ -24,8 +24,10 @@ from __future__ import absolute_import
 
 import obplayer
 
-from obplayer.player.control import ObPlayer, ObPlayerController
+from .control import ObPlayer, ObPlayerController
+from .playlog import ObPlaylogData
 
 def init():
     obplayer.Player = ObPlayer()
+    obplayer.PlaylogData = ObPlaylogData()
 
