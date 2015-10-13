@@ -151,7 +151,7 @@ body
 {
   position: absolute;
   top: 0;
-  right: 0;
+  right: 200px;
   width: 50%;
   height: 100%;
   overflow: auto;
@@ -207,6 +207,106 @@ body
     display: inline-block;
     line-height: normal;
     vertical-align: middle;    
+  }
+
+#main-mixer-toggle
+{
+  position: absolute;
+  right: 0px;
+  z-index: 100;
+
+  font-size: 1.5em;
+  background-color: #333;
+  border: 1px solid #000;
+  padding-right: 0.5em;
+  padding-left: 0.5em;
+
+  bottom: 140px;
+}
+
+#main-mixer
+{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  overflow: auto;
+  max-height: 100%;
+  border-top: 60px solid rgba(0,0,0,0);
+  border-bottom: 140px solid rgba(0,0,0,0);
+  text-align: center;
+
+  border-left: 1px solid #999;
+
+/*
+  position: absolute;
+  bottom: 140px;
+  right: 0px;
+
+  height: 300px;
+  width: 160px;
+
+  border-top: 1px solid #999;
+  border-left: 1px solid #999;
+
+  background-color: #333;
+*/
+}
+
+  #main-mixer #stream-controls {
+    padding: 12px;
+    position: relative;
+    border-bottom: 1px solid #999;
+  }
+
+  #main-mixer #mixer-controls {
+    position: relative;
+  }
+
+  #main-mixer .label
+  {
+    display: block;
+    font-size: 0.8em;
+    padding: 3px;
+  }
+
+  #main-mixer .mixer-channel
+  {
+    display: inline-block;
+    height: 100%;
+    margin-top: 5px;
+    margin-left: 10px;
+  }
+
+  #main-mixer .mixer-channel .label
+  {
+    font-size: 0.8em;
+    text-align: center;
+  }
+
+  #main-mixer .mixer-volume
+  {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #main-mixer .mixer-mute
+  {
+    margin: auto;
+    display: inline-block;
+    border: 1px solid #999;
+    padding: 3px;
+    font-size: 0.8em;
+    text-align: center;
+    width: 100%;
+  }
+
+  #main-mixer .mixer-mute.muted
+  {
+    background-color: #700;
   }
 
 #supfooter
@@ -315,6 +415,11 @@ body
 #info-status[data-status=paused]
 {
   color: #ff4;
+}
+
+#info-status[data-status=not-connected]
+{
+  color: #f44;
 }
 
 .attention {

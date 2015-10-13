@@ -392,6 +392,36 @@
 	    <td>Live Assist HTTP Port:</td>
 	    <td><% obplayer.Config.setting('live_assist_port') %></td>
 	  </tr>
+
+	  <tr class="padding">
+	    <td>Live Assist Microphone Enabled?:</td>
+	    <td><% obplayer.Config.setting('live_assist_mic_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td>Microphone Output Mode:</td>
+	    <td><% obplayer.Config.setting('live_assist_mic_mode') %></td>
+	  </tr>
+	  <tr>
+	    <td>Microphone ALSA Device (if using ALSA):</td>
+	    <td><% obplayer.Config.setting('live_assist_mic_alsa_device') %></td>
+	  </tr>
+	  <tr>
+	    <td>Microphone Jack Port Name (if using Jack):</td>
+	    <td><% obplayer.Config.setting('live_assist_mic_jack_name') %></td>
+	  </tr>
+
+	  <tr class="padding">
+	    <td>Monitor Input Mode:</td>
+	    <td><% obplayer.Config.setting('live_assist_monitor_mode') %></td>
+	  </tr>
+	  <tr>
+	    <td>Monitor ALSA Device (if using ALSA):</td>
+	    <td><% obplayer.Config.setting('live_assist_monitor_alsa_device') %></td>
+	  </tr>
+	  <tr>
+	    <td>Monitor Jack Port Name (if using Jack):</td>
+	    <td><% obplayer.Config.setting('live_assist_monitor_jack_name') %></td>
+	  </tr>
 	</table>
 
       </div>
@@ -856,7 +886,70 @@
               <td><input type="text" name="live_assist_port" value="<% obplayer.Config.setting('live_assist_port', True) %>"></td>
             </tr>
             <tr>
-              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('liveassist');" value="Save"></td>
+              <td>Enable Live Assist Microphone</td>
+              <td><input type="checkbox" name="live_assist_mic_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('live_assist_mic_enable') %>></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Microphone Output Settings</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Microphone Output Mode</td>
+              <td><select id="live_assist_mic_mode_select" name="live_assist_mic_mode">
+                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','auto') %>>Auto Detect</option>
+                  <option value="alsa"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','alsa') %>>ALSA</option>
+                  <option value="esd"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','esd') %>>Esound</option>
+                  <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','jack') %>>JACK</option>
+                  <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','oss') %>>OSS</option>
+                  <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','pulse') %>>Pulse Audio</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('live_assist_mic_mode','test') %>>No Output</option>
+                </select></td>
+            </tr>
+            <tr id="live_assist_mic_alsa_device_row">
+              <td>ALSA Device Name</td>
+              <td><input type="text" name="live_assist_mic_alsa_device" value="<% obplayer.Config.setting('live_assist_mic_alsa_device',True) %>"></td>
+            </tr>
+            <tr id="live_assist_mic_jack_name_row">
+              <td>Jack Port Name</td>
+              <td><input type="text" name="live_assist_mic_jack_name" value="<% obplayer.Config.setting('live_assist_mic_jack_name',True) %>"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Monitor Input Settings</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Monitor Input Mode</td>
+              <td><select id="live_assist_monitor_mode_select" name="live_assist_monitor_mode">
+                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','auto') %>>Auto Detect</option>
+                  <option value="alsa"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','alsa') %>>ALSA</option>
+                  <option value="esd"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','esd') %>>Esound</option>
+                  <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','jack') %>>JACK</option>
+                  <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','oss') %>>OSS</option>
+                  <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','pulse') %>>Pulse Audio</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('live_assist_monitor_mode','test') %>>No Output</option>
+                </select></td>
+            </tr>
+            <tr id="live_assist_monitor_alsa_device_row">
+              <td>ALSA Device Name</td>
+              <td><input type="text" name="live_assist_monitor_alsa_device" value="<% obplayer.Config.setting('live_assist_monitor_alsa_device',True) %>"></td>
+            </tr>
+            <tr id="live_assist_monitor_jack_name_row">
+              <td>Jack Port Name</td>
+              <td><input type="text" name="live_assist_monitor_jack_name" value="<% obplayer.Config.setting('live_assist_monitor_jack_name',True) %>"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
             </tr>
           </tbody>
         </table>

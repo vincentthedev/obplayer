@@ -5,7 +5,7 @@ LA.windowResize = function()
   $('#main-playlist').resizable({
     handles: 'e',
     minWidth: 300,
-    maxWidth: $(window).width()-5,
+    maxWidth: $(window).width()-5 - ( $('#main-mixer').is(':visible') ? $('#main-mixer').width() : 0 ),
     resize: LA.mainResize
   });
 
@@ -14,7 +14,7 @@ LA.windowResize = function()
 
 LA.mainResize = function()
 {
-  $('#main-buttons').width( $(window).width() - $('#main-playlist').width() - 48);
+  $('#main-buttons').width( $(window).width() - $('#main-playlist').width() - 48 - ( $('#main-mixer').is(':visible') ? $('#main-mixer').width() : 0 ));
   $('#main-buttons > div').toggle($('#main-buttons').width()>20)
 }
 
@@ -75,7 +75,7 @@ LA.updateShow = function()
       LA.updateShowLock--;
 
       $('#info-show_name').text(response.value);
-    },'json');
+    },'json').fail(LA.showNotConnected);
 
     // get playlist items and populate
     $.post('/info/playlist', {}, function(response)
@@ -140,7 +140,7 @@ LA.updateShow = function()
           $group.append('<li class="button" id="group-'+group_count+'-item-'+track_count+'"><span></span></li>');
 
           var $track = $('#group-'+group_count+'-item-'+track_count);
-          $track.find('span').text(track.artist+' - '+track.title);
+          $track.find('span').html(track.artist+' - '+track.title+'<br>'+LA.friendlyDuration(track.duration));
           $track.attr('data-type',track.media_type);
           $track.attr('data-artist',track.artist);
           $track.attr('data-title',track.title);
@@ -286,11 +286,19 @@ LA.updateStatus = function()
 
       LA.updateStatusLock--;
 
-    }, 'json');
+    }, 'json').fail(LA.showNotConnected);
 
   }, 500);
 
 }
+
+LA.showNotConnected = function ()
+{
+  $('#info-status').text('not connected');
+  $('#info-status').attr('data-status','not-connected');
+  LA.playing = false;
+}
+
 
 LA.currentTimeOffset = false;
 LA.updateTimes = function()
@@ -298,7 +306,7 @@ LA.updateTimes = function()
   $.post('/info/current_time',{},function(response)
   {
     LA.currentTimeOffset = (Date.now()/1000) - response.value;
-  },'json');
+  },'json').fail(LA.showNotConnected);
 }
 
 LA.tick = function()
@@ -421,7 +429,7 @@ LA.play = function()
   $.post('/command/play',{},function()
   {
     LA.updateStatus();
-  }, 'json');
+  }, 'json').fail(LA.showNotConnected);
 }
 
 LA.pause = function()
@@ -429,7 +437,7 @@ LA.pause = function()
   $.post('/command/pause',{},function()
   {
     LA.updateStatus();
-  }, 'json');
+  }, 'json').fail(LA.showNotConnected);
 }
 
 LA.changePlaylistTrack = function(track, offset)
@@ -438,7 +446,7 @@ LA.changePlaylistTrack = function(track, offset)
   $.post('/command/playlist_seek',{'track_num': track, 'position': offset}, function(response)
   {
     LA.updateStatus();
-  }, 'json');
+  }, 'json').fail(LA.showNotConnected);
 
 }
 
@@ -448,7 +456,7 @@ LA.changeGroupTrack = function(group, track, offset)
   $.post('/command/play_group_item',{'group_num': group, 'group_item_num': track, 'position': offset}, function(response)
   {
     LA.updateStatus();
-  }, 'json');
+  }, 'json').fail(LA.showNotConnected);
 
 }
 
@@ -467,6 +475,26 @@ LA.friendlyTime = function(timestamp)
   return hours+':'+minutes+':'+seconds;
 }
 
+
+LA.toggleMixer = function()
+{
+  if ($('#main-mixer').is(':hidden')) {
+    $('#main-mixer-toggle').html('&raquo;');
+    $('#main-mixer').show();
+    $('#main-buttons').css('right', $('#main-mixer').width());
+    if (($(window).width() - $('#main-playlist').width()) < $('#main-mixer').width())
+      $('#main-playlist').width( $(window).width() - $('#main-mixer').width() - 48 );
+    LA.mainResize();
+  }
+  else {
+    $('#main-mixer-toggle').html('&laquo;');
+    $('#main-mixer').hide();
+    $('#main-buttons').css('right', 0);
+    LA.mainResize();
+  }
+}
+
+
 $(function() {
 
   $('#main-playlist-tracks').disableSelection();
@@ -477,6 +505,8 @@ $(function() {
     start: LA.sliderChangeStart,
     stop: LA.sliderChangeStop
   });
+
+  $('#main-mixer-toggle').click(function (event) { LA.toggleMixer(); });
 
   $(window).resize(LA.windowResize);
   LA.windowResize();

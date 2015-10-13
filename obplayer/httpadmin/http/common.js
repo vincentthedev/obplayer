@@ -64,6 +64,7 @@ Site.saveSuccess = function(response)
   else $('#error').text(response.error).show();
 }
 
+
 Site.injectAlert = function()
 {
   test_alert=$('#test_alert_select').val();
@@ -165,6 +166,7 @@ Site.updateAlertInfo = function()
   }
 }
 
+
 Site.updateStatusInfo = function()
 {
   if($('#tabs .tab[data-content="status"]').hasClass('selected')){
@@ -264,6 +266,7 @@ Site.drawAudioMeter = function(levels)
     c.fillRect(0, i * (canvas.height / channels), canvas.width + (levels[i] * (canvas.width / 100) ), canvas.height / channels);
   }
 }
+
 
 // convert seconds to friendly duration
 Site.friendlyDuration = function(secs)
@@ -385,4 +388,25 @@ $(document).ready(function()
     var id = $(this).attr('data-id');
     window.open('/alertdetails.html?id='+id, '_blank', "width=500, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
   });
+
+
+  $('#live_assist_mic_mode_select').change(function()
+  {
+    if($('#live_assist_mic_mode_select').val()=='alsa') $('#live_assist_mic_alsa_device_row').show();
+    else $('#live_assist_mic_alsa_device_row').hide();
+
+    if($('#live_assist_mic_mode_select').val()=='jack') $('#live_assist_mic_jack_name_row').show();
+    else $('#live_assist_mic_jack_name_row').hide();
+  });
+  $('#live_assist_mic_mode_select').change();
+
+  $('#live_assist_monitor_mode_select').change(function()
+  {
+    if($('#live_assist_monitor_mode_select').val()=='alsa') $('#live_assist_monitor_alsa_device_row').show();
+    else $('#live_assist_monitor_alsa_device_row').hide();
+
+    if($('#live_assist_monitor_mode_select').val()=='jack') $('#live_assist_monitor_jack_name_row').show();
+    else $('#live_assist_monitor_jack_name_row').hide();
+  });
+  $('#live_assist_monitor_mode_select').change();
 });

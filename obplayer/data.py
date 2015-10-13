@@ -267,10 +267,7 @@ class ObConfigData (ObData):
         self.add_setting('audio_in_alsa_device', 'default', 'text')
         self.add_setting('audio_in_jack_name', '', 'text')
 
-        self.add_setting('mic_in_enable', '0', 'bool')
-        self.add_setting('mic_in_mode', 'auto', 'text')
-        self.add_setting('mic_in_alsa_device', 'default', 'text')
-        self.add_setting('mic_in_jack_name', '', 'text')
+
 
         self.add_setting('audiolog_enable', '0', 'bool')
 
@@ -311,6 +308,13 @@ class ObConfigData (ObData):
 
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')
+        self.add_setting('live_assist_mic_enable', '0', 'bool')
+        self.add_setting('live_assist_mic_mode', 'auto', 'text')
+        self.add_setting('live_assist_mic_alsa_device', 'default', 'text')
+        self.add_setting('live_assist_mic_jack_name', '', 'text')
+        self.add_setting('live_assist_monitor_mode', 'auto', 'text')
+        self.add_setting('live_assist_monitor_alsa_device', 'default', 'text')
+        self.add_setting('live_assist_monitor_jack_name', '', 'text')
 
         self.add_setting('alerts_enable', '0', 'bool')
         self.add_setting('alerts_language_primary', 'english', 'text')
