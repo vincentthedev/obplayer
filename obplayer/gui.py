@@ -41,6 +41,7 @@ class ObGui:
         else:
             global Gtk, Gdk, GdkX11, GdkPixbuf, cairo
             gi.require_version('Gtk', '3.0')
+            gi.require_version('GdkX11', '3.0')
             from gi.repository import Gtk, Gdk, GdkX11, GdkPixbuf, cairo
 
         builder = Gtk.Builder()

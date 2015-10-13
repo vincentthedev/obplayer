@@ -60,15 +60,22 @@ class ObAudioOutputBin (ObOutputBin):
 
         self.elements = [ ]
 
+        """
         ## create caps filter element to set the output audio parameters
         caps = Gst.ElementFactory.make('capsfilter', "audiocapsfilter")
-        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2"))
+        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
         self.elements.append(caps)
+        """
 
         # create filter elements
         level = Gst.ElementFactory.make("level", "level")
         level.set_property('interval', int(0.5 * Gst.SECOND))
         self.elements.append(level)
+
+        """
+        tee = Gst.ElementFactory.make("tee", "tee")
+        self.elements.append(tee)
+        """
 
         ## create audio sink element
         audio_output = obplayer.Config.setting('audio_out_mode')
@@ -112,6 +119,16 @@ class ObAudioOutputBin (ObOutputBin):
         self.elements.append(self.audiosink)
 
         self.build_pipeline(self.elements)
+
+        """
+        appsink = Gst.ElementFactory.make("appsink", "appsink")
+        appsink.set_property('emit-signals', True)
+        appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
+        appsink.connect("new-preroll", obplayer.Player.microphone.cb_new_preroll)
+        appsink.connect("new-sample", obplayer.Player.microphone.cb_new_sample)
+        self.bin.add(appsink)
+        tee.link(appsink)
+        """
 
         self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
         self.bin.add_pad(self.sinkpad)

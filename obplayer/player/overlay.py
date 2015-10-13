@@ -24,6 +24,7 @@ import obplayer
 
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('PangoCairo', '1.0')
 from gi.repository import GObject, Gtk, Gdk, GdkX11, GdkPixbuf, Pango, PangoCairo
 import cairo
 

@@ -132,7 +132,7 @@ class ObRemoteData (obplayer.ObData):
         rows = self.query("SELECT id from shows WHERE datetime NOT IN (" + id_list_string + ") and datetime > " + str(ignore_limit))
 
         for row in rows:
-            self.execute("DELETE from shows where id=?", (str(row['id']),))
+            self.execute("DELETE from shows where id = " + str(row['id']))
             self.execute("DELETE from shows_media where local_show_id = " + str(row['id']))
         return True
 
@@ -141,7 +141,7 @@ class ObRemoteData (obplayer.ObData):
         rows = self.query("SELECT id from shows WHERE (datetime+duration) < " + str(time.time()))
 
         for row in rows:
-            self.execute("DELETE from shows where id=?", (str(row['id']),))
+            self.execute("DELETE from shows where id = " + str(row['id']))
             self.execute("DELETE from shows_media where local_show_id = " + str(row['id']))
         return True
 

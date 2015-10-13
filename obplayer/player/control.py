@@ -30,13 +30,13 @@ import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
+gi.require_version('GstVideo', '1.0')
 from gi.repository import GObject, Gst, GstVideo
 
 Gst.init(None)
 
-from obplayer.player import pipes
-from obplayer.player import outputs
-#from obplayer.player import mixer
+from . import pipes
+from . import outputs
 
 if sys.version.startswith('3'):
     unicode = str
@@ -90,13 +90,9 @@ class ObPlayer (object):
         self.silencectrl = self.create_controller('silence', priority=1, allow_requeue=False)
         self.silencectrl.set_request_callback(silence_request)
 
-        #self.mixer = mixer.ObMixer()
-        #self.mixer.start()
-
     def player_quit(self):
         for pipe_name in self.pipes.keys():
             self.pipes[pipe_name].quit()
-        #self.mixer.quit()
 
     @staticmethod
     def media_type_to_class(media_type):
@@ -338,8 +334,9 @@ class ObPlayer (object):
 
     def controller_request_is_playing(self, ctrl):
         for output in self.get_controller_requests(ctrl):
-            request_pipe = self.pipes[self.requests[output]['media_type']]
-            if request_pipe.is_playing():
+            media_type = self.requests[output]['media_type']
+            request_pipe = self.pipes[media_type]
+            if media_type != 'break' and request_pipe.is_playing():
                 return True
         return False
 

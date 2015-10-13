@@ -30,6 +30,7 @@ import random
 
 import gi
 gi.require_version('Gst', '1.0')
+gi.require_version('GstPbutils', '1.0')
 from gi.repository import GObject, Gst, GstPbutils
 
 if sys.version.startswith('3'):
