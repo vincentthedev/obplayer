@@ -267,8 +267,6 @@ class ObConfigData (ObData):
         self.add_setting('audio_in_alsa_device', 'default', 'text')
         self.add_setting('audio_in_jack_name', '', 'text')
 
-
-
         self.add_setting('audiolog_enable', '0', 'bool')
 
         self.add_setting('video_out_enable', '1', 'bool')
@@ -280,6 +278,15 @@ class ObConfigData (ObData):
         self.add_setting('images_framerate', '15', 'int')
 
         self.add_setting('overlay_enable', '0', 'bool')
+
+        self.add_setting('streamer_enable', '0', 'bool')
+        self.add_setting('streamer_audio_in_mode', 'auto', 'text')
+        self.add_setting('streamer_audio_in_alsa_device', 'default', 'text')
+        self.add_setting('streamer_audio_in_jack_name', '', 'text')
+        self.add_setting('streamer_shoutcast_ip', '127.0.0.1', 'text')
+        self.add_setting('streamer_shoutcast_port', '8000', 'int')
+        self.add_setting('streamer_shoutcast_mount', 'stream', 'text')
+        self.add_setting('streamer_shoutcast_password', 'hackme', 'text')
 
         self.add_setting('scheduler_enable', '1', 'bool')
         self.add_setting('sync_device_id', '1', 'int')

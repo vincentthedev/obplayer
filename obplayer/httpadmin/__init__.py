@@ -39,3 +39,6 @@ def init():
     if obplayer.Config.args.disable_http is False:
         HTTPAdminThread().start()
 
+def quit():
+    pass
+

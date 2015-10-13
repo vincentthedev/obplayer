@@ -31,3 +31,6 @@ def init():
     obplayer.Player = ObPlayer()
     obplayer.PlaylogData = ObPlaylogData()
 
+def quit():
+    pass
+

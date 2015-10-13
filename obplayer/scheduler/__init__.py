@@ -64,3 +64,8 @@ def init():
     SyncMediaThread().start()
     SyncPlaylogThread().start()
 
+def quit():
+    # backup our main db to disk.
+    if hasattr(obplayer, 'RemoteData'):
+        obplayer.RemoteData.backup()
+

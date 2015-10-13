@@ -29,3 +29,8 @@ from .audiolog import ObAudioLog
 def init():
     obplayer.AudioLog = ObAudioLog()
 
+def quit():
+    # stop the audio logger.
+    if hasattr(obplayer, 'AudioLog'):
+        obplayer.AudioLog.stop()
+

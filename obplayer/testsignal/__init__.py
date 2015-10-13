@@ -32,3 +32,6 @@ def init():
     ctrl = obplayer.Player.create_controller('testsignal', priority=2, allow_requeue=False)
     ctrl.set_request_callback(testsignal_request)
 
+def quit():
+    pass
+

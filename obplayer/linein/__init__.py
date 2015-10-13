@@ -31,3 +31,6 @@ def init():
     ctrl = obplayer.Player.create_controller('linein', priority=10, allow_requeue=False)
     ctrl.set_request_callback(linein_request)
 
+def quit():
+    pass
+

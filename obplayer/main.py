@@ -38,6 +38,8 @@ GObject.threads_init()
 class ObMainApp:
 
     def __init__(self):
+        self.modules = [ ]
+
         parser = argparse.ArgumentParser(prog='obplayer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Player')
         parser.add_argument('-f', '--fullscreen', action='store_true', help='start fullscreen', default=False)
         parser.add_argument('-m', '--minimize', action='store_true', help='start minimized', default=False)
@@ -88,6 +90,8 @@ class ObMainApp:
                 self.load_module('liveassist')
             if obplayer.Config.setting('audiolog_enable'):
                 self.load_module('audiolog')
+            if obplayer.Config.setting('streamer_enable'):
+                self.load_module('streamer')
 
             #### TEST CODE ####
 
@@ -132,13 +136,8 @@ class ObMainApp:
     def application_shutdown(self):
         obplayer.Log.log("shutting down player...", 'debug')
 
-        # stop the audio logger.
-        if hasattr(obplayer, 'AudioLog'):
-            obplayer.AudioLog.stop()
-
-        # backup our main db to disk.
-        if hasattr(obplayer, 'RemoteData'):
-            obplayer.RemoteData.backup()
+        # call quit() or all modules to allow them to shutdown
+        self.quit_modules()
 
         # send stop signals to all threads
         obplayer.ObThread.stop_all()
@@ -150,7 +149,13 @@ class ObMainApp:
         sys.exit(0)
 
     def load_module(self, name):
+        if name in self.modules:
+            return
         obplayer.Log.log('loading module ' + name, 'module')
         exec('import obplayer.%s; obplayer.%s.init()' % (name, name))
+        self.modules.append(name)
 
+    def quit_modules(self):
+        for name in self.modules:
+            exec('obplayer.%s.quit()' % (name,))
 

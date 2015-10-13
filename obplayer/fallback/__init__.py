@@ -30,4 +30,6 @@ def init():
     global FallbackPlayer
     FallbackPlayer = ObFallbackPlayer()
 
+def quit():
+    pass
 

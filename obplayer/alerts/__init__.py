@@ -31,3 +31,6 @@ def init():
     global Processor
     Processor = ObAlertProcessor()
 
+def quit():
+    pass
+

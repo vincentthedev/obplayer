@@ -18,6 +18,7 @@
       <div class="tab" data-content="basic">Basic</div>
       <div class="tab" data-content="sync">Sync/Media</div>
       <div class="tab" data-content="audio">Audio/Visualization</div>
+      <div class="tab" data-content="streamer">Streaming</div>
       <div class="tab" data-content="alerts">Emergency Alerts</div>
       <div class="tab" data-content="http">HTTP(S) Admin</div>
       <div class="tab" data-content="liveassist">Live Assist</div>
@@ -296,6 +297,39 @@
 	  <tr class="padding">
 	    <td>Test Signal Enabled?:</td>
 	    <td><% obplayer.Config.setting('testsignal_enable') %></td>
+	  </tr>
+
+	  <tr class="padding">
+	    <td>Streaming Enabled?:</td>
+	    <td><% obplayer.Config.setting('streamer_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td>Audio Input Mode:</td>
+	    <td><% obplayer.Config.setting('streamer_audio_in_mode') %></td>
+	  </tr>
+	  <tr>
+	    <td>ALSA Device (if using ALSA):</td>
+	    <td><% obplayer.Config.setting('streamer_audio_in_alsa_device') %></td>
+	  </tr>
+	  <tr>
+	    <td>Jack Port Name (if using Jack):</td>
+	    <td><% obplayer.Config.setting('streamer_audio_in_jack_name') %></td>
+	  </tr>
+	  <tr>
+	    <td>Shoutcast IP:</td>
+	    <td><% obplayer.Config.setting('streamer_shoutcast_ip') %></td>
+	  </tr>
+	  <tr>
+	    <td>Shoutcast Port:</td>
+	    <td><% obplayer.Config.setting('streamer_shoutcast_port') %></td>
+	  </tr>
+	  <tr>
+	    <td>Shoutcast Mountpoint:</td>
+	    <td><% obplayer.Config.setting('streamer_shoutcast_mount') %></td>
+	  </tr>
+	  <tr>
+	    <td>Shoutcast Password:</td>
+	    <td><% obplayer.Config.setting('streamer_shoutcast_password') %></td>
 	  </tr>
 
 	  <tr class="padding">
@@ -672,6 +706,56 @@
           <tbody>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('audio');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div style="display: none;" id="content-streamer">
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Enable Streaming</td>
+              <td><input type="checkbox" name="streamer_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('streamer_enable') %>></td>
+            </tr>
+            <tr>
+              <td>Audio Input Mode</td>
+              <td><select id="streamer_audio_in_mode_select" name="streamer_audio_in_mode">
+                  <option value="auto"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','auto') %>>Auto Detect</option>
+                  <option value="alsa"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','alsa') %>>ALSA</option>
+                  <option value="jack"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','jack') %>>JACK</option>
+                  <option value="oss"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','oss') %>>OSS</option>
+                  <option value="pulse"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','pulse') %>>Pulse Audio</option>
+                  <option value="test"<% obplayer.HTTPAdmin.form_item_selected('streamer_audio_in_mode','test') %>>No Input</option>
+                </select></td>
+            </tr>
+            <tr id="streamer_audio_in_alsa_device_row">
+              <td>ALSA Device Name</td>
+              <td><input type="text" name="streamer_audio_in_alsa_device" value="<% obplayer.Config.setting('streamer_audio_in_alsa_device',True) %>"></td>
+            </tr>
+            <tr id="streamer_audio_in_jack_name_row">
+              <td>Jack Port Name</td>
+              <td><input type="text" name="streamer_audio_in_jack_name" value="<% obplayer.Config.setting('streamer_audio_in_jack_name',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Shoutcast IP</td>
+              <td><input type="text" name="streamer_shoutcast_ip" value="<% obplayer.Config.setting('streamer_shoutcast_ip',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Shoutcast Port</td>
+              <td><input type="text" name="streamer_shoutcast_port" value="<% obplayer.Config.setting('streamer_shoutcast_port',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Shoutcast Mountpoint</td>
+              <td><input type="text" name="streamer_shoutcast_mount" value="<% obplayer.Config.setting('streamer_shoutcast_mount',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Shoutcast Password</td>
+              <td><input type="password" name="streamer_shoutcast_password" value="<% obplayer.Config.setting('streamer_shoutcast_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('streamer');" value="Save"></td>
             </tr>
           </tbody>
         </table>
