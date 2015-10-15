@@ -90,7 +90,7 @@ function ServerConnection(context)
 
   that.send_audio = function (data)
   {
-    if (that.socket)
+    if (that.socket && that.socket.readyState != WebSocket.CLOSING && that.socket.readyState != WebSocket.CLOSED)
       that.socket.send(that.encoder.encodeBuffer(data));
   }
 
@@ -256,7 +256,7 @@ PCMEncoder.prototype.encodeBuffer = function(buffer)
 PCMEncoder.prototype.decodeBuffer = function(buffer)
 {
   var pcm = new Int16Array(buffer);
-  var data = new Float32Array(pcm.length / this.factor);
+  var data = new Float32Array(pcm.length * this.factor);
   for (var i = 0, j = 0; i < pcm.length; i++, j += this.factor) {
     for (var k = 0; k < this.factor; k++) {
       data[j + k] = pcm[i] / 32767;
@@ -275,28 +275,39 @@ AlawEncoder.prototype = new AudioEncoder();
 
 AlawEncoder.prototype.encodeBuffer = function(buffer)
 {
-  // TODO not done
-  var pcm = new Int16Array(buffer.length / this.factor);
+  var alaw = new Uint8Array(buffer.length / this.factor);
   for (var i = 0, j = 0; i < buffer.length; i++, j += this.factor) {
-    pcm[i] = buffer[j] * 32767;
+    var sign = (buffer[j] < 0) ? 0x80 : 0;
+    var sample = Math.abs(buffer[j] * 32767);
+    var exponent = AlawEncoder.prototype.encodeTable[(sample >> 8) & 0x7f];
+    var mantissa = (exponent != 0) ? (sample >> exponent + 3) : (sample >> 4)
+    alaw[i] = sign | (exponent << 4) | (mantissa & 0x0f);
   }
-  return pcm;
+  return alaw;
 }
 
 AlawEncoder.prototype.decodeBuffer = function(buffer)
 {
   var alaw = new Uint8Array(buffer);
-  var data = new Float32Array(alaw.length / this.factor);
+  var data = new Float32Array(alaw.length * this.factor);
   for (var i = 0, j = 0; i < alaw.length; i++, j += this.factor) {
+    //var sample = AlawEncoder.prototype.decodeTable[alaw[i]];
+    var sign = (alaw[i] & 0x80) ? 0x8000 : 0;
+    var exponent = (alaw[i] & 0x70) >> 4;
+    var mantissa = alaw[i] & 0x0f;
+    var sample = (exponent != 0) ? (0x10 | mantissa) << (exponent + 3) : (mantissa << 4);
+    if (sign)
+      sample *= -1;
+    sample /= 32767;
     for (var k = 0; k < this.factor; k++) {
-      data[j + k] = AlawEncoder.prototype.decodeTable[alaw[i]];
+      data[j + k] = sample;
     }
   }
   return data;
 }
 
 AlawEncoder.prototype.encodeTable = [
-  1,1,2,2,3,3,3,3,
+  0,1,2,2,3,3,3,3,
   4,4,4,4,4,4,4,4,
   5,5,5,5,5,5,5,5,
   5,5,5,5,5,5,5,5,
@@ -314,6 +325,7 @@ AlawEncoder.prototype.encodeTable = [
   7,7,7,7,7,7,7,7
 ]
 
+/*
 AlawEncoder.prototype.decodeTable = [
   -0.16797387615588855,   -0.16016113773003327,   -0.1835993530075991,   -0.17578661458174383,  -0.13672292245246742,   -0.12891018402661214,    -0.15234839930417798,   -0.1445356608783227, 
   -0.2304757835627308,    -0.22266304513687551,   -0.24610126041444136,  -0.23828852198858608,  -0.19922482985930967,   -0.1914120914334544,     -0.21485030671102023,   -0.20703756828516495, 
@@ -348,32 +360,45 @@ AlawEncoder.prototype.decodeTable = [
   0.02099673451948607,     0.020020142216254158,   0.02294991912594989,   0.02197332682271798,   0.017090365306558428,   0.016113773003326518,    0.019043549913022248,   0.018066957609790338, 
   0.02880947294534135,     0.02783288064210944,    0.03076265755180517,   0.02978606524857326,   0.02490310373241371,    0.0239265114291818,      0.02685628833887753,    0.02587969603564562
 ]
+*/
 
 
 Stream.connect = function ()
 {
-    if (!Stream.context)
-      Stream.context = new (window.AudioContext || window.webkitAudioContext)();
+  if (!Stream.context)
+    Stream.context = new (window.AudioContext || window.webkitAudioContext)();
 
-    if (!Stream.server) {
-      Stream.server = new ServerConnection(Stream.context);
-      Stream.server.connect();
-    }
-    Stream.updateButtonState(true);
+  if (!Stream.server) {
+    Stream.server = new ServerConnection(Stream.context);
+    Stream.server.connect();
+  }
+  Stream.updateButtonState(true);
+
+  /*
+  buffer = new Uint8Array(256);
+  for (var i = 0; i < 256; i++)
+    buffer[i] = i;
+  enc = new AlawEncoder(22050);
+  data = enc.decodeBuffer(buffer);
+  data2 = enc.encodeBuffer(data);
+  console.log(buffer);
+  console.log(data);
+  console.log(data2);
+  */
 }
 
 Stream.disconnect = function ()
 {
-    if (Stream.server) {
-      Stream.server.disconnect();
-      Stream.server = undefined;
-    }
+  if (Stream.server) {
+    Stream.server.disconnect();
+    Stream.server = undefined;
+  }
 
-    //if (context) {
-    //  context.close();
-    //  context = undefined;
-    //}
-    Stream.updateButtonState(false);
+  //if (context) {
+  //  context.close();
+  //  context = undefined;
+  //}
+  Stream.updateButtonState(false);
 }
 
 Stream.updateButtonState = function (connected)

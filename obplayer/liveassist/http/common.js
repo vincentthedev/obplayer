@@ -440,6 +440,22 @@ LA.pause = function()
   }, 'json').fail(LA.showNotConnected);
 }
 
+LA.next = function()
+{
+  $.post('/command/next',{},function()
+  {
+    LA.updateStatus();
+  }, 'json').fail(LA.showNotConnected);
+}
+
+LA.prev = function()
+{
+  $.post('/command/prev',{},function()
+  {
+    LA.updateStatus();
+  }, 'json').fail(LA.showNotConnected);
+}
+
 LA.changePlaylistTrack = function(track, offset)
 {
 

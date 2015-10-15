@@ -295,6 +295,16 @@ class ObShow (object):
             self.ctrl.stop_requests()
             self.play_current(time.time())
 
+    def next(self):
+        pos = self.playlist.current_pos() + 1
+        if pos < self.playlist.size():
+            self.playlist_seek(pos, 0)
+
+    def previous(self):
+        pos = self.playlist.current_pos() - 1
+        if pos >= 0:
+            self.playlist_seek(pos, 0)
+
     def is_paused(self):
         return self.paused or not self.auto_advance
 
@@ -449,6 +459,22 @@ class ObScheduler:
 
         with self.lock:
             self.present_show.pause()
+        return True
+
+    def next_track(self):
+        if self.present_show == None:
+            return False
+
+        with self.lock:
+            self.present_show.next()
+        return True
+
+    def previous_track(self):
+        if self.present_show == None:
+            return False
+
+        with self.lock:
+            self.present_show.previous()
         return True
 
     def find_group_item_pos(self, group_id):

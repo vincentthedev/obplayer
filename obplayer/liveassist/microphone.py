@@ -33,14 +33,11 @@ from gi.repository import GObject, Gst, GstVideo
 
 
 class ObLiveAssistMicrophone (object):
-    def __init__(self, conn, mode, rate, encoding, blocksize):
+    def __init__(self, conn, mode, params):
         self.conn = conn
         self.mode = mode
-        self.rate = rate
-        self.encoding = encoding
-        self.alaw_encode = True if self.encoding == 'a-law' else False
-        self.blocksize = blocksize
 
+        self.encoder = None
         self.microphone_queue = [ ]
         self.monitor_queue = bytearray()
         self.lock = threading.Lock()
@@ -55,6 +52,8 @@ class ObLiveAssistMicrophone (object):
         if mode == 'monitor' or mode == 'mic+monitor':
             self.add_monitor()
 
+        self.change_format(params)
+
     def add_microphone(self):
         elements = [ ]
 
@@ -62,7 +61,7 @@ class ObLiveAssistMicrophone (object):
         self.appsrc = Gst.ElementFactory.make('appsrc', 'audiomixer-src')
         self.appsrc.set_property('is-live', True)
         self.appsrc.set_property('format', 3)
-        self.appsrc.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
+        #self.appsrc.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
         self.appsrc.connect("need-data", self.cb_need_data)
         elements.append(self.appsrc)
 
@@ -138,7 +137,7 @@ class ObLiveAssistMicrophone (object):
 
         self.appsink = Gst.ElementFactory.make("appsink", "appsink")
         self.appsink.set_property('emit-signals', True)
-        self.appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
+        #self.appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
         #self.appsink.set_property('blocksize', 4096)
         #self.appsink.set_property('max-buffers', 10)
         self.appsink.set_property('drop', True)
@@ -147,6 +146,18 @@ class ObLiveAssistMicrophone (object):
         elements.append(self.appsink)
 
         self.build_pipeline(elements)
+
+    def change_format(self, params):
+        self.rate = params['rate']
+        self.encoding = params['encoding']
+        if self.encoding == 'a-law':
+            self.encoder = AlawEncoder()
+        self.blocksize = params['blocksize']
+
+        if self.appsink:
+            self.appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
+        if self.appsrc:
+            self.appsrc.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
 
     def build_pipeline(self, elements):
         for element in elements:
@@ -190,11 +201,6 @@ class ObLiveAssistMicrophone (object):
             return False
         return True
 
-    def change_format(self, rate, encoding):
-        self.rate = rate
-        self.appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
-        self.appsrc.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
-
     def queue_data(self, data):
         with self.lock:
             self.microphone_queue.append(data)
@@ -205,6 +211,9 @@ class ObLiveAssistMicrophone (object):
                 data = self.microphone_queue.pop(0)
             else:
                 data = bytearray(self.blocksize)
+        if self.encoder:
+            data = self.encoder.decode_buffer(data)
+        print("Decoded: " + str(len(data)) + " " + repr(data[:20]))
         gbuffer = Gst.Buffer.new_allocate(None, len(data), None)
         gbuffer.fill(0, data)
         ret = self.appsrc.emit('push-buffer', gbuffer)
@@ -212,8 +221,9 @@ class ObLiveAssistMicrophone (object):
     def cb_new_sample(self, userdata):
         gbuffer = self.appsink.get_property('last-sample').get_buffer()
         data = gbuffer.extract_dup(0, gbuffer.get_size())
-        if self.alaw_encode:
-            data = self.encodeAlawBuffer(data)
+        if self.encoder:
+            data = self.encoder.encode_buffer(data)
+        print("Encoded: " + str(len(data)) + " " + repr(data[:20]))
         self.monitor_queue += data
 
         while len(self.monitor_queue) >= self.blocksize:
@@ -232,42 +242,65 @@ class ObLiveAssistMicrophone (object):
         return data
     """
 
-    def encodeAlawBuffer(self, data):
+
+class AlawEncoder (object):
+    def encode_buffer(self, data):
         output = bytearray(len(data) / 2)
         for i in range(0, len(data), 2):
-            sample = (ord(data[i]) << 8) | ord(data[i + 1])
-            sign = (~ord(data[i])) & 0x80;
-            if not sign:
-                sample = ~sample;
-            if sample > 32635:
-                sample = 32635;
-            if sample >= 256:
-                exponent = AlawEncodeTable[ord(data[i]) & 0x7F];
-                mantissa = (sample >> (exponent + 3) ) & 0x0F;
-                alawsample = ((exponent << 4) | mantissa);
-            else:
-                alawsample = (sample >> 4) & 0xff;
-
-            alawsample ^= (sign ^ 0x55)
-            output[int(i / 2)] = alawsample
+            sample = (ord(data[i + 1]) << 8) | ord(data[i])
+            sign = 0x80 if sample < 0 else 0
+            sample = abs(sample)
+            exponent = self.AlawEncodeTable[(sample >> 8) & 0x7f]
+            output[i >> 1] = chr(sign | (exponent << 4) | ((sample >> exponent + 3) & 0x0f))
         return output
 
-AlawEncodeTable = [
-     1,1,2,2,3,3,3,3,
-     4,4,4,4,4,4,4,4,
-     5,5,5,5,5,5,5,5,
-     5,5,5,5,5,5,5,5,
-     6,6,6,6,6,6,6,6,
-     6,6,6,6,6,6,6,6,
-     6,6,6,6,6,6,6,6,
-     6,6,6,6,6,6,6,6,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7,
-     7,7,7,7,7,7,7,7
-]
+    def decode_buffer(self, data):
+        output = bytearray(len(data) * 2)
+        for i in range(0, len(data)):
+            sign = True if data[i] & 0x80 else False
+            exponent = (data[i] & 0x70) >> 4
+            if exponent == 0:
+                sample = (data[i] & 0x0f) << 4
+            else:
+                sample = (((data[i] & 0x0f) | 0x10) << (exponent + 3))
+            if sign:
+                sample = sample * -1
+            output[i << 1] = sample & 0xff
+            output[(i << 1) + 1] = (sample >> 8) & 0xff
+        return output
+
+    AlawEncodeTable = [
+         0,1,2,2,3,3,3,3,
+         4,4,4,4,4,4,4,4,
+         5,5,5,5,5,5,5,5,
+         5,5,5,5,5,5,5,5,
+         6,6,6,6,6,6,6,6,
+         6,6,6,6,6,6,6,6,
+         6,6,6,6,6,6,6,6,
+         6,6,6,6,6,6,6,6,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7,
+         7,7,7,7,7,7,7,7
+    ]
+
+"""
+enc = AlawEncoder()
+buffer = bytearray(256)
+for i in range(256):
+    buffer[i] = chr(i)
+print(repr(buffer))
+
+buffer = ''.join(chr(i) for i in range(256))
+
+data = enc.decode_buffer(buffer)
+data2 = enc.encode_buffer(data)
+
+print(repr(data))
+print(repr(data2))
+"""
 

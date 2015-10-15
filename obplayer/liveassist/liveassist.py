@@ -92,12 +92,22 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         elif path == '/command/play':
             if obplayer.Scheduler.unpause_show() == True:
-                return '{"status": True}'
+                return {'status' : True }
             return { 'status' : False }
 
         elif path == '/command/pause':
             if obplayer.Scheduler.pause_show() == True:
-                return '{"status": True}'
+                return { 'status' : True }
+            return { 'status' : False }
+
+        elif path == '/command/next':
+            if obplayer.Scheduler.next_track() == True:
+                return {'status' : True }
+            return { 'status' : False }
+
+        elif path == '/command/prev':
+            if obplayer.Scheduler.previous_track() == True:
+                return {'status' : True }
             return { 'status' : False }
 
         elif path == '/command/play_group_item':
@@ -143,7 +153,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                     if msg['type'] == 'negotiate':
                         print(repr(msg))
                         if not conn.microphone:
-                            conn.microphone = microphone.ObLiveAssistMicrophone(conn, msg['mode'], msg['rate'], msg['encoding'], msg['blocksize'])
+                            conn.microphone = microphone.ObLiveAssistMicrophone(conn, msg['mode'], msg)
                             conn.microphone.start()
                             self.send_mic_status(conn)
                         else:
