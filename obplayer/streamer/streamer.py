@@ -83,10 +83,10 @@ class ObStreamer (object):
         self.elements.append(self.encoder)
 
         self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
-        self.shout2send.set_property('ip', obplayer.Config.setting('streamer_shoutcast_ip'))
-        self.shout2send.set_property('port', int(obplayer.Config.setting('streamer_shoutcast_port')))
-        self.shout2send.set_property('password', obplayer.Config.setting('streamer_shoutcast_password'))
-        self.shout2send.set_property('mount', obplayer.Config.setting('streamer_shoutcast_mount'))
+        self.shout2send.set_property('ip', obplayer.Config.setting('streamer_icecast_ip'))
+        self.shout2send.set_property('port', int(obplayer.Config.setting('streamer_icecast_port')))
+        self.shout2send.set_property('password', obplayer.Config.setting('streamer_icecast_password'))
+        self.shout2send.set_property('mount', obplayer.Config.setting('streamer_icecast_mount'))
         self.elements.append(self.shout2send)
 
         self.build_pipeline(self.elements)

@@ -317,19 +317,19 @@
 	  </tr>
 	  <tr>
 	    <td>Shoutcast IP:</td>
-	    <td><% obplayer.Config.setting('streamer_shoutcast_ip') %></td>
+	    <td><% obplayer.Config.setting('streamer_icecast_ip') %></td>
 	  </tr>
 	  <tr>
 	    <td>Shoutcast Port:</td>
-	    <td><% obplayer.Config.setting('streamer_shoutcast_port') %></td>
+	    <td><% obplayer.Config.setting('streamer_icecast_port') %></td>
 	  </tr>
 	  <tr>
 	    <td>Shoutcast Mountpoint:</td>
-	    <td><% obplayer.Config.setting('streamer_shoutcast_mount') %></td>
+	    <td><% obplayer.Config.setting('streamer_icecast_mount') %></td>
 	  </tr>
 	  <tr>
 	    <td>Shoutcast Password:</td>
-	    <td><% obplayer.Config.setting('streamer_shoutcast_password') %></td>
+	    <td><% obplayer.Config.setting('streamer_icecast_password') %></td>
 	  </tr>
 
 	  <tr class="padding">
@@ -739,20 +739,20 @@
               <td><input type="text" name="streamer_audio_in_jack_name" value="<% obplayer.Config.setting('streamer_audio_in_jack_name',True) %>"></td>
             </tr>
             <tr>
-              <td>Shoutcast IP</td>
-              <td><input type="text" name="streamer_shoutcast_ip" value="<% obplayer.Config.setting('streamer_shoutcast_ip',True) %>"></td>
+              <td>Icecast IP</td>
+              <td><input type="text" name="streamer_icecast_ip" value="<% obplayer.Config.setting('streamer_icecast_ip',True) %>"></td>
             </tr>
             <tr>
-              <td>Shoutcast Port</td>
-              <td><input type="text" name="streamer_shoutcast_port" value="<% obplayer.Config.setting('streamer_shoutcast_port',True) %>"></td>
+              <td>Icecast Port</td>
+              <td><input type="text" name="streamer_icecast_port" value="<% obplayer.Config.setting('streamer_icecast_port',True) %>"></td>
             </tr>
             <tr>
-              <td>Shoutcast Mountpoint</td>
-              <td><input type="text" name="streamer_shoutcast_mount" value="<% obplayer.Config.setting('streamer_shoutcast_mount',True) %>"></td>
+              <td>Icecast Mountpoint</td>
+              <td><input type="text" name="streamer_icecast_mount" value="<% obplayer.Config.setting('streamer_icecast_mount',True) %>"></td>
             </tr>
             <tr>
-              <td>Shoutcast Password</td>
-              <td><input type="password" name="streamer_shoutcast_password" value="<% obplayer.Config.setting('streamer_shoutcast_password',True) %>"></td>
+              <td>Icecast Password</td>
+              <td><input type="password" name="streamer_icecast_password" value="<% obplayer.Config.setting('streamer_icecast_password',True) %>"></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('streamer');" value="Save"></td>
