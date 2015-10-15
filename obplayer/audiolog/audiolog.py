@@ -45,7 +45,7 @@ class ObAudioLog (object):
 
         audio_output = obplayer.Config.setting('audio_out_mode')
         #launchcmd = 'pulsesrc device=' + self.args.alsa_device \
-        launchcmd = 'pulsesrc client-name="obplayer Audiolog Recorder"' \
+        launchcmd = 'pulsesrc client-name="obplayer-audiolog"' \
                     + ' ! audioconvert ! audioresample ' \
                     + ' ! audio/x-raw, rate=' + AUDIOLOG_SAMPLE_RATE + ', channels=' + AUDIOLOG_CHANNELS \
                     + ' ! queue ! vorbisenc quality=0.0 ! oggmux ! queue ! filesink location=' + outfile

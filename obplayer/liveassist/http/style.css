@@ -132,6 +132,11 @@ body
     background: #966;
   }
 
+  #main-playlist .track[data-type=linein], #main-buttons .button[data-type=linein]
+  {
+    background: #666;
+  }
+
   #main-playlist .track[data-type=breakpoint]
   {
     background: #996;

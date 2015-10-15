@@ -91,6 +91,7 @@ class ObLiveAssistMicrophone (object):
 
         elif audio_output == 'pulse':
             self.audiosink = Gst.ElementFactory.make('pulsesink', 'audiosink')
+            self.audiosrc.set_property('client-name', 'obplayer-liveassist: microphone')
 
         elif audio_output == 'test':
             self.audiosink = Gst.ElementFactory.make('fakesink', 'audiosink')
@@ -123,6 +124,7 @@ class ObLiveAssistMicrophone (object):
 
         elif audio_input == 'pulse':
             self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
+            self.audiosrc.set_property('client-name', 'obplayer-liveassist: monitor')
 
         elif audio_input == 'test':
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')

@@ -59,6 +59,7 @@ class ObLineInPipeline (ObGstPipeline):
 
         elif audio_input == 'pulse':
             self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
+            self.audiosrc.set_property('client-name', 'obplayer-pipe: line-in')
 
         elif audio_input == 'test':
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')

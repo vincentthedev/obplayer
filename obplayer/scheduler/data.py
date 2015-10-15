@@ -325,6 +325,9 @@ class ObRemoteData (obplayer.ObData):
 
             groups.append({ 'id' : group_row['id'], 'local_show_id' : group_row['local_show_id'], 'name' : group_row['name'], 'items' : group_items })
 
+        groups.append({ 'id' : -1, 'local_show_id' : -1, 'name' : 'System Requests', 'items' : [
+            { 'id': -1, 'artist': 'System', 'title': "Line-In Audio Source", 'media_type': 'linein', 'duration': 3600, 'media_id': -1, 'order_num': -1, 'file_location': '', 'filename': '' }
+        ] })
         return groups
 
     #
