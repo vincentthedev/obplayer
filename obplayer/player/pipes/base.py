@@ -175,6 +175,18 @@ class ObGstPipeline (object):
             struct = message.get_structure()
             #self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
             self.player.audio_levels = struct.get_value('rms')
+            """
+            peaks = struct.get_value('peak')
+            if peaks is None:
+                self.player.audio_silence = 0
+            else:
+                for level in peaks:
+                    if level > -60:
+                        self.player.audio_silence = 0
+                        return
+                self.player.audio_silence += 1
+            print(self.player.audio_silence)
+            """
 
     """
     def signal_about_to_finish(self, message):

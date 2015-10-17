@@ -270,13 +270,6 @@ body
     position: relative;
   }
 
-  #main-mixer .label
-  {
-    display: block;
-    font-size: 0.8em;
-    padding: 3px;
-  }
-
   #main-mixer .mixer-channel
   {
     display: inline-block;
@@ -289,6 +282,7 @@ body
   {
     font-size: 0.8em;
     text-align: center;
+    padding: 3px;
   }
 
   #main-mixer .mixer-volume
@@ -297,6 +291,7 @@ body
     margin-bottom: 1em;
     margin-left: auto;
     margin-right: auto;
+    height: 250px;
   }
 
   #main-mixer .mixer-mute

@@ -54,6 +54,7 @@ class ObPlayer (object):
         self.patches = { }
         self.pipes = { }
         self.audio_levels = None
+        self.audio_silence = 0
 
     def start_player(self):
         self.thread = obplayer.ObThread('PlayerThread', target=self.try_run)
