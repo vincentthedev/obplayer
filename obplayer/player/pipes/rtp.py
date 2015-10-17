@@ -32,7 +32,7 @@ from gi.repository import GObject, Gst, GstVideo
 from obplayer.player.pipes.base import ObGstPipeline
 
 
-class ObLineInPipeline (ObGstPipeline):
+class ObRTPInputPipeline (ObGstPipeline):
     output_caps = [ 'audio' ]
 
     def __init__(self, name, player):
@@ -40,43 +40,35 @@ class ObLineInPipeline (ObGstPipeline):
         self.player = player
 
         self.pipeline = Gst.Pipeline()
+        self.elements = [ ]
 
-        audio_input = obplayer.Config.setting('audio_in_mode')
-        if audio_input == 'alsa':
-            self.audiosrc = Gst.ElementFactory.make('alsasrc', 'audiosrc')
-            alsa_device = obplayer.Config.setting('audio_in_alsa_device')
-            if alsa_device != '':
-                self.audiosrc.set_property('device', alsa_device)
+        self.udpsrc = Gst.ElementFactory.make('udpsrc')
+        self.udpsrc.set_property('port', 5500)
+        self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
+        #self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,clock-rate=48000,encoding-name=OPUS"))
+        #self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
+        self.elements.append(self.udpsrc)
 
-        elif audio_input == 'jack':
-            self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', 'audiosrc')
-            self.audiosrc.set_property('connect', 0)  # don't autoconnect ports.
-            name = obplayer.Config.setting('audio_in_jack_name')
-            self.audiosrc.set_property('client-name', name if name else 'obplayer')
+        #self.rtpbin = Gst.ElementFactory.make('rtpbin')
+        #self.elements.append(self.rtpbin)
 
-        elif audio_input == 'oss':
-            self.audiosrc = Gst.ElementFactory.make('osssrc', 'audiosrc')
+        self.rtpdepay = Gst.ElementFactory.make('rtpopusdepay')
+        self.elements.append(self.rtpdepay)
 
-        elif audio_input == 'pulse':
-            self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
-            self.audiosrc.set_property('client-name', 'obplayer-pipe: line-in')
-
-        elif audio_input == 'test':
-            self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
-
-        else:
-            self.audiosrc = Gst.ElementFactory.make('autoaudiosrc', 'audiosrc')
-
-        self.pipeline.add(self.audiosrc)
+        self.decoder = Gst.ElementFactory.make('opusdec')
+        self.elements.append(self.decoder)
 
         self.audioconvert = Gst.ElementFactory.make('audioconvert')
-        self.pipeline.add(self.audioconvert)
-        self.audiosrc.link(self.audioconvert)
+        self.elements.append(self.audioconvert)
+
+        self.audioconvert = Gst.ElementFactory.make('audioresample')
+        self.elements.append(self.audioconvert)
 
         self.audiosink = None
         self.fakesink = Gst.ElementFactory.make('fakesink')
         self.set_property('audio-src', self.fakesink)
 
+        self.build_pipeline(self.elements)
         self.register_signals()
 
     def set_property(self, property, value):
@@ -86,7 +78,7 @@ class ObLineInPipeline (ObGstPipeline):
             self.audiosink = value
             if self.audiosink:
                 self.pipeline.add(self.audiosink)
-                self.audioconvert.link(self.audiosink)
+                self.elements[-1].link(self.audiosink)
 
     def patch(self, mode):
         self.wait_state(Gst.State.NULL)

@@ -22,8 +22,8 @@ class ObLocalStreamer (object):
         parser.add_argument('-D', '--alsa-device', type=str, help='Name of the ALSA device to monitor.', default='default')
         parser.add_argument('-J', '--jack-port', type=str, help='Name of the jack port to monitor.', default='default')
         parser.add_argument('-i', '--ip', type=str, help='Icecast server IP address.', default='127.0.0.1')
-        parser.add_argument('-P', '--port', type=str, help='Icecast server port number.', default='8000')
-        parser.add_argument('-p', '--password', type=str, help='Icecast server password.', default='')
+        parser.add_argument('-p', '--port', type=str, help='Icecast server port number.', default='5500')
+        parser.add_argument('-P', '--password', type=str, help='Icecast server password.', default='')
         parser.add_argument('-m', '--mount', type=str, help='Icecast mountpoint to send to.', default='stream')
 
         self.args = parser.parse_args()
@@ -71,6 +71,7 @@ class ObLocalStreamer (object):
         self.elements.append(self.selector)
         """
 
+        """
         self.encoder = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
         self.elements.append(self.encoder)
 
@@ -80,6 +81,19 @@ class ObLocalStreamer (object):
         self.shout2send.set_property('password', self.args.password)
         self.shout2send.set_property('mount', self.args.mount)
         self.elements.append(self.shout2send)
+        """
+
+        self.encoder = Gst.ElementFactory.make("opusenc")
+        self.elements.append(self.encoder)
+
+        self.rtppay = Gst.ElementFactory.make("rtpopuspay")
+        self.elements.append(self.rtppay)
+
+        self.udpsink = Gst.ElementFactory.make("udpsink")
+        self.udpsink.set_property('host', self.args.ip)
+        self.udpsink.set_property('port', int(self.args.port))
+        self.elements.append(self.udpsink)
+
 
         self.build_pipeline(self.elements)
 
@@ -166,12 +180,12 @@ def main():
     global mainloop, streamer
     mainloop = GObject.MainLoop()
 
+    streamer = ObLocalStreamer()
+    #streamer.start()
+
     win = MainWindow()
     win.connect("delete-event", quit)
     win.show_all()
-
-    streamer = ObLocalStreamer()
-    #streamer.start()
 
     try:
         mainloop.run()

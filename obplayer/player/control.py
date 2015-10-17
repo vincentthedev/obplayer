@@ -82,6 +82,7 @@ class ObPlayer (object):
         self.pipes['image'] = pipes.ObImagePipeline('image-pipeline', self)
         self.pipes['break'] = pipes.ObBreakPipeline('audio-break', self)
         self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
+        self.pipes['rtp'] = pipes.ObRTPInputPipeline('rtp-input', self)
 
         def silence_request(self, present_time):
             obplayer.Log.log("player has no requests to play; outputting silence", 'player')
@@ -98,7 +99,7 @@ class ObPlayer (object):
     def media_type_to_class(media_type):
         if media_type in [ 'video', 'testsignal' ]:
             return 'audio/visual'
-        elif media_type in [ 'audio', 'linein', 'break' ]:
+        elif media_type in [ 'audio', 'linein', 'break', 'rtp' ]:
             return 'audio'
         elif media_type in [ 'image' ]:
             return 'visual'

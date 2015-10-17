@@ -27,5 +27,6 @@ from .breakbin import ObBreakPipeline
 from .decodebin import ObPlayBinPipeline, ObDecodeBinPipeline
 from .image import ObImagePipeline
 from .linein import ObLineInPipeline
+from .rtp import ObRTPInputPipeline
 from .testsignal import ObTestSignalPipeline
 
