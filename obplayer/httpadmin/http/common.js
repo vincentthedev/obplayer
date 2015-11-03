@@ -399,6 +399,12 @@ $(document).ready(function()
     window.open('/alertdetails.html?id='+id, '_blank', "width=500, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
   });
 
+  $('input[name="alerts_trigger_serial"]').change(function()
+  {
+    if($(this).is(':checked')) $('#alerts_trigger_serial_file_row').show();
+    else $('#alerts_trigger_serial_file_row').hide();
+  });
+  $('input[name="alerts_trigger_serial"]').change();
 
   $('#live_assist_mic_mode_select').change(function()
   {
@@ -419,4 +425,9 @@ $(document).ready(function()
     else $('#live_assist_monitor_jack_name_row').hide();
   });
   $('#live_assist_monitor_mode_select').change();
+
+  $('table.settings input').each(function ()
+  {
+    $(this).parent().parent().first().attr('title', $(this).attr('title'));
+  });
 });

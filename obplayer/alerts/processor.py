@@ -202,6 +202,7 @@ class ObAlertProcessor (object):
         self.target_geocodes = obplayer.Config.setting('alerts_geocode').split(',')
         self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
         self.repeat_times = obplayer.Config.setting('alerts_repeat_times')
+        self.leadin_delay = obplayer.Config.setting('alerts_leadin_delay')
         self.language_primary = obplayer.Config.setting('alerts_language_primary')
         self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
         self.voice_primary = obplayer.Config.setting('alerts_voice_primary')
@@ -209,6 +210,14 @@ class ObAlertProcessor (object):
 
         self.play_moderates = obplayer.Config.setting('alerts_play_moderates')
         self.play_tests = obplayer.Config.setting('alerts_play_tests')
+
+        self.trigger_streamer = obplayer.Config.setting('alerts_trigger_streamer')
+        self.trigger_serial = obplayer.Config.setting('alerts_trigger_serial')
+        self.trigger_serial_file = obplayer.Config.setting('alerts_trigger_serial_file')
+        self.trigger_serial_fd = None
+        if self.trigger_serial:
+            global serial #, fcntl
+            import serial #, fcntl
 
         self.ctrl = obplayer.Player.create_controller('alerts', priority=100, default_play_mode='overlap', allow_overlay=True)
         #self.ctrl.do_player_request = self.do_player_request
@@ -347,6 +356,40 @@ class ObAlertProcessor (object):
                     except requests.ConnectionError:
                         obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
 
+    def trigger_alert_cycle_start(self):
+        if self.trigger_serial:
+            try:
+                obplayer.Log.log("asserted DTR on serial port " + self.trigger_serial_file, 'alerts')
+                if self.trigger_serial_fd:
+                    self.trigger_serial_fd.close()
+                #self.trigger_serial_fd = open(self.trigger_serial_file, 'r')
+                #fcntl.ioctl(self.trigger_serial_fd, termios.TIOCMBIS, TIOCM_DTR)
+                self.trigger_serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
+                self.trigger_serial_fd.setDTR(True)
+            except:
+                obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
+
+        if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
+            obplayer.Log.log("starting icecast streamer for alert cycle", 'alerts')
+            obplayer.Streamer.start()
+
+    def trigger_alert_cycle_stop(self):
+        if self.trigger_serial:
+            try:
+                obplayer.Log.log("resetting DTR on serial port " + self.trigger_serial_file, 'alerts')
+                if self.trigger_serial_fd:
+                    #self.trigger_serial_fd = open(self.trigger_serial_file, 'r')
+                    #fcntl.ioctl(self.trigger_serial_fd, termios.TIOCMBIC, TIOCM_DTR)
+                    self.trigger_serial_fd.setDTR(False)
+                    self.trigger_serial_fd.close()
+                    self.trigger_serial_fd = None
+            except:
+                obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
+
+        if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
+            obplayer.Log.log("stopping icecast streamer after alert cycle", 'alerts')
+            obplayer.Streamer.stop()
+
     def run(self):
         self.next_expired_check = time.time() + 30
         self.next_alert_check = 0
@@ -379,8 +422,12 @@ class ObAlertProcessor (object):
                 # TODO delete alert data after 90 days
 
                 # play active alerts
-                if present_time > self.next_alert_check:
+                if present_time > self.next_alert_check and len(self.alerts_active) > 0:
                     obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
+
+                    self.ctrl.hold_requests(True)
+                    self.ctrl.add_request(media_type='break', duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
+
                     expired_list = [ ]
                     with self.lock:
                         for alert in self.alerts_active.itervalues():
@@ -396,6 +443,16 @@ class ObAlertProcessor (object):
                     for alert in expired_list:
                         self.mark_expired(alert)
                     self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
+
+                    self.ctrl.add_request(media_type='break', duration=1.0, onend=self.trigger_alert_cycle_stop)
+                    self.ctrl.hold_requests(False)
+
+                    """
+                    print("Starting")
+                    for req in self.ctrl.queue:
+                        print("{start_time} {end_time} {media_type}".format(**req))
+                    print("Ending")
+                    """
 
                 # reset fetcher if we stop receiving heartbeats
                 if self.fetcher.last_received and time.time() - self.fetcher.last_received > 360:

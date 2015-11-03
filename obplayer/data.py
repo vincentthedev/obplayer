@@ -224,6 +224,9 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
             return 'The archive #2 URL does not appear to be valid.'
 
+        if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
+            return 'The RS-232 device filename does not appear to be valid.'
+
         geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
             return 'Geocodes must be specified as a list of comma-separated numbers.'
@@ -287,11 +290,12 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')
         self.add_setting('streamer_icecast_password', 'hackme', 'text')
+        self.add_setting('streamer_play_on_startup', '1', 'bool')
 
         self.add_setting('scheduler_enable', '1', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
         self.add_setting('sync_device_password', 'password', 'text')
-        self.add_setting('sync_url', 'http://demo.openbroadcaster.com/remote.php', 'text')
+        self.add_setting('sync_url', 'https://demo.openbroadcaster.pro/remote.php', 'text')
         self.add_setting('sync_buffer', '24', 'int')
         self.add_setting('sync_showlock', '20', 'int')
         self.add_setting('sync_playlog_enable', '1', 'bool')
@@ -331,6 +335,7 @@ class ObConfigData (ObData):
         self.add_setting('alerts_geocode', '59', 'text')
         self.add_setting('alerts_repeat_interval', '30', 'int')
         self.add_setting('alerts_repeat_times', '0', 'int')
+        self.add_setting('alerts_leadin_delay', '1', 'int')
         self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
         self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
         self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
@@ -338,6 +343,9 @@ class ObConfigData (ObData):
         self.add_setting('alerts_truncate', '0', 'bool')
         self.add_setting('alerts_play_moderates', '1', 'bool')
         self.add_setting('alerts_play_tests', '0', 'bool')
+        self.add_setting('alerts_trigger_serial', '0', 'bool')
+        self.add_setting('alerts_trigger_serial_file', '', 'text')
+        self.add_setting('alerts_trigger_streamer', '0', 'bool')
 
         self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')

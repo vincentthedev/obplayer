@@ -96,14 +96,18 @@ class ObPlayer (object):
         for pipe_name in self.pipes.keys():
             self.pipes[pipe_name].quit()
 
-    @staticmethod
-    def media_type_to_class(media_type):
+    def media_type_to_class(self, media_type):
         if media_type in [ 'video', 'testsignal' ]:
             return 'audio/visual'
         elif media_type in [ 'audio', 'linein', 'break', 'rtp' ]:
             return 'audio'
         elif media_type in [ 'image' ]:
             return 'visual'
+        """
+        if media_type not in self.pipes:
+            obplayer.Log.log("unknown media type request", 'error')
+        return '/'.join(self.pipes[media_type].output_caps)
+        """
 
     @staticmethod
     def get_media_location(file_location):
@@ -262,6 +266,9 @@ class ObPlayer (object):
         request_pipe.set_request(req)
         request_pipe.start()
 
+        if req['onstart']:
+            req['onstart']()
+
         if outputs.Overlay and req['overlay_text']:
             outputs.Overlay.set_message(req['overlay_text'])
 
@@ -283,6 +290,9 @@ class ObPlayer (object):
 
         if outputs.Overlay and req['overlay_text']:
             outputs.Overlay.set_message('')
+
+        if req['onend']:
+            req['onend']()
 
         for name in self.requests.keys():
             if self.requests[name] == req:
@@ -380,13 +390,14 @@ class ObPlayerController (object):
         self.lock = threading.Lock()
         self.queue = [ ]
         self.next_update = 0
+        self.hold_requests_flag = False
 
         # TODO you could have a list of failed requests, where the request is automatically added (auto limit to say 5 entries)
         self.failed = [ ]
 
     # media_type can be:        audio, video, image, linein, break, testsignal
     # play_mode can be:                exclusive, overlap
-    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None):
+    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
         # expand file location if necessary and check that media file exists
         if file_location:
             file_location = ObPlayer.get_media_location(file_location)
@@ -406,6 +417,10 @@ class ObPlayerController (object):
             play_mode = self.default_play_mode
 
         req = {
+            'controller' : self,
+            'priority' : self.priority,
+            'media_class' : self.player.media_type_to_class(media_type),
+
             'media_type' : media_type,
             'start_time' : start_time,
             'end_time' : end_time,
@@ -419,9 +434,8 @@ class ObPlayerController (object):
             'title' : title,
             'play_mode' : play_mode,
             'overlay_text' : overlay_text,
-            'priority' : self.priority,
-            'media_class' : ObPlayer.media_type_to_class(media_type),
-            'controller' : self
+            'onstart' : onstart,
+            'onend' : onend
         }
 
         self.insert_request(req)
@@ -467,6 +481,8 @@ class ObPlayerController (object):
         self.player.stop_controller_requests(self)
 
     def get_request(self, present_time, allow_query=False):
+        if self.hold_requests_flag is True:
+            return None
         index = self.find_current_request(present_time)
         if index is None and allow_query is True:
             self.call_player_request(present_time)
@@ -499,6 +515,9 @@ class ObPlayerController (object):
                 if req['end_time'] > start_time:
                     start_time = req['end_time']
         return start_time
+
+    def hold_requests(self, value):
+        self.hold_requests_flag = value
 
     def set_request_callback(self, func):
         self.do_player_request = func

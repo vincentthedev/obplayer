@@ -331,6 +331,10 @@
 	    <td>Shoutcast Password:</td>
 	    <td><% obplayer.Config.setting('streamer_icecast_password') %></td>
 	  </tr>
+	  <tr>
+	    <td>Play Stream on Startup?:</td>
+	    <td><% obplayer.Config.setting('streamer_play_on_startup') %></td>
+	  </tr>
 
 	  <tr class="padding">
 	    <td>Emergency Alerts Enabled?:</td>
@@ -347,6 +351,10 @@
 	  <tr>
 	    <td>Maximum Repeats:</td>
 	    <td><% obplayer.Config.setting('alerts_repeat_times') %> time(s)</td>
+	  </tr>
+	  <tr>
+	    <td>Lead-In Delay:</td>
+	    <td><% obplayer.Config.setting('alerts_leadin_delay') %> minutes</td>
 	  </tr>
 	  <tr>
 	    <td>TTS Primary Language (Voice):</td>
@@ -371,6 +379,18 @@
 	  <tr>
 	    <td>NAAD Archive URL #2:</td>
 	    <td><% obplayer.Config.setting('alerts_naad_archive2') %></td>
+	  </tr>
+	  <tr>
+	    <td>Trigger RS-232 DTR on Alerts?:</td>
+	    <td><% obplayer.Config.setting('alerts_trigger_serial') %></td>
+	  </tr>
+	  <tr>
+	    <td>Filename for RS-232 DTR Trigger:</td>
+	    <td><% obplayer.Config.setting('alerts_trigger_serial_file') %></td>
+	  </tr>
+	  <tr>
+	    <td>Trigger Icecast Stream on Alerts?:</td>
+	    <td><% obplayer.Config.setting('alerts_trigger_streamer') %></td>
 	  </tr>
 	  <tr>
 	    <td>Truncate Long Messages?:</td>
@@ -755,6 +775,10 @@
               <td><input type="password" name="streamer_icecast_password" value="<% obplayer.Config.setting('streamer_icecast_password',True) %>"></td>
             </tr>
             <tr>
+              <td>Play Stream on Startup</td>
+              <td><input type="checkbox" name="streamer_play_on_startup" value="1"<% obplayer.HTTPAdmin.form_item_checked('streamer_play_on_startup') %> title="Uncheck this when using the 'trigger icecast stream on alerts' feature on the alerts tab"></td>
+            </tr>
+            <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('streamer');" value="Save"></td>
             </tr>
           </tbody>
@@ -838,6 +862,10 @@
               <td><input type="text" name="alerts_repeat_times" value="<% obplayer.Config.setting('alerts_repeat_times', True) %>"></td>
             </tr>
             <tr>
+              <td>Lead-In Delay (in seconds)</td>
+              <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
+            </tr>
+            <tr>
               <td>NAAD Stream #1 URL</td>
               <td><input type="text" name="alerts_naad_stream1" value="<% obplayer.Config.setting('alerts_naad_stream1',True) %>"></td>
             </tr>
@@ -852,6 +880,18 @@
             <tr>
               <td>NAAD Archive #2 URL</td>
               <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Trigger RS-232 DTR on Alerts</td>
+              <td><input type="checkbox" name="alerts_trigger_serial" value="<% obplayer.Config.setting('alerts_trigger_serial',True) %>"></td>
+            </tr>
+            <tr id="alerts_trigger_serial_file_row">
+              <td>RS-232 Device Filename</td>
+              <td><input type="text" name="alerts_trigger_serial_file" value="<% obplayer.Config.setting('alerts_trigger_serial_file',True) %>" title="The device filename of the serial port on which to set the DTR line to signal when an alert cycle is under way."></td>
+            </tr>
+            <tr>
+              <td>Trigger Icecast Stream on Alerts</td>
+              <td><input type="checkbox" name="alerts_trigger_streamer" value="<% obplayer.Config.setting('alerts_trigger_streamer',True) %>"></td>
             </tr>
             <tr>
               <td>Truncate Long Alert Messages</td>

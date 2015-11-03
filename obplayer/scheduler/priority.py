@@ -38,14 +38,14 @@ class ObPriorityBroadcaster:
     def check_update(self):
         present_time = time.time()
 
-        # run through emergency broadcasts and play if it's time. don't play while syncing emerg since it might be changing data or downloading new data.
+        # run through priority broadcasts and play if it's time. don't play while syncing emerg since it might be changing data or downloading new data.
         if obplayer.RemoteData.priority_broadcasts != False and obplayer.Sync.emerg_sync_running == False:
             for (bindex, broadcast) in obplayer.RemoteData.priority_broadcasts.iteritems():
                 if broadcast['next_play'] <= present_time:
 
                     if obplayer.Sync.check_media(broadcast):
 
-                        obplayer.Log.log('play emergency broadcast', 'emerg')
+                        obplayer.Log.log('play priority broadcast', 'emerg')
 
                         self.ctrl.add_request(
                             media_type = broadcast['media_type'],

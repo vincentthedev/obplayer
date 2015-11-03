@@ -28,7 +28,8 @@ from .streamer import ObStreamer
 
 def init():
     obplayer.Streamer = ObStreamer()
-    obplayer.Streamer.start()
+    if obplayer.Config.setting('streamer_play_on_startup'):
+        obplayer.Streamer.start()
 
 def quit():
     obplayer.Streamer.quit()
