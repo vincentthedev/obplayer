@@ -54,6 +54,11 @@ Include if using alerts module:
 - mbrola-fr4
 
 
+Include if using RS-232 option in the alerts module:
+
+- python-serial
+
+
 Include if sharing multiple OpenBroadcaster players with a local media library:
 
 - cifs-utils

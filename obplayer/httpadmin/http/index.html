@@ -354,7 +354,11 @@
 	  </tr>
 	  <tr>
 	    <td>Lead-In Delay:</td>
-	    <td><% obplayer.Config.setting('alerts_leadin_delay') %> minutes</td>
+	    <td><% obplayer.Config.setting('alerts_leadin_delay') %> seconds</td>
+	  </tr>
+	  <tr>
+	    <td>Lead-Out Delay:</td>
+	    <td><% obplayer.Config.setting('alerts_leadout_delay') %> seconds</td>
 	  </tr>
 	  <tr>
 	    <td>TTS Primary Language (Voice):</td>
@@ -864,6 +868,10 @@
             <tr>
               <td>Lead-In Delay (in seconds)</td>
               <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
+            </tr>
+            <tr>
+              <td>Lead-Out Delay (in seconds)</td>
+              <td><input type="text" name="alerts_leadout_delay" value="<% obplayer.Config.setting('alerts_leadout_delay', True) %>" title="The time in seconds of silence after an alert cycle has completed."></td>
             </tr>
             <tr>
               <td>NAAD Stream #1 URL</td>

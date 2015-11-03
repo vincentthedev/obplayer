@@ -203,6 +203,7 @@ class ObAlertProcessor (object):
         self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
         self.repeat_times = obplayer.Config.setting('alerts_repeat_times')
         self.leadin_delay = obplayer.Config.setting('alerts_leadin_delay')
+        self.leadout_delay = obplayer.Config.setting('alerts_leadout_delay')
         self.language_primary = obplayer.Config.setting('alerts_language_primary')
         self.language_secondary = obplayer.Config.setting('alerts_language_secondary')
         self.voice_primary = obplayer.Config.setting('alerts_voice_primary')
@@ -444,7 +445,7 @@ class ObAlertProcessor (object):
                         self.mark_expired(alert)
                     self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
 
-                    self.ctrl.add_request(media_type='break', duration=1.0, onend=self.trigger_alert_cycle_stop)
+                    self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
                     self.ctrl.hold_requests(False)
 
                     """

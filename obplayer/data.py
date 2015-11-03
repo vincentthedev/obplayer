@@ -231,6 +231,12 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
             return 'Geocodes must be specified as a list of comma-separated numbers.'
 
+        if setting_name == 'alerts_leadin_delay' and setting_value <= 0:
+            return 'The alert lead-in delay must be 1s or greater.'
+
+        if setting_name == 'alerts_leadout_delay' and setting_value <= 0:
+            return 'The alert lead-out delay must be 1s or greater.'
+
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
             return 'The fallback media directory you have specified does not exist.'
 
@@ -336,6 +342,7 @@ class ObConfigData (ObData):
         self.add_setting('alerts_repeat_interval', '30', 'int')
         self.add_setting('alerts_repeat_times', '0', 'int')
         self.add_setting('alerts_leadin_delay', '1', 'int')
+        self.add_setting('alerts_leadout_delay', '1', 'int')
         self.add_setting('alerts_naad_stream1', "http://streaming1.naad-adna.pelmorex.com:8080", 'text')
         self.add_setting('alerts_naad_stream2', "http://streaming2.naad-adna.pelmorex.com:8080", 'text')
         self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
