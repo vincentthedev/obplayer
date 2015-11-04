@@ -855,15 +855,15 @@
             </tr>
             <tr>
               <td>Location Geocode</td>
-              <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>"></td>
+              <td><input type="text" name="alerts_geocode" value="<% obplayer.Config.setting('alerts_geocode', True) %>" title="A comma-separated list of partial geocodes.  The first part of an alert's geocode must match one of the partial geocodes in this list for the alert to be active.  See http://www.statcan.gc.ca/eng/subjects/standard/sgc/geography for a list of Canadian geocodes."></td>
             </tr>
             <tr>
               <td>Alert Repeat Interval (in minutes)</td>
-              <td><input type="text" name="alerts_repeat_interval" value="<% obplayer.Config.setting('alerts_repeat_interval', True) %>"></td>
+              <td><input type="text" name="alerts_repeat_interval" value="<% obplayer.Config.setting('alerts_repeat_interval', True) %>" title="The time in minutes between each alert cycle (not including the length of the cycle).  If a new active alert is received before this time completes, an alert cycle will start 20 seconds later."></td>
             </tr>
             <tr>
               <td>Plays Per Alert (0 = no limit)</td>
-              <td><input type="text" name="alerts_repeat_times" value="<% obplayer.Config.setting('alerts_repeat_times', True) %>"></td>
+              <td><input type="text" name="alerts_repeat_times" value="<% obplayer.Config.setting('alerts_repeat_times', True) %>" title="The number of alert cycles in which a given alert will be played before it expires.  Setting this to 0 will repeat each alert until that alert's expiration time is reached or the alert is cancelled by the alerting authority."></td>
             </tr>
             <tr>
               <td>Lead-In Delay (in seconds)</td>
@@ -891,7 +891,7 @@
             </tr>
             <tr>
               <td>Trigger RS-232 DTR on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_serial" value="<% obplayer.Config.setting('alerts_trigger_serial',True) %>"></td>
+              <td><input type="checkbox" name="alerts_trigger_serial" value="<% obplayer.Config.setting('alerts_trigger_serial',True) %>" title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
             </tr>
             <tr id="alerts_trigger_serial_file_row">
               <td>RS-232 Device Filename</td>
@@ -899,19 +899,19 @@
             </tr>
             <tr>
               <td>Trigger Icecast Stream on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_streamer" value="<% obplayer.Config.setting('alerts_trigger_streamer',True) %>"></td>
+              <td><input type="checkbox" name="alerts_trigger_streamer" value="<% obplayer.Config.setting('alerts_trigger_streamer',True) %>" title="If checked, the streamer module (configured on the 'Streaming' tab) will be started when an alert cycle starts, and stopped when it completes.  Make sure to uncheck the 'Play Stream on Startup' option on the 'Streaming' tab so that it only doesn't automatically start when the program first starts."></td>
             </tr>
             <tr>
               <td>Truncate Long Alert Messages</td>
-              <td><input type="checkbox" name="alerts_truncate" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_truncate') %>></td>
+              <td><input type="checkbox" name="alerts_truncate" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_truncate') %> title="If checked, alerts that are not marked as 'Broadcast Immediately' will be truncated after the first paragraph (after the first blank line).  Alerts marked 'Broadcast Immediately' will never be truncated."></td>
             </tr>
             <tr>
               <td>Play Moderately Severe Alerts</td>
-              <td><input type="checkbox" name="alerts_play_moderates" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_moderates') %>></td>
+              <td><input type="checkbox" name="alerts_play_moderates" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_moderates') %> title="Include alerts that are not marked 'Broadcast Immediately'.  Alerts marked 'Broadcast Immediately' will always be played."></td>
             </tr>
             <tr>
               <td>Play Test Alerts</td>
-              <td><input type="checkbox" name="alerts_play_tests" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_tests') %>></td>
+              <td><input type="checkbox" name="alerts_play_tests" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_tests') %> title="Include alerts that are marked as a test.  These are not scheduled tests of the alert system, but internal system tests which are not normally played to the public."></td>
             </tr>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('alerts');" value="Save"></td>
