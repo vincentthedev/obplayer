@@ -369,6 +369,7 @@ class ObAlertProcessor (object):
                 self.trigger_serial_fd.setDTR(True)
             except:
                 obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
         if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
             obplayer.Log.log("starting icecast streamer for alert cycle", 'alerts')
@@ -386,6 +387,7 @@ class ObAlertProcessor (object):
                     self.trigger_serial_fd = None
             except:
                 obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
         if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
             obplayer.Log.log("stopping icecast streamer after alert cycle", 'alerts')
