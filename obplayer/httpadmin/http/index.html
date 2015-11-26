@@ -891,7 +891,7 @@
             </tr>
             <tr>
               <td>Trigger RS-232 DTR on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_serial" value="<% obplayer.Config.setting('alerts_trigger_serial',True) %>" title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
+              <td><input type="checkbox" name="alerts_trigger_serial" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_serial') %> title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
             </tr>
             <tr id="alerts_trigger_serial_file_row">
               <td>RS-232 Device Filename</td>
@@ -899,7 +899,7 @@
             </tr>
             <tr>
               <td>Trigger Icecast Stream on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_streamer" value="<% obplayer.Config.setting('alerts_trigger_streamer',True) %>" title="If checked, the streamer module (configured on the 'Streaming' tab) will be started when an alert cycle starts, and stopped when it completes.  Make sure to uncheck the 'Play Stream on Startup' option on the 'Streaming' tab so that it only doesn't automatically start when the program first starts."></td>
+              <td><input type="checkbox" name="alerts_trigger_streamer" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_streamer') %> title="If checked, the streamer module (configured on the 'Streaming' tab) will be started when an alert cycle starts, and stopped when it completes.  Make sure to uncheck the 'Play Stream on Startup' option on the 'Streaming' tab so that it only doesn't automatically start when the program first starts."></td>
             </tr>
             <tr>
               <td>Truncate Long Alert Messages</td>
