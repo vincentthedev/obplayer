@@ -216,9 +216,7 @@ class ObAlertProcessor (object):
         self.trigger_serial = obplayer.Config.setting('alerts_trigger_serial')
         self.trigger_serial_file = obplayer.Config.setting('alerts_trigger_serial_file')
         self.trigger_serial_fd = None
-        if self.trigger_serial:
-            global serial #, fcntl
-            import serial #, fcntl
+        self.trigger_initialize()
 
         self.ctrl = obplayer.Player.create_controller('alerts', priority=100, default_play_mode='overlap', allow_overlay=True)
         #self.ctrl.do_player_request = self.do_player_request
@@ -356,6 +354,20 @@ class ObAlertProcessor (object):
                             break
                     except requests.ConnectionError:
                         obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
+
+    def trigger_initialize(self):
+        if self.trigger_serial:
+            try:
+                obplayer.Log.log("initializing serial trigger on port " + self.trigger_serial_file, 'alerts')
+                global serial
+                import serial
+
+                serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
+                serial_fd.setDTR(False)
+                serial_fd.close()
+            except:
+                obplayer.Log.log("failed to initalize serial trigger", 'alerts')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def trigger_alert_cycle_start(self):
         if self.trigger_serial:
