@@ -110,11 +110,13 @@ function AudioTransmitter(server, sampleSize)
 
   that.server = server;
   that.processor = that.server.context.createScriptProcessor(sampleSize, 1, 1);
+  //that.vu_meter = document.getElementById('mixer-vu-meter');
 
   that.processor.onaudioprocess = function (event)
   {
     var data = event.inputBuffer.getChannelData(0);
     that.server.send_audio(data);
+    //$(that.vu_meter).css('width', (Math.max.apply(Math, data) * 100) + '%');
     //event.outputBuffer.getChannelData(0).set(data);
   }
 
@@ -380,6 +382,8 @@ Stream.updateButtonState = function (connected)
 
     $('#mic-connect').removeAttr('disabled');
     $('#mic-disconnect').attr('disabled', true);
+
+  $('#mixer-vu-meter .level').css('width', '100%');
   }
 }
 
@@ -405,7 +409,10 @@ Stream.muteMic = function()
 Stream.handle_message = function (msg)
 {
 
-  if (msg.type == 'mic-status') {
+  if (msg.type == 'mic-level') {
+    $('#mixer-vu-meter .level').css('width', (100 - Math.max(0, 100 + msg.level[0])) + '%');
+  }
+  else if (msg.type == 'mic-status') {
     $('#mixer-mic .mixer-volume').slider('value', msg.volume);
     if (msg.mute)
       $('#mixer-mic .mixer-mute').addClass('muted');

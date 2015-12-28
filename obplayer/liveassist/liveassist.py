@@ -70,7 +70,13 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         #if not access:
         #    return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
 
-        if path == '/info/current_time':
+        if path == '/info/levels':
+            return obplayer.Scheduler.get_audio_levels()
+
+        elif path == '/info/play_status':
+            return obplayer.Scheduler.get_now_playing()
+
+        elif path == '/info/current_time':
             return { 'value' : str(time.time()) }
 
         elif path == '/info/show_name':
@@ -86,9 +92,6 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         elif path == '/info/liveassist_groups':
             groups = obplayer.Scheduler.get_current_groups()
             return groups
-
-        elif path == '/info/play_status':
-            return obplayer.Scheduler.get_now_playing()
 
         elif path == '/command/play':
             if obplayer.Scheduler.unpause_show() == True:
@@ -151,7 +154,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 if opcode == httpserver.WS_OP_TEXT:
                     msg = json.loads(msg)
                     if msg['type'] == 'negotiate':
-                        print(repr(msg))
+                        #print(repr(msg))
                         if not conn.microphone:
                             conn.microphone = microphone.ObLiveAssistMicrophone(conn, msg['mode'], msg)
                             conn.microphone.start()

@@ -67,6 +67,11 @@
         <button id="mic-connect">Connect</button>
         <button id="mic-disconnect">Disconnect</button>
       </div>
+
+      <div>
+        <div id="mixer-vu-meter"><div class="level"></div></div>
+      </div>
+
     </div>
 
     <div id="mixer-controls">
@@ -103,7 +108,8 @@
 </div>
 
 <div id="footer">
-  <div><div style="display: none;"><span class="label">Total Media Time Remaining</span><span id="info-media_remaining">00:15:52</span></div></div>
+  <!-- <div><div style="display: none;"><span class="label">Total Media Time Remaining</span><span id="info-media_remaining">00:15:52</span></div></div> -->
+  <div><span class="label">Meter</span><span><div id="info-vu-meter"><div class="level"></div></div></span></div>
   <!-- <div><div style="display: none;"><span class="label">Total Breakpoint Time Remaining</span><span id="info-remaining">00:02:23</span></div></div> -->
   <div><span class="label">Track Remaining</span><span id="info-track_remaining"></span></div>
   <div><span class="label">Show End</span><span id="info-show_end">15:00:00</span></div>

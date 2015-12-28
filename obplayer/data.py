@@ -296,6 +296,10 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')
         self.add_setting('streamer_icecast_password', 'hackme', 'text')
+        self.add_setting('streamer_icecast_streamname', '', 'text')
+        self.add_setting('streamer_icecast_description', '', 'text')
+        self.add_setting('streamer_icecast_url', '', 'text')
+        self.add_setting('streamer_icecast_public', '1', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
 
         self.add_setting('scheduler_enable', '1', 'bool')

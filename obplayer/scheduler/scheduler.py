@@ -498,6 +498,7 @@ class ObScheduler:
             data['status'] = 'playing'
         else:
             data['status'] = 'stopped'
+        data['audio_levels'] = self.ctrl.player.get_audio_levels()
 
         if self.present_show != None and self.present_show.now_playing != None:
             now_playing = self.present_show.now_playing
@@ -519,5 +520,8 @@ class ObScheduler:
             data['track'] = -1
 
         return data
+
+    def get_audio_levels(self):
+        return self.ctrl.player.get_audio_levels()
 
  

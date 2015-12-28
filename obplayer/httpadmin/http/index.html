@@ -316,20 +316,36 @@
 	    <td><% obplayer.Config.setting('streamer_audio_in_jack_name') %></td>
 	  </tr>
 	  <tr>
-	    <td>Shoutcast IP:</td>
+	    <td>Icecast IP:</td>
 	    <td><% obplayer.Config.setting('streamer_icecast_ip') %></td>
 	  </tr>
 	  <tr>
-	    <td>Shoutcast Port:</td>
+	    <td>Icecast Port:</td>
 	    <td><% obplayer.Config.setting('streamer_icecast_port') %></td>
 	  </tr>
 	  <tr>
-	    <td>Shoutcast Mountpoint:</td>
+	    <td>Icecast Mountpoint:</td>
 	    <td><% obplayer.Config.setting('streamer_icecast_mount') %></td>
 	  </tr>
 	  <tr>
-	    <td>Shoutcast Password:</td>
+	    <td>Icecast Password:</td>
 	    <td><% obplayer.Config.setting('streamer_icecast_password') %></td>
+	  </tr>
+	  <tr>
+	    <td>Icecast Stream Name:</td>
+	    <td><% obplayer.Config.setting('streamer_icecast_streamname') %></td>
+	  </tr>
+	  <tr>
+	    <td>Icecast Description:</td>
+	    <td><% obplayer.Config.setting('streamer_icecast_description') %></td>
+	  </tr>
+	  <tr>
+	    <td>Icecast URL:</td>
+	    <td><% obplayer.Config.setting('streamer_icecast_url') %></td>
+	  </tr>
+	  <tr>
+	    <td>Icecast Stream Public?:</td>
+	    <td><% obplayer.Config.setting('streamer_icecast_public') %></td>
 	  </tr>
 	  <tr>
 	    <td>Play Stream on Startup?:</td>
@@ -777,6 +793,22 @@
             <tr>
               <td>Icecast Password</td>
               <td><input type="password" name="streamer_icecast_password" value="<% obplayer.Config.setting('streamer_icecast_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Icecast Stream Name</td>
+              <td><input type="text" name="streamer_icecast_streamname" value="<% obplayer.Config.setting('streamer_icecast_streamname',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Icecast Description</td>
+              <td><input type="text" name="streamer_icecast_description" value="<% obplayer.Config.setting('streamer_icecast_description',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Icecast URL</td>
+              <td><input type="text" name="streamer_icecast_url" value="<% obplayer.Config.setting('streamer_icecast_url',True) %>"></td>
+            </tr>
+            <tr>
+              <td>Publicly List Icecast Stream</td>
+              <td><input type="checkbox" name="streamer_icecast_public" value="1"<% obplayer.HTTPAdmin.form_item_checked('streamer_icecast_public') %>></td>
             </tr>
             <tr>
               <td>Play Stream on Startup</td>

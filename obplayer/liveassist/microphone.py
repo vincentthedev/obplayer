@@ -24,6 +24,7 @@ import obplayer
 
 import os
 import time
+import json
 import traceback
 import threading
 
@@ -52,6 +53,10 @@ class ObLiveAssistMicrophone (object):
         if mode == 'monitor' or mode == 'mic+monitor':
             self.add_monitor()
 
+        self.bus = self.pipeline.get_bus()
+        self.bus.add_signal_watch()
+        self.bus.connect("message", self.message_handler)
+
         self.change_format(params)
 
     def add_microphone(self):
@@ -67,6 +72,11 @@ class ObLiveAssistMicrophone (object):
 
         self.volume = Gst.ElementFactory.make('volume', 'audiomixer-volume')
         elements.append(self.volume)
+
+        self.level = Gst.ElementFactory.make("level", "level")
+        self.level.set_property('interval', int(0.5 * Gst.SECOND))
+        elements.append(self.level)
+
         elements.append(Gst.ElementFactory.make('queue2'))
 
         ## create audio sink element
@@ -168,6 +178,25 @@ class ObLiveAssistMicrophone (object):
         for index in range(0, len(elements) - 1):
             elements[index].link(elements[index + 1])
 
+    def message_handler(self, bus, message):
+        if message.type == Gst.MessageType.STATE_CHANGED:
+            oldstate, newstate, pending = message.parse_state_changed()
+
+        elif message.type == Gst.MessageType.ERROR:
+            err, debug = message.parse_error()
+            obplayer.Log.log("gstreamer error: %s, %s, %s" % (err, debug, err.code), 'error')
+            # TODO send something
+
+        #elif message.type == Gst.MessageType.EOS:
+        #    obplayer.Log.log("player received end of stream signal", 'debug')
+        #    self.player.request_update.set()
+
+        elif message.type == Gst.MessageType.ELEMENT:
+            struct = message.get_structure()
+            #self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
+            #print(struct.get_value('rms'))
+            self.conn.websocket_write_message(obplayer.httpadmin.httpserver.WS_OP_TEXT, json.dumps({ 'type': 'mic-level', 'level': struct.get_value('rms') }))
+
     def toggle_mute(self):
         if self.volume:
             mute = self.volume.get_property('mute')
@@ -215,7 +244,7 @@ class ObLiveAssistMicrophone (object):
                 data = bytearray(self.blocksize)
         if self.encoder:
             data = self.encoder.decode_buffer(data)
-        print("Decoded: " + str(len(data)) + " " + repr(data[:20]))
+        #print("Decoded: " + str(len(data)) + " " + repr(data[:20]))
         gbuffer = Gst.Buffer.new_allocate(None, len(data), None)
         gbuffer.fill(0, data)
         ret = self.appsrc.emit('push-buffer', gbuffer)
@@ -225,7 +254,7 @@ class ObLiveAssistMicrophone (object):
         data = gbuffer.extract_dup(0, gbuffer.get_size())
         if self.encoder:
             data = self.encoder.encode_buffer(data)
-        print("Encoded: " + str(len(data)) + " " + repr(data[:20]))
+        #print("Encoded: " + str(len(data)) + " " + repr(data[:20]))
         self.monitor_queue += data
 
         while len(self.monitor_queue) >= self.blocksize:

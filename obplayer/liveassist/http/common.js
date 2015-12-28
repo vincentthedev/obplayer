@@ -50,6 +50,12 @@ LA.init = function()
 
   // hook up play/pause buttons
 
+  // set vu meter interval
+  setInterval(function ()
+  {
+    $.post('/info/levels', null, LA.updateVuMeter, 'json').fail(LA.showNotConnected);
+  }, 1000);
+
 }
 
 LA.showEndTime = false;
@@ -244,6 +250,8 @@ LA.updateStatus = function()
         LA.playing = false;
       }
 
+      LA.updateVuMeter(response.audio_levels);
+
       $('#main-playlist-tracks .track').add('#main-buttons .button').removeAttr('data-status');
 
       var $track = false;
@@ -296,6 +304,7 @@ LA.showNotConnected = function ()
 {
   $('#info-status').text('not connected');
   $('#info-status').attr('data-status','not-connected');
+  $('#info-vu-meter').css('width', '0%');
   LA.playing = false;
 }
 
@@ -307,6 +316,13 @@ LA.updateTimes = function()
   {
     LA.currentTimeOffset = (Date.now()/1000) - response.value;
   },'json').fail(LA.showNotConnected);
+}
+
+LA.updateVuMeter = function (levels)
+{
+  var $meter = $('#info-vu-meter .level');
+  $meter.css('width', (100 - Math.max(0, 100 + levels[0])) + '%');
+  //$meter.css('background', 'linear-gradient(to right, #090, #900 ' + Math.max(0, 100 + levels[0]) + '%' + ', transparent)');
 }
 
 LA.tick = function()

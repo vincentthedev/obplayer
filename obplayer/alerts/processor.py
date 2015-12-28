@@ -46,19 +46,21 @@ class ObAlertFetcher (obplayer.ObThread):
         self.buffer = ""
         self.receiving_data = False
         self.last_received = 0
+        self.close_lock = threading.Lock()
 
     def close(self):
-        if self.socket:
-            addr, port = self.socket.getsockname()
-            obplayer.Log.log("closing socket %s:%s" % (addr, port), 'alerts')
-            try:
-                self.socket.shutdown(socket.SHUT_RDWR)
-                self.socket.close()
-            except:
-                obplayer.Log.log("exception in " + self.name + " thread", 'error')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-            self.socket = None
-            self.last_received = 0
+        with self.close_lock:
+            if self.socket:
+                addr, port = self.socket.getsockname()
+                obplayer.Log.log("closing socket %s:%s" % (addr, port), 'alerts')
+                try:
+                    self.socket.shutdown(socket.SHUT_RDWR)
+                    self.socket.close()
+                except:
+                    obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                    obplayer.Log.log(traceback.format_exc(), 'error')
+                self.socket = None
+                self.last_received = 0
 
     def read_alert_data(self):
         while True:
@@ -79,7 +81,8 @@ class ObAlertFetcher (obplayer.ObThread):
 
             data = self.receive()
             if not data:
-                self.socket = None
+                with self.close_lock:
+                    self.socket = None
                 raise socket.error("TCP socket closed by remote end. (" + str(self.host) + ":" + str(self.port) + ")")
             self.buffer = self.buffer + data
 

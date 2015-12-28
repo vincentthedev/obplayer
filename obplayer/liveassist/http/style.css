@@ -157,7 +157,7 @@ body
 {
   position: absolute;
   top: 0;
-  right: 200px;
+  right: 0px;
   width: 50%;
   height: 100%;
   overflow: auto;
@@ -192,6 +192,7 @@ body
     font-size: 1em;
     border: 1px solid #000;
     border-bottom: none;
+    border-radius: 10px;
     position: relative;
     padding: 5px;
     cursor: pointer;
@@ -244,20 +245,6 @@ body
   text-align: center;
 
   border-left: 1px solid #999;
-
-/*
-  position: absolute;
-  bottom: 140px;
-  right: 0px;
-
-  height: 300px;
-  width: 160px;
-
-  border-top: 1px solid #999;
-  border-left: 1px solid #999;
-
-  background-color: #333;
-*/
 }
 
   #main-mixer #stream-controls {
@@ -296,6 +283,7 @@ body
 
   #main-mixer .mixer-mute
   {
+    cursor: pointer;
     margin: auto;
     display: inline-block;
     border: 1px solid #999;
@@ -308,6 +296,25 @@ body
   #main-mixer .mixer-mute.muted
   {
     background-color: #700;
+  }
+
+  #main-mixer #mixer-vu-meter {
+    position: relative;
+    height: 10px;
+    margin: 2px;
+    border: 1px solid black;
+    /*background-color: #900;*/
+    background: linear-gradient(to right, #090, #900);
+  }
+
+  #main-mixer #mixer-vu-meter .level
+  {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 8px;
+      background: #333;
   }
 
 #supfooter
@@ -421,6 +428,25 @@ body
 #info-status[data-status=not-connected]
 {
   color: #f44;
+}
+
+#info-vu-meter
+{
+  position: relative;
+  border: 1px solid black;
+  height: 10px;
+  /*background-color: #900;*/
+  background: linear-gradient(to right, #090, #900);
+}
+
+#info-vu-meter .level
+{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 8px;
+    background: #333;
 }
 
 .attention {
