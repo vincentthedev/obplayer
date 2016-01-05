@@ -11,26 +11,26 @@ Site.fullscreen = function()
   },'json');
 }
 
-Site.quit = function()
+Site.restart = function()
 {
-  $('#command_quit').val('Quitting...');
+  $('#command_restart').val('Restarting...');
 
   $.get('/command/restart',{},function(response)
   {
-    $('#command_quit').attr('onclick','');
-    Site.quitInterval = setInterval(Site.quitCountdown, 1000);
+    $('#command_restart').attr('onclick','');
+    Site.restartInterval = setInterval(Site.restartCountdown, 1000);
   },'json');
 }
 
-Site.quitCountdownCount = 10;
-Site.quitCountdown = function()
+Site.restartCountdownCount = 10;
+Site.restartCountdown = function()
 {
-  Site.quitCountdownCount--;
-  $('#command_quit').val('Quitting ('+Site.quitCountdownCount+')');
+  Site.restartCountdownCount--;
+  $('#command_restart').val('Restarting ('+Site.restartCountdownCount+')');
 
-  if(Site.quitCountdownCount==0)
+  if(Site.restartCountdownCount==0)
   {
-    clearInterval(Site.quitInterval);
+    clearInterval(Site.restartInterval);
     location.reload(true);
   }
 

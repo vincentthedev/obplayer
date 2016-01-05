@@ -236,7 +236,14 @@ LA.updateStatus = function()
     $.post('/info/play_status', {}, function(response)
     {
 
-      if(response.status=='playing')
+      if(response.status=='override')
+      {
+        $('#info-status').text('Override');
+        $('#info-status').attr('data-status','playing');
+        LA.playing = true;
+      }
+
+      else if(response.status=='playing')
       {
         $('#info-status').text('Playing');
         $('#info-status').attr('data-status','playing');
@@ -249,8 +256,6 @@ LA.updateStatus = function()
         $('#info-status').attr('data-status','paused');
         LA.playing = false;
       }
-
-      LA.updateVuMeter(response.audio_levels);
 
       $('#main-playlist-tracks .track').add('#main-buttons .button').removeAttr('data-status');
 
@@ -282,6 +287,7 @@ LA.updateStatus = function()
 
       else
       {
+        /*
         LA.currentTrackNumber = -1;
         LA.currentGroupNumber = -1;
         LA.currentPlayMode = false;
@@ -290,6 +296,11 @@ LA.updateStatus = function()
 
         $('#info-track_name').html('');
         $('#info-track_time').html('');
+        */
+
+        $('#info-track_name').text(response.artist+' - '+response.title);
+        LA.currentTrackStart = Date.now()/1000 - response.position;
+        LA.currentTrackEnd = response.duration + LA.currentTrackStart;
       }
 
       LA.updateStatusLock--;

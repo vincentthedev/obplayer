@@ -24,7 +24,7 @@
       <div class="tab" data-content="liveassist">Live Assist</div>
 
       <div id="commands">
-        <input id="command_quit" type="button" value="Quit/Restart" onclick="Site.quit();">
+        <input id="command_restart" type="button" value="Restart" onclick="Site.restart();">
         <input id="command_fullscreen" type="button" value="Fullscreen (<% obplayer.HTTPAdmin.fullscreen_status() %>)" onclick="Site.fullscreen();">
       </div>
 
@@ -454,7 +454,7 @@
 	    <td>(hidden)</td>
 	  </tr>
 	  <tr>
-	    <td>HTTP Read-Only User Allowed to Fullsrceen/Quit?:</td>
+	    <td>HTTP Read-Only User Allowed to Fullsrceen/Restart?:</td>
 	    <td><% obplayer.Config.setting('http_readonly_allow_restart') %></td>
 	  </tr>
 
@@ -898,14 +898,6 @@
               <td><input type="text" name="alerts_repeat_times" value="<% obplayer.Config.setting('alerts_repeat_times', True) %>" title="The number of alert cycles in which a given alert will be played before it expires.  Setting this to 0 will repeat each alert until that alert's expiration time is reached or the alert is cancelled by the alerting authority."></td>
             </tr>
             <tr>
-              <td>Lead-In Delay (in seconds)</td>
-              <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
-            </tr>
-            <tr>
-              <td>Lead-Out Delay (in seconds)</td>
-              <td><input type="text" name="alerts_leadout_delay" value="<% obplayer.Config.setting('alerts_leadout_delay', True) %>" title="The time in seconds of silence after an alert cycle has completed."></td>
-            </tr>
-            <tr>
               <td>NAAD Stream #1 URL</td>
               <td><input type="text" name="alerts_naad_stream1" value="<% obplayer.Config.setting('alerts_naad_stream1',True) %>"></td>
             </tr>
@@ -922,18 +914,6 @@
               <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
             </tr>
             <tr>
-              <td>Trigger RS-232 DTR on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_serial" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_serial') %> title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
-            </tr>
-            <tr id="alerts_trigger_serial_file_row">
-              <td>RS-232 Device Filename</td>
-              <td><input type="text" name="alerts_trigger_serial_file" value="<% obplayer.Config.setting('alerts_trigger_serial_file',True) %>" title="The device filename of the serial port on which to set the DTR line to signal when an alert cycle is under way."></td>
-            </tr>
-            <tr>
-              <td>Trigger Icecast Stream on Alerts</td>
-              <td><input type="checkbox" name="alerts_trigger_streamer" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_streamer') %> title="If checked, the streamer module (configured on the 'Streaming' tab) will be started when an alert cycle starts, and stopped when it completes.  Make sure to uncheck the 'Play Stream on Startup' option on the 'Streaming' tab so that it only doesn't automatically start when the program first starts."></td>
-            </tr>
-            <tr>
               <td>Truncate Long Alert Messages</td>
               <td><input type="checkbox" name="alerts_truncate" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_truncate') %> title="If checked, alerts that are not marked as 'Broadcast Immediately' will be truncated after the first paragraph (after the first blank line).  Alerts marked 'Broadcast Immediately' will never be truncated."></td>
             </tr>
@@ -945,6 +925,40 @@
               <td>Play Test Alerts</td>
               <td><input type="checkbox" name="alerts_play_tests" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_tests') %> title="Include alerts that are marked as a test.  These are not scheduled tests of the alert system, but internal system tests which are not normally played to the public."></td>
             </tr>
+          </tbody>
+        </table>
+
+        <div class="advanced-settings">
+          <input type="checkbox" id="alert-advanced" />
+          <label for="alert-advanced">Advanced Settings</label>
+          <table class="settings">
+            <tbody>
+              <tr>
+                <td>Lead-In Delay (in seconds)</td>
+                <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
+              </tr>
+              <tr>
+                <td>Lead-Out Delay (in seconds)</td>
+                <td><input type="text" name="alerts_leadout_delay" value="<% obplayer.Config.setting('alerts_leadout_delay', True) %>" title="The time in seconds of silence after an alert cycle has completed."></td>
+              </tr>
+              <tr>
+                <td>Trigger RS-232 DTR on Alerts</td>
+                <td><input type="checkbox" name="alerts_trigger_serial" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_serial') %> title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
+              </tr>
+              <tr id="alerts_trigger_serial_file_row">
+                <td>RS-232 Device Filename</td>
+                <td><input type="text" name="alerts_trigger_serial_file" value="<% obplayer.Config.setting('alerts_trigger_serial_file',True) %>" title="The device filename of the serial port on which to set the DTR line to signal when an alert cycle is under way."></td>
+              </tr>
+              <tr>
+                <td>Trigger Icecast Stream on Alerts</td>
+                <td><input type="checkbox" name="alerts_trigger_streamer" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_streamer') %> title="If checked, the streamer module (configured on the 'Streaming' tab) will be started when an alert cycle starts, and stopped when it completes.  Make sure to uncheck the 'Play Stream on Startup' option on the 'Streaming' tab so that it only doesn't automatically start when the program first starts."></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <table class="settings">
+          <tbody>
             <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('alerts');" value="Save"></td>
             </tr>
@@ -1022,7 +1036,7 @@
               <td><input type="password" name="http_readonly_password" value="<% obplayer.Config.setting('http_readonly_password',True) %>"></td>
             </tr>
             <tr>
-              <td>Allow Fullscreen/Quit for Read-Only User</td>
+              <td>Allow Fullscreen/Restart for Read-Only User</td>
               <td><input type="checkbox" name="http_readonly_allow_restart" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_readonly_allow_restart') %>></td>
             </tr>
             <tr>

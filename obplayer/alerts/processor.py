@@ -33,7 +33,10 @@ import os
 import requests
 import threading
 
-import urlparse
+if sys.version.startswith('3'):
+    import urllib.parse as urlparse
+else:
+    import urlparse
 import codecs
 
 class ObAlertFetcher (obplayer.ObThread):

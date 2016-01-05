@@ -165,3 +165,47 @@ h2:first-child
   padding-top: 10px;
 }
 
+
+.advanced-settings {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border: 1px solid #66f;
+}
+
+.advanced-settings > input + label + table {
+  padding-top: 2px;
+  padding-left: 20px;
+}
+
+.advanced-settings > input {
+  display: none;
+}
+
+.advanced-settings > input ~ table {
+  display: none;
+}
+
+.advanced-settings > input:checked ~ table {
+  display: block;
+}
+
+.advanced-settings > input + label::before {
+  content: "\229e";
+  margin-right: 4px;
+  margin-left: 4px;
+  vertical-align: bottom;
+}
+
+.advanced-settings > input:checked + label::before {
+  content: "\229f";
+  margin-right: 4px;
+  margin-left: 4px;
+  vertical-align: bottom;
+}
+
+label.advanced-settings,
+label.advanced-settings::before {
+  cursor: pointer;
+  display: inline-block;
+}
+

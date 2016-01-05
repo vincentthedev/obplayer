@@ -492,6 +492,36 @@ class ObScheduler:
     def get_now_playing(self):
         data = { }
 
+        player = self.ctrl.player
+        requests = player.get_requests()
+
+        request = None
+        for key in requests.keys():
+            if not request or requests[key]['priority'] > request['priority']:
+                request = requests[key]
+
+        if request['controller'] != self.ctrl:
+            data['status'] = 'override'
+        elif self.ctrl.request_is_playing():
+            data['status'] = 'playing'
+        else:
+            data['status'] = 'stopped'
+
+        data['artist'] = request['artist']
+        data['title'] = request['title']
+        data['duration'] = request['duration']
+        data['position'] = time.time() - request['start_time']
+
+        if self.present_show != None and self.present_show.now_playing != None:
+            now_playing = self.present_show.now_playing
+            if 'group_id' in now_playing:
+                data['mode'] = 'group'
+                (data['group_num'], data['group_item_num']) = self.find_group_item_pos(now_playing['id'])
+            else:
+                data['mode'] = 'playlist'
+                data['track'] = self.present_show.playlist.current_pos()
+
+        """
         #status = obplayer.Player.status()
         status = self.ctrl.request_is_playing()
         if status == True:
@@ -518,6 +548,7 @@ class ObScheduler:
             data['title'] = ''
             data['position'] = 0
             data['track'] = -1
+        """
 
         return data
 

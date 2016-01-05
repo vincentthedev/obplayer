@@ -167,3 +167,5 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                         obplayer.alerts.Processor.cancel_alert(identifier)
                     return { 'status' : True }
                 return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
+
+

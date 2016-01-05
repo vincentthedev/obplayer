@@ -36,7 +36,6 @@ import socket
 import sys
 import os
 
-import thread
 import requests
 import subprocess
 
@@ -95,7 +94,7 @@ class ObAlert (object):
         except:
             obplayer.Log.log('error parsing emergency alert xml data', 'error')
             obplayer.Log.log(traceback.format_exc(), 'error')
-            print xmlcode
+            print(xmlcode)
             return
 
         for alert in alerts.getElementsByTagName('alert'):
@@ -113,12 +112,12 @@ class ObAlert (object):
                 self.info.append(ObAlertInfo(node))
 
     def print_data(self):
-        print self.identifier
-        print self.sent + " by " + self.sender
-        print "Status: " + self.status + " Type: " + self.msgtype
+        print(self.identifier)
+        print(self.sent + " by " + self.sender)
+        print("Status: " + self.status + " Type: " + self.msgtype)
 
         if len(self.info) > 0:
-            print self.info[0].description
+            print(self.info[0].description)
 
     def get_all_info(self, language):
         infos = [ ]
