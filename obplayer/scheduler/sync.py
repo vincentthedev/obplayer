@@ -329,6 +329,10 @@ class ObSync:
                                 media_item = xml_get_media_item(media)
                                 obplayer.RemoteData.group_item_add(group_id, media_item)
 
+                        group_id = obplayer.RemoteData.group_add(local_show_id, 'System Requests')
+                        obplayer.RemoteData.group_item_add(group_id, { 'id': -1, 'order': 0, 'artist': 'System', 'title': "Line-In Audio Source", 'type': 'linein', 'duration': 3600, 'filename': '', 'file_hash': '', 'file_size': 0, 'file_location': '', 'approved': 0, 'archived': 0 })
+                        obplayer.RemoteData.group_item_add(group_id, { 'id': -1, 'order': 1, 'artist': 'System', 'title': "RTP Audio Source", 'type': 'rtp', 'duration': 3600, 'filename': '', 'file_hash': '', 'file_size': 0, 'file_location': '', 'approved': 0, 'archived': 0 })
+
         obplayer.RemoteData.show_remove_deleted(start_times_list, cutoff_time)
         obplayer.RemoteData.show_remove_old()
 
@@ -555,7 +559,7 @@ class ObSync:
     #
     def check_media(self, media):
 
-        if media['media_type'] in [ 'breakpoint', 'break', 'linein', 'testsignal' ]:
+        if media['media_type'] not in [ 'audio', 'video', 'image' ]:
             return True
 
         media_fullpath = obplayer.Config.setting('remote_media') + '/' + media['file_location'][0] + '/' + media['file_location'][1] + '/' + media['filename']

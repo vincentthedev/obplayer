@@ -325,10 +325,11 @@ class ObRemoteData (obplayer.ObData):
 
             groups.append({ 'id' : group_row['id'], 'local_show_id' : group_row['local_show_id'], 'name' : group_row['name'], 'items' : group_items })
 
-        groups.append({ 'id' : -1, 'local_show_id' : -1, 'name' : 'System Requests', 'items' : [
-            { 'id': -1, 'artist': 'System', 'title': "Line-In Audio Source", 'media_type': 'linein', 'duration': 3600, 'media_id': -1, 'order_num': -1, 'file_location': '', 'filename': '' },
-            { 'id': -1, 'artist': 'System', 'title': "RTP Audio Source", 'media_type': 'rtp', 'duration': 3600, 'media_id': -1, 'order_num': -1, 'file_location': '', 'filename': '' }
-        ] })
+        # TODO I've moved this to sync, and only liveassist shows will have these available
+        #groups.append({ 'id' : -1, 'local_show_id' : -1, 'name' : 'System Requests', 'items' : [
+        #    { 'id': -1, 'artist': 'System', 'title': "Line-In Audio Source", 'media_type': 'linein', 'duration': 3600, 'media_id': -1, 'order_num': -1, 'file_location': '', 'filename': '' },
+        #    { 'id': -1, 'artist': 'System', 'title': "RTP Audio Source", 'media_type': 'rtp', 'duration': 3600, 'media_id': -1, 'order_num': -1, 'file_location': '', 'filename': '' }
+        #] })
         return groups
 
     #
