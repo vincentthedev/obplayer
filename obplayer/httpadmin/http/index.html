@@ -914,30 +914,6 @@
           <table class="settings">
             <tbody>
               <tr>
-                <td>NAAD Stream #1 URL</td>
-                <td><input type="text" name="alerts_naad_stream1" value="<% obplayer.Config.setting('alerts_naad_stream1',True) %>"></td>
-              </tr>
-              <tr>
-                <td>NAAD Stream #2 URL</td>
-                <td><input type="text" name="alerts_naad_stream2" value="<% obplayer.Config.setting('alerts_naad_stream2',True) %>"></td>
-              </tr>
-              <tr>
-                <td>NAAD Archive #1 URL</td>
-                <td><input type="text" name="alerts_naad_archive1" value="<% obplayer.Config.setting('alerts_naad_archive1',True) %>"></td>
-              </tr>
-              <tr>
-                <td>NAAD Archive #2 URL</td>
-                <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
-              </tr>
-              <tr>
-                <td>Lead-In Delay (in seconds)</td>
-                <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
-              </tr>
-              <tr>
-                <td>Lead-Out Delay (in seconds)</td>
-                <td><input type="text" name="alerts_leadout_delay" value="<% obplayer.Config.setting('alerts_leadout_delay', True) %>" title="The time in seconds of silence after an alert cycle has completed."></td>
-              </tr>
-              <tr>
                 <td>Trigger RS-232 DTR on Alerts</td>
                 <td><input type="checkbox" name="alerts_trigger_serial" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_serial') %> title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
               </tr>
@@ -952,6 +928,30 @@
               <tr>
                 <td>Play Test Alerts</td>
                 <td><input type="checkbox" name="alerts_play_tests" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_play_tests') %> title="Include alerts that are marked as a test.  These are not scheduled tests of the alert system, but internal system tests which are not normally played to the public."></td>
+              </tr>
+              <tr>
+                <td>Lead-In Delay (in seconds)</td>
+                <td><input type="text" name="alerts_leadin_delay" value="<% obplayer.Config.setting('alerts_leadin_delay', True) %>" title="The time in seconds of silence after an alert cycle has started but before the first alert audio is played."></td>
+              </tr>
+              <tr>
+                <td>Lead-Out Delay (in seconds)</td>
+                <td><input type="text" name="alerts_leadout_delay" value="<% obplayer.Config.setting('alerts_leadout_delay', True) %>" title="The time in seconds of silence after an alert cycle has completed."></td>
+              </tr>
+              <tr>
+                <td>NAAD Stream #1 URL</td>
+                <td><input type="text" name="alerts_naad_stream1" value="<% obplayer.Config.setting('alerts_naad_stream1',True) %>"></td>
+              </tr>
+              <tr>
+                <td>NAAD Stream #2 URL</td>
+                <td><input type="text" name="alerts_naad_stream2" value="<% obplayer.Config.setting('alerts_naad_stream2',True) %>"></td>
+              </tr>
+              <tr>
+                <td>NAAD Archive #1 URL</td>
+                <td><input type="text" name="alerts_naad_archive1" value="<% obplayer.Config.setting('alerts_naad_archive1',True) %>"></td>
+              </tr>
+              <tr>
+                <td>NAAD Archive #2 URL</td>
+                <td><input type="text" name="alerts_naad_archive2" value="<% obplayer.Config.setting('alerts_naad_archive2',True) %>"></td>
               </tr>
             </tbody>
           </table>
