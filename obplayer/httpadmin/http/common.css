@@ -209,3 +209,21 @@ label.advanced-settings::before {
   display: inline-block;
 }
 
+#map-container {
+ height:400px;
+ width:400px;
+ border: 1px solid #0f0f0f;
+ border-radius: 5px;
+ padding: 2px;
+ overflow: hidden;
+ }
+
+ #map {
+         position: relative;
+         top: 0px;
+         left: 0px;
+         border-radius: 5px;
+         width:400px;
+         height:400px;
+      overflow:hidden;
+}
