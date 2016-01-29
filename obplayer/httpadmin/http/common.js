@@ -212,6 +212,13 @@ Site.updateStatusInfo = function()
   }
 }
 
+Site.updateMapInfo = function()
+{
+  if($('#tabs .tab[data-content="map"]').hasClass('selected')){
+        map.invalidateSize();
+        }
+}
+
 Site.formatLogs = function(lines)
 {
   var scroll = false;
@@ -325,6 +332,7 @@ $(document).ready(function()
 
     if($(this).attr('data-content')=='alerts') Site.updateAlertInfo();
     if($(this).attr('data-content')=='status') Site.updateStatusInfo();
+    if($(this).attr('data-content')=='map') Site.updateMapInfo();
   });
 
   $('#sync_media_mode').change(function()
@@ -430,4 +438,5 @@ $(document).ready(function()
   {
     $(this).parent().parent().first().attr('title', $(this).attr('title'));
   });
+  init_map();
 });

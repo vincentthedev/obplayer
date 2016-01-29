@@ -252,6 +252,13 @@ class ObConfigData (ObData):
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
             return 'Live Assist and HTTP Admin cannot use the same port.'
 
+	lat_regex = re.compile(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$')
+	lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
+        if setting_name == 'device_latitude' and lat_regex.match(setting_value) == None:
+             return 'Invalid latitdue coordinate.'
+        if setting_name == 'device_longitude' and lng_regex.match(setting_value) == None:
+             return 'Invalid longitude coordinate.'
+
         return None
 
     def set(self, setting_name, setting_value):
@@ -362,6 +369,10 @@ class ObConfigData (ObData):
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
 
         self.add_setting('testsignal_enable', '1', 'bool')
+
+        self.add_setting('enable_location', '1', 'bool')
+        self.add_setting('device_longitude','-131.500', 'float')
+        self.add_setting('device_latitude','60.500', 'float')
 
     def add_setting(self, name, value, datatype=None):
 
