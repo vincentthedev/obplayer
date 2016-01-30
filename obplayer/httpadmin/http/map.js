@@ -20,8 +20,8 @@ map.setView(latlng,9);
 function onDrag(e){
 
         map.panTo(e.target.getLatLng());
-        $("input[name=device_longitude]").val(e.target.getLatLng().lng)
-        $("input[name=device_latitude]").val(e.target.getLatLng().lat)
+        $("input[name=device_longitude]").val(e.target.getLatLng().lng.toFixed(5))
+        $("input[name=device_latitude]").val(e.target.getLatLng().lat.toFixed(5))
         }
 
 function updateMap(){
