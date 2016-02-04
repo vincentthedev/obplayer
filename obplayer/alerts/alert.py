@@ -86,7 +86,7 @@ class ObAlert (object):
         self.media_info = { }
 
         if xmlcode is not None:
-            self.parse_cap_xml(xmlcode)
+            self.parse_cap_xml(xmlcode.encode('utf-8'))
 
     def parse_cap_xml(self, xmlcode):
         try:
@@ -194,7 +194,7 @@ class ObAlert (object):
             #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
             #cmd += u"\"" + message_text[0] + u"\""
             proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-            (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + " <break time=\"2s\" /> " + message_text.encode('utf-8') + " <break time=\"3s\" /> ")
+            (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + b" <break time=\"2s\" /> " + message_text.encode('utf-8') + b" <break time=\"3s\" /> ")
             proc.wait()
 
             with open(location + '/' + filename, 'wb') as f:
@@ -387,7 +387,7 @@ class ObAlertResource (object):
 
 
 def parse_alert_file(xmlfile):
-    with open(xmlfile, 'r') as f:
-        alert = ObAlert(f.read())
+    with open(xmlfile, 'rb') as f:
+        alert = ObAlert(f.read().decode('utf-8'))
     return alert
 

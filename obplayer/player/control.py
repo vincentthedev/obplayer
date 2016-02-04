@@ -216,6 +216,7 @@ class ObPlayer (object):
 
                 if ctrl.allow_overlay is False and ctrl.has_requests():
                     break
+
         return None
 
     def execute_request(self, req, output_limit=None):
@@ -249,10 +250,10 @@ class ObPlayer (object):
 
         obplayer.Log.log("now playing track %s: %s - %s (id: %d file: %s duration: %ss type: '%s' source: %s)" % (
             str(req['order_num'] + 1) if type(req['order_num']) == int and req['order_num'] >= 0 else '?',
-            unicode(req['artist']).encode('ascii', 'replace'),
-            unicode(req['title']).encode('ascii', 'replace'),
+            unicode(req['artist']).encode('ascii', 'replace').decode('ascii'),
+            unicode(req['title']).encode('ascii', 'replace').decode('ascii'),
             req['media_id'],
-            unicode(req['filename']).encode('ascii', 'replace'),
+            unicode(req['filename']).encode('ascii', 'replace').decode('ascii'),
             str(req['duration']),
             req['media_type'],
             req['controller'].name
@@ -310,8 +311,10 @@ class ObPlayer (object):
                         self.pipes[pipe].stop()
                         if self.requests[unpatch_list[0]]:
                             self.requests[unpatch_list[0]]['controller'].requeue_request(self.requests[unpatch_list[0]])
-                        # TODO requeue any request for which we stop the pipe
-                        print("*** We should be requeuing")
+                            print("*** Requeued request " + repr(self.requests[unpatch_list[0]]))
+                        else:
+                            # TODO requeue any request for which we stop the pipe
+                            print("*** We didn't requeue " + repr(unpatch_list[0]))
                     self.pipes[pipe].unpatch('/'.join(unpatch_list))
 
         if media_type is not None:
@@ -395,8 +398,8 @@ class ObPlayerController (object):
         # TODO you could have a list of failed requests, where the request is automatically added (auto limit to say 5 entries)
         self.failed = [ ]
 
-    # media_type can be:        audio, video, image, linein, break, testsignal
-    # play_mode can be:                exclusive, overlap
+    # media_type can be: audio, video, image, linein, break, testsignal
+    # play_mode can be:  exclusive, overlap
     def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
         # expand file location if necessary and check that media file exists
         if file_location:

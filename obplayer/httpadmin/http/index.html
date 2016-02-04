@@ -19,14 +19,14 @@
     <div id="tabs">
       <div class="tab selected" data-content="status">Status</div>
       <div class="tab" data-content="summary">Summary</div>
-      <div class="tab" data-content="basic">Basic</div>
-      <div class="tab" data-content="sync">Sync/Media</div>
+      <div class="tab" data-content="admin">Admin</div>
+      <div class="tab" data-content="sync" <% 'style="display: none;"' if not obplayer.Config.setting('http_show_sync') else '' %>>Sync/Media</div>
       <div class="tab" data-content="audio">Audio/Visualization</div>
-      <div class="tab" data-content="streamer">Streaming</div>
-      <div class="tab" data-content="alerts">Emergency Alerts</div>
-      <div class="tab" data-content="map">Location Map</div>
+      <div class="tab" data-content="streamer" <% 'style="display: none;"' if not obplayer.Config.setting('http_show_streaming') else '' %>>Streaming</div>
+      <div class="tab" data-content="alerts" <% 'style="display: none;"' if not obplayer.Config.setting('http_show_alerts') else '' %>>Emergency Alerts</div>
+      <div class="tab" data-content="map" <% 'style="display: none;"' if not obplayer.Config.setting('http_show_location') else '' %>>Location Map</div>
       <div class="tab" data-content="http">HTTP(S) Admin</div>
-      <div class="tab" data-content="liveassist">Live Assist</div>
+      <div class="tab" data-content="liveassist" <% 'style="display: none;"' if not obplayer.Config.setting('http_show_liveassist') else '' %>>Live Assist</div>
 
       <div id="commands">
         <input id="command_restart" type="button" value="Restart" onclick="Site.restart();">
@@ -432,6 +432,10 @@
 	    <td>Play Test Alerts?:</td>
 	    <td><% obplayer.Config.setting('alerts_play_tests') %></td>
 	  </tr>
+	  <tr>
+	    <td>Purge Alert Files after 90 days?:</td>
+	    <td><% obplayer.Config.setting('alerts_purge_files') %></td>
+	  </tr>
 
 	  <tr class="padding">
 	    <td>HTTPS Enabled?:</td>
@@ -507,7 +511,7 @@
 	</table>
 
       </div>
-      <div style="display: none;" id="content-basic">
+      <div style="display: none;" id="content-admin">
 
         <table class="settings">
           <tbody>
@@ -524,7 +528,38 @@
               <td><input type="text" name="sync_url" value="<% obplayer.Config.setting('sync_url',True) %>"></td>
             </tr>
             <tr>
+              <td>Show Sync Tab</td>
+              <td><input type="checkbox" name="http_show_sync" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_show_sync') %>></td>
+            </tr>
+            <tr>
+              <td>Show Streaming Tab</td>
+              <td><input type="checkbox" name="http_show_streaming" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_show_streaming') %>></td>
+            </tr>
+            <tr>
+              <td>Show Alerts Tab</td>
+              <td><input type="checkbox" name="http_show_alerts" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_show_alerts') %>></td>
+            </tr>
+            <tr>
+              <td>Show Location Tab</td>
+              <td><input type="checkbox" name="http_show_location" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_show_location') %>></td>
+            </tr>
+            <tr>
+              <td>Show LiveAssist Tab</td>
+              <td><input type="checkbox" name="http_show_liveassist" value="1"<% obplayer.HTTPAdmin.form_item_checked('http_show_liveassist') %>></td>
+            </tr>
+            <tr>
               <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('basic');" value="Save"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <br/>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Reset Database and Restart</td>
+              <td><input name="reset" type="button" onclick="javascript: Site.restart('hard');" value="Reset"></td>
             </tr>
           </tbody>
         </table>
@@ -922,6 +957,10 @@
           <table class="settings">
             <tbody>
               <tr>
+                <td>Purge Saved Alerts After 90 days</td>
+                <td><input type="checkbox" name="alerts_purge_files" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_purge_files') %> title="Delete saved alert xml and wav files after 90 days."></td>
+              </tr>
+              <tr>
                 <td>Trigger RS-232 DTR on Alerts</td>
                 <td><input type="checkbox" name="alerts_trigger_serial" value="1"<% obplayer.HTTPAdmin.form_item_checked('alerts_trigger_serial') %> title="If checked, the serial port (configured below) will be opened when an alert cycle starts, and the DTR signal will be set.  The DTR line will be cleared and the serial port closed when the alert cycle has completed."></td>
               </tr>
@@ -1011,33 +1050,36 @@
 	</table>
 
       </div>
-     <div style="display: none;" id="content-map">
-     <table class="settings">
-     <tbody>
-     <tr>
-       <td>Enable Map Display</td>
-       <td><input type="checkbox" name="enable_location" value="1"<% obplayer.HTTPAdmin.form_item_checked('enable_location') %>></td>
-     </tr>
-     <tr>
-       <td colspan="2">Device Location (use decimal degrees)</td>
-     </tr>
-     <tr>
-       <td>Longitude: <input type="text" name="device_longitude" value="<% obplayer.Config.setting('device_longitude', True) %>" onchange="updateMap()"></td>
-      <td>Latitude: <input type="text" name="device_latitude" value="<% obplayer.Config.setting('device_latitude', True) %>" onchange="updateMap()"></td>
-     </tr>
-     <tr>
-       <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('map');" value="Save"></td>
-     </tr>
+
+      <div style="display: none;" id="content-map">
+        <table class="settings">
+        <tbody>
+          <tr>
+            <td>Enable Map Display</td>
+            <td><input type="checkbox" name="enable_location" value="1"<% obplayer.HTTPAdmin.form_item_checked('enable_location') %>></td>
+          </tr>
+          <tr>
+            <td colspan="2">Device Location (use decimal degrees)</td>
+          </tr>
+          <tr>
+            <td>Longitude: <input type="text" name="device_longitude" value="<% obplayer.Config.setting('device_longitude', True) %>" onchange="updateMap()"></td>
+            <td>Latitude: <input type="text" name="device_latitude" value="<% obplayer.Config.setting('device_latitude', True) %>" onchange="updateMap()"></td>
+          </tr>
+          <tr>
+            <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('map');" value="Save"></td>
+          </tr>
         </tbody>
-      </table>
-      <table>
-      <tbody>
-      <tr>
-       <td><div id="map-container"><div id="map"></div></div></td>
-       <td> Drag and drop marker to update coordinates. <br/> Drag and drop map to pan.
-      </tbody>
-      </table>
-    </div>
+        </table>
+
+        <table>
+        <tbody>
+          <tr>
+            <td><div id="map-container"><div id="map"></div></div></td>
+            <td> Drag and drop marker to update coordinates. <br/> Drag and drop map to pan.</td>
+          </tr>
+        </tbody>
+        </table>
+      </div>
 
       <div style="display: none;" id="content-http">
 

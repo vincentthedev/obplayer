@@ -100,7 +100,7 @@ class ObData (object):
         column_list = []
         value_list = []
 
-        for (key, value) in data.iteritems():
+        for (key, value) in data.items():
             column_list.append("'" + self.escape(str(key)) + "'")
             value_list.append("'" + self.escape(str(value)) + "'")
 
@@ -152,7 +152,7 @@ class ObConfigData (ObData):
             self.headless = True
 
     def validate_settings(self, settings):
-        for (setting_name, setting_value) in settings.iteritems():
+        for (setting_name, setting_value) in settings.items():
             error = self.validate_setting(setting_name, setting_value, settings)
             if error:
                 return error
@@ -252,8 +252,8 @@ class ObConfigData (ObData):
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
             return 'Live Assist and HTTP Admin cannot use the same port.'
 
-	lat_regex = re.compile(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$')
-	lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
+        lat_regex = re.compile(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$')
+        lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
         if setting_name == 'device_latitude' and lat_regex.match(setting_value) == None:
              return 'Invalid latitdue coordinate.'
         if setting_name == 'device_longitude' and lng_regex.match(setting_value) == None:
@@ -334,6 +334,12 @@ class ObConfigData (ObData):
         self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
 
+        self.add_setting('http_show_sync', '1', 'bool')
+        self.add_setting('http_show_streaming', '1', 'bool')
+        self.add_setting('http_show_alerts', '1', 'bool')
+        self.add_setting('http_show_location', '1', 'bool')
+        self.add_setting('http_show_liveassist', '1', 'bool')
+
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')
         self.add_setting('live_assist_mic_enable', '0', 'bool')
@@ -364,6 +370,7 @@ class ObConfigData (ObData):
         self.add_setting('alerts_trigger_serial', '0', 'bool')
         self.add_setting('alerts_trigger_serial_file', '', 'text')
         self.add_setting('alerts_trigger_streamer', '0', 'bool')
+        self.add_setting('alerts_purge_files', '1', 'bool')
 
         self.add_setting('fallback_enable', '1', 'bool')
         self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
@@ -399,7 +406,7 @@ class ObConfigData (ObData):
     # save our settings into the database. update settings_edit_cache to handle subsequent edits.
     def save_settings(self, settings):
 
-        for (name, value) in settings.iteritems():
+        for (name, value) in settings.items():
             self.query('UPDATE settings set value="' + self.escape(str(value)) + '" where name="' + self.escape(name) + '"')
 
             dataType = self.settings_type[name]

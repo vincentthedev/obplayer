@@ -83,27 +83,36 @@ class ObStreamer (object):
         self.encoder = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
         self.elements.append(self.encoder)
 
+        #audio_output = obplayer.Config.setting('streamer_audio_out_mode')
         self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
         self.shout2send.set_property('ip', obplayer.Config.setting('streamer_icecast_ip'))
         self.shout2send.set_property('port', int(obplayer.Config.setting('streamer_icecast_port')))
         self.shout2send.set_property('password', obplayer.Config.setting('streamer_icecast_password'))
         self.shout2send.set_property('mount', obplayer.Config.setting('streamer_icecast_mount'))
+        self.shout2send.set_property('streamname', obplayer.Config.setting('streamer_icecast_streamname'))
+        self.shout2send.set_property('description', obplayer.Config.setting('streamer_icecast_description'))
+        self.shout2send.set_property('url', obplayer.Config.setting('streamer_icecast_url'))
+        self.shout2send.set_property('public', obplayer.Config.setting('streamer_icecast_public'))
         self.elements.append(self.shout2send)
+
+        #self.elements.append(ObRtpOutput())
 
         self.build_pipeline(self.elements)
 
 
     def build_pipeline(self, elements):
         for element in elements:
-            #print "adding element to bin: " + element.get_name()
+            #print("adding element to bin: " + element.get_name())
             self.pipeline.add(element)
         for index in range(0, len(elements) - 1):
             elements[index].link(elements[index + 1])
 
     def start(self):
+        obplayer.Log.log("starting streamer", 'debug')
         self.pipeline.set_state(Gst.State.PLAYING)
 
     def stop(self):
+        obplayer.Log.log("stopping streamer", 'debug')
         self.pipeline.set_state(Gst.State.NULL)
 
     def quit(self):
@@ -115,12 +124,68 @@ class ObStreamer (object):
             if not self.is_dropping:
                 self.is_dropping = True
                 self.selector.set_property('drop', True)
-                print "now dropping buffers"
+                print("now dropping buffers")
         else:
             if self.is_dropping:
                 self.is_dropping = False
                 self.selector.set_property('drop', False)
-                print "now outputting buffers"
+                print("now outputting buffers")
         return True
 
+
+class ObRtpOutput (Gst.Bin):
+    def __init__(self):
+        Gst.Bin.__init__(self)
+
+        """
+        self.encoder = Gst.ElementFactory.make("opusenc")
+        self.add(self.encoder)
+
+        self.payloader = Gst.ElementFactory.make("rtpopuspay")
+        self.add(self.payloader)
+        """
+
+        self.capsfilter = Gst.ElementFactory.make('capsfilter')
+        self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
+        self.add(self.capsfilter)
+
+        self.payloader = Gst.ElementFactory.make("rtpL16pay")
+        self.add(self.payloader)
+
+        self.rtpbin = Gst.ElementFactory.make("rtpbin")
+        self.add(self.rtpbin)
+
+        self.udp_rtp = Gst.ElementFactory.make("udpsink")
+        self.udp_rtp.set_property('host', '192.168.1.248')
+        self.udp_rtp.set_property('port', 4000)
+        self.add(self.udp_rtp)
+
+        self.udp_rtcp = Gst.ElementFactory.make("udpsink")
+        self.udp_rtcp.set_property('host', '192.168.1.248')
+        self.udp_rtcp.set_property('port', 4001)
+        self.udp_rtcp.set_property('sync', False)
+        self.udp_rtcp.set_property('async', False)
+        self.add(self.udp_rtcp)
+
+        # link elements
+        self.sinkpad = Gst.GhostPad.new('sink', self.capsfilter.get_static_pad('sink'))
+        self.add_pad(self.sinkpad)
+
+        self.capsfilter.link(self.payloader)
+        #self.encoder.link(self.payloader)
+
+        """
+        self.rtp_sink = self.rtpbin.get_request_pad('send_rtp_sink_0')
+        self.payloader.get_static_pad('src').link(self.rtp_sink)
+        self.rtp_src = self.rtpbin.get_request_pad('send_rtp_src_0')
+        self.rtp_src.link(self.udp_rtp.get_static_pad('sink'))
+
+        self.rtcp_src = self.rtpbin.get_request_pad('send_rtcp_src_0')
+        self.rtcp_src.link(self.udp_rtcp.get_static_pad('sink'))
+        """
+
+        self.payloader.link_pads('src', self.rtpbin, 'send_rtp_sink_0')
+        self.rtpbin.link_pads('send_rtp_src_0', self.udp_rtp, 'sink')
+
+        self.rtpbin.link_pads('send_rtcp_src_0', self.udp_rtcp, 'sink')
 

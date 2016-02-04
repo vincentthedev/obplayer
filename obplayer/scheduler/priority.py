@@ -40,7 +40,7 @@ class ObPriorityBroadcaster:
 
         # run through priority broadcasts and play if it's time. don't play while syncing emerg since it might be changing data or downloading new data.
         if obplayer.RemoteData.priority_broadcasts != False and obplayer.Sync.emerg_sync_running == False:
-            for (bindex, broadcast) in obplayer.RemoteData.priority_broadcasts.iteritems():
+            for (bindex, broadcast) in obplayer.RemoteData.priority_broadcasts.items():
                 if broadcast['next_play'] <= present_time:
 
                     if obplayer.Sync.check_media(broadcast):

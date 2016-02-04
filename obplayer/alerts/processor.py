@@ -25,10 +25,12 @@ import obplayer.alerts
 
 import traceback
 import time
+import datetime
 
 import socket
 import sys
 import os
+import os.path
 
 import requests
 import threading
@@ -37,7 +39,6 @@ if sys.version.startswith('3'):
     import urllib.parse as urlparse
 else:
     import urlparse
-import codecs
 
 class ObAlertFetcher (obplayer.ObThread):
     def __init__(self, processor):
@@ -46,7 +47,7 @@ class ObAlertFetcher (obplayer.ObThread):
 
         self.processor = processor
         self.socket = None
-        self.buffer = ""
+        self.buffer = u""
         self.receiving_data = False
         self.last_received = 0
         self.close_lock = threading.Lock()
@@ -106,8 +107,8 @@ class ObAlertFetcher (obplayer.ObThread):
                         self.processor.dispatch(alert)
 
                         # TODO for testing only
-                        with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier) + '.xml', 'w', encoding='utf-8') as f:
-                            f.write(data.decode('utf-8'))
+                        with open(obplayer.ObData.get_datadir() + "/alerts/" + obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier) + '.xml', 'wb') as f:
+                            f.write(data.encode('utf-8'))
 
                 except socket.error as e:
                     obplayer.Log.log("Socket Error: " + str(e), 'error')
@@ -167,10 +168,10 @@ class ObAlertTCPFetcher (ObAlertFetcher):
         return False
 
     def receive(self):
-        return self.socket.recv(4096)
+        return self.socket.recv(4096).decode('utf-8')
 
     def send(self, data):
-        self.socket.send(data)
+        self.socket.send(data.encode('utf-8'))
 
 
 class ObAlertUDPFetcher (ObAlertFetcher):
@@ -183,10 +184,10 @@ class ObAlertUDPFetcher (ObAlertFetcher):
         #self.socket.bind(('', self.port))
 
     def receive(self):
-        return self.socket.recv(4096)
+        return self.socket.recv(4096).decode('utf-8')
 
     def send(self, data):
-        self.socket.sendto(data, (self.host, self.port))
+        self.socket.sendto(data.encode('utf-8'), (self.host, self.port))
 
 
 class ObAlertProcessor (object):
@@ -244,8 +245,8 @@ class ObAlertProcessor (object):
 
     def inject_alert(self, filename):
         obplayer.Log.log("injecting test alert from file " + filename, 'alerts')
-        with open(filename, 'r') as f:
-            data = f.read()
+        with open(filename, 'rb') as f:
+            data = f.read().decode('utf-8')
         alert = obplayer.alerts.ObAlert(data)
         alert.add_geocode(self.target_geocodes[0])
         alert.max_plays = 1
@@ -348,14 +349,12 @@ class ObAlertProcessor (object):
                         obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
                         r = requests.get(url)
 
-                        r.encoding = 'utf-8'
-                        # TODO for testing only
-                        #print r.text
-                        with codecs.open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'w', encoding='utf-8') as f:
-                            f.write(r.text)
-
                         if r.status_code == 200:
-                            alert = obplayer.alerts.ObAlert(r.content)
+                            r.encoding = 'utf-8'
+                            with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
+                                f.write(r.text.encode('utf-8'))
+
+                            alert = obplayer.alerts.ObAlert(r.text)
                             self.handle_dispatch(alert)
                             break
                     except requests.ConnectionError:
@@ -381,8 +380,6 @@ class ObAlertProcessor (object):
                 obplayer.Log.log("asserted DTR on serial port " + self.trigger_serial_file, 'alerts')
                 if self.trigger_serial_fd:
                     self.trigger_serial_fd.close()
-                #self.trigger_serial_fd = open(self.trigger_serial_file, 'r')
-                #fcntl.ioctl(self.trigger_serial_fd, termios.TIOCMBIS, TIOCM_DTR)
                 self.trigger_serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
                 self.trigger_serial_fd.setDTR(True)
             except:
@@ -398,8 +395,6 @@ class ObAlertProcessor (object):
             try:
                 obplayer.Log.log("resetting DTR on serial port " + self.trigger_serial_file, 'alerts')
                 if self.trigger_serial_fd:
-                    #self.trigger_serial_fd = open(self.trigger_serial_file, 'r')
-                    #fcntl.ioctl(self.trigger_serial_fd, termios.TIOCMBIC, TIOCM_DTR)
                     self.trigger_serial_fd.setDTR(False)
                     self.trigger_serial_fd.close()
                     self.trigger_serial_fd = None
@@ -412,6 +407,7 @@ class ObAlertProcessor (object):
             obplayer.Streamer.stop()
 
     def run(self):
+        self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
         self.next_expired_check = time.time() + 30
         self.next_alert_check = 0
 
@@ -433,14 +429,26 @@ class ObAlertProcessor (object):
                     self.next_expired_check = present_time + 30
                     expired_list = [ ]
                     with self.lock:
-                        for alert in self.alerts_active.itervalues():
+                        for alert in self.alerts_active.values():
                             if alert.is_expired():
                                 obplayer.Log.log("alert %s has expired" % (obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier),), 'alerts')
                                 expired_list.append(alert)
                     for alert in expired_list:
                         self.mark_expired(alert)
 
-                # TODO delete alert data after 90 days
+                # delete old alert data
+                if self.next_purge_check is not None and present_time > self.next_purge_check:
+                    self.next_purge_check = present_time + 86400
+
+                    basedir = obplayer.ObData.get_datadir() + "/alerts"
+                    then = datetime.datetime.now() - datetime.timedelta(days=90)
+
+                    for filename in os.listdir(basedir):
+                        (year, month, day) = filename[:10].split('_')
+                        filedate = datetime.datetime(int(year), int(month), int(day))
+                        if filedate < then:
+                            obplayer.Log.log("deleting alert file " + filename, 'alerts')
+                            os.remove(os.path.join(basedir, filename))
 
                 # play active alerts
                 if present_time > self.next_alert_check and len(self.alerts_active) > 0:
@@ -451,7 +459,7 @@ class ObAlertProcessor (object):
 
                     expired_list = [ ]
                     with self.lock:
-                        for alert in self.alerts_active.itervalues():
+                        for alert in self.alerts_active.values():
                             alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
                             if alert_media['primary']:
                                 alert.times_played += 1

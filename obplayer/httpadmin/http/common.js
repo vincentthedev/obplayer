@@ -11,11 +11,14 @@ Site.fullscreen = function()
   },'json');
 }
 
-Site.restart = function()
+Site.restart = function(extra)
 {
+  var postvars = {};
+  if (extra) postvars['extra'] = extra;
+
   $('#command_restart').val('Restarting...');
 
-  $.get('/command/restart',{},function(response)
+  $.get('/command/restart',postvars,function(response)
   {
     $('#command_restart').attr('onclick','');
     Site.restartInterval = setInterval(Site.restartCountdown, 1000);

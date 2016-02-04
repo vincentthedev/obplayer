@@ -37,32 +37,12 @@ import traceback
 
 if sys.version.startswith('3'):
     import urllib.parse as urllib
+    unicode = str
 else:
     import urllib
 
 
-curl_response_data = b''
-curl_response_schedule_data = b''
-curl_response_emerg_data = b''
-
-
-def curl_response(buf):
-    global curl_response_data
-    curl_response_data += buf
-
-
-def curl_response_schedule(buf):
-    global curl_response_schedule_data
-    curl_response_schedule_data += buf
-
-
-def curl_response_emerg(buf):
-    global curl_response_emerg_data
-    curl_response_emerg_data += buf
-
-
 # Given XML element, gets text within that element.
-
 def xml_get_text(element):
     nodelist = element.childNodes
     rc = ''
@@ -73,7 +53,6 @@ def xml_get_text(element):
 
 
 # Get direct children.  Like getElementsByTagName, but only with direct children.
-
 def xml_get_direct_children(node, tagName):
     children = []
     for e in node.childNodes:
@@ -81,11 +60,13 @@ def xml_get_direct_children(node, tagName):
             children.append(e)
     return children
 
+
 def xml_get_tag_value(node, tagName, default=''):
     child = xml_get_direct_children(node, tagName)
     if len(child) <= 0:
         return default
     return xml_get_text(child[0])
+
 
 def xml_get_media_item(node):
     media_item = {}
@@ -106,6 +87,7 @@ def xml_get_media_item(node):
 
     return media_item
 
+
 def xml_get_tags(element, tag):
     children = [ ]
     for node in element.childNodes:
@@ -113,11 +95,13 @@ def xml_get_tags(element, tag):
             children.append(node)
     return children
 
+
 def xml_get_tag_values(element, tag):
     values = [ ]
     for child in xml_get_tags(element, tag):
         values.append(xml_get_text(child))
     return values
+
 
 def xml_get_first_tag_value(element, tag, default=None):
     children = xml_get_tags(element, tag)
@@ -472,12 +456,14 @@ class ObSync:
             xmlentry.appendChild(media_id_element)
 
             artist_element = doc.createElement('artist')
-            artist_text = doc.createTextNode(unicode(entry['artist']).encode('ascii', 'xmlcharrefreplace'))
+            #artist_text = doc.createTextNode(unicode(entry['artist']).encode('ascii', 'xmlcharrefreplace'))
+            artist_text = doc.createTextNode(entry['artist'])
             artist_element.appendChild(artist_text)
             xmlentry.appendChild(artist_element)
 
             title_element = doc.createElement('title')
-            title_text = doc.createTextNode(unicode(entry['title']).encode('ascii', 'xmlcharrefreplace'))
+            #title_text = doc.createTextNode(unicode(entry['title']).encode('ascii', 'xmlcharrefreplace'))
+            title_text = doc.createTextNode(entry['title'])
             title_element.appendChild(title_text)
             xmlentry.appendChild(title_element)
 
@@ -660,11 +646,6 @@ class ObSync:
     # Function outputs XML response from server.
     #
     def sync_request(self, request_type='', data=False):
-
-        global curl_response_data
-        global curl_response_schedule_data
-        global curl_response_emerg_data
-
         sync_url = obplayer.Config.setting('sync_url')
         if not sync_url:
             obplayer.Log.log("sync url is blank, skipping sync request", 'sync')
@@ -687,15 +668,6 @@ class ObSync:
         curl.setopt(pycurl.POST, True)
         curl.setopt(pycurl.POSTFIELDS, enc_postfields)
 
-        if request_type == 'schedule':
-            curl.setopt(pycurl.WRITEFUNCTION, curl_response_schedule)
-
-        elif request_type == 'emerg':
-            curl.setopt(pycurl.WRITEFUNCTION, curl_response_emerg)
-
-        else:
-            curl.setopt(pycurl.WRITEFUNCTION, curl_response)
-
         # some options so that it'll abort the transfer if the speed is too low (i.e., network problem)
         # low speed abort set to 0.01Kbytes/s for 60 seconds).
         curl.setopt(pycurl.LOW_SPEED_LIMIT, 10)
@@ -703,6 +675,15 @@ class ObSync:
 
         curl.setopt(pycurl.NOPROGRESS, 0)
         curl.setopt(pycurl.PROGRESSFUNCTION, self.curl_progress)
+
+        class CurlResponse:
+            def __init__(self):
+                self.buffer = u''
+            def __call__(self, data):
+                self.buffer += data.decode('utf-8')
+
+        curl_response = CurlResponse()
+        curl.setopt(pycurl.WRITEFUNCTION, curl_response)
 
         try:
             curl.perform()
@@ -715,19 +696,7 @@ class ObSync:
 
         curl.close()
 
-        if request_type == 'schedule':
-            return_data = curl_response_schedule_data
-            curl_response_schedule_data = ''
-
-        elif request_type == 'emerg':
-            return_data = curl_response_emerg_data
-            curl_response_emerg_data = ''
-
-        else:
-            return_data = curl_response_data
-            curl_response_data = ''
-
-        return return_data
+        return curl_response.buffer
 
     #
     # Fetch media from web application.  Saves under media directory.

@@ -90,13 +90,15 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         else:
             return 'Off'
 
-    def command_restart(self, access):
+    def command_restart(self, access, getvars):
         if not self.readonly_allow_restart and not access:
             return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
+        if 'extra' in getvars and getvars['extra'][0] == 'hard':
+            obplayer.Main.exit_code = 37
         os.kill(os.getpid(), signal.SIGINT)
         return { 'status' : True }
 
-    def command_fstoggle(self, access):
+    def command_fstoggle(self, access, getvars):
         if not self.readonly_allow_restart and not access:
             return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest", 'fullscreen' : 'N/A' }
 
@@ -118,7 +120,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
             data = { }
             data['time'] = time.time()
-            data['uptime'] = uptime
+            data['uptime'] = uptime.decode('utf-8')
             for stream in requests.keys():
                 data[stream] = { key: requests[stream][key] for key in requests[stream].keys() if key in select_keys }
             data['audio_levels'] = obplayer.Player.get_audio_levels()

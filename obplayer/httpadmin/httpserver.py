@@ -37,6 +37,7 @@ import hashlib
 if sys.version.startswith('3'):
     from urllib.parse import parse_qs,urlparse
     import http.server as BaseHTTPServer
+    unicode = str
 else:
     from urlparse import parse_qs,urlparse
     import BaseHTTPServer
@@ -57,6 +58,10 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.server.log(self.address_string() + ' ' + format % args)
 
     def parse(self, data, params=None):
+        scope = { }
+        scope['t'] = self.translate
+        scope['time'] = time
+        scope['obplayer'] = obplayer
 
         ret = ''
         while data != '':
@@ -68,16 +73,20 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             try:
                 if code:
                     if code.startswith('exec '):
-                        exec(code[5:])
+                        exec(code[5:], scope)
                     else:
-                        ret += unicode(eval(code)).encode('utf-8')
+                        # TODO this might introduce a conversion error in python2 when displaying utf-8 characters
+                        ret += str(eval(code, scope))
+                        #ret += unicode(eval(code, scope)).encode('utf-8')
             except Exception as e:
-                #ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + e.__class__.__name__ + ': ' + e.args[0] + '<br>\n'
                 ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + repr(e) + '<br>\n'
 
             data = second[2]
 
         return ret
+
+    def translate(self, string):
+        return string
 
     def check_authorization(self):
 
@@ -87,11 +96,12 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if not self.server.username and not self.server.readonly_username:
             return True
 
-        authdata = self.headers.getheader('Authorization')
-        if type(authdata).__name__ == 'str':
-            authdata = authdata.split(' ')[-1].decode('base64')
-            username = authdata.split(':')[0]
-            password = authdata.split(':')[1]
+        authdata = self.headers['Authorization']
+        if type(authdata) == str:
+            (username, _, password) = base64.b64decode(authdata.split(' ')[-1].encode('utf-8')).decode('utf-8').partition(':')
+            #authdata = authdata.split(' ')[-1].decode('base64')
+            #username = authdata.split(':')[0]
+            #password = authdata.split(':')[1]
 
             if username == self.server.readonly_username and password == self.server.readonly_password:
                 self.admin_access = False
@@ -139,7 +149,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.send_404()
                 return
 
-            ret = command_func(self.admin_access)
+            ret = command_func(self.admin_access, params)
             self.send_content(200, 'application/json', json.dumps(ret))
             return
 
@@ -158,10 +168,10 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.extension = self.get_extension(filename)
             self.mimetype = self.get_mimetype(filename)
 
-            with open(filename, 'r') as f:
+            with open(filename, 'rb') as f:
                 contents = f.read()
                 if self.extension == 'html':
-                    contents = self.parse(contents, params)
+                    contents = self.parse(contents.decode('utf-8'), params)
                 self.send_content(200, self.mimetype, contents)
                 return
 

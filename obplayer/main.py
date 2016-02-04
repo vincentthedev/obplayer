@@ -39,6 +39,7 @@ class ObMainApp:
 
     def __init__(self):
         self.modules = [ ]
+        self.exit_code = 0
 
         parser = argparse.ArgumentParser(prog='obplayer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Player')
         parser.add_argument('-f', '--fullscreen', action='store_true', help='start fullscreen', default=False)
@@ -146,7 +147,7 @@ class ObMainApp:
         obplayer.ObThread.join_all()
 
         # quit main thread.
-        sys.exit(0)
+        sys.exit(self.exit_code)
 
     def load_module(self, name):
         if name in self.modules:
