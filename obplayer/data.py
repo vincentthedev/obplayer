@@ -378,8 +378,8 @@ class ObConfigData (ObData):
         self.add_setting('testsignal_enable', '1', 'bool')
 
         self.add_setting('enable_location', '1', 'bool')
-        self.add_setting('device_longitude','-131.500', 'float')
-        self.add_setting('device_latitude','60.500', 'float')
+        self.add_setting('device_longitude','-134.18537', 'decimal')
+        self.add_setting('device_latitude','60.27434', 'decimal')
 
     def add_setting(self, name, value, datatype=None):
 
