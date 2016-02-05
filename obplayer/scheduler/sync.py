@@ -38,8 +38,12 @@ import traceback
 if sys.version.startswith('3'):
     import urllib.parse as urllib
     unicode = str
+    def strascii(text):
+        return text
 else:
     import urllib
+    def strascii(text):
+        return unicode(text).encode('ascii', 'xmlcharrefreplace')
 
 
 # Given XML element, gets text within that element.
@@ -191,6 +195,8 @@ class ObSync:
     def __init__(self):
         self.quit = False
         self.emerg_sync_running = False
+        # TODO for debugging purposes
+        self.previous = ''
 
     def curl_progress(self, download_t, download_d, upload_t, upload_d):
         if self.quit:
@@ -245,8 +251,10 @@ class ObSync:
         schedule_xml = self.sync_request('schedule')
 
         # TODO for debugging purposes, write schedule to file
-        #with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
-        #    f.write(schedule_xml)
+        if self.previous != schedule_xml:
+            self.previous = schedule_xml
+            with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
+                f.write(schedule_xml)
         #print schedule_xml
 
 
@@ -457,13 +465,13 @@ class ObSync:
 
             artist_element = doc.createElement('artist')
             #artist_text = doc.createTextNode(unicode(entry['artist']).encode('ascii', 'xmlcharrefreplace'))
-            artist_text = doc.createTextNode(entry['artist'])
+            artist_text = doc.createTextNode(strascii(entry['artist']))
             artist_element.appendChild(artist_text)
             xmlentry.appendChild(artist_element)
 
             title_element = doc.createElement('title')
             #title_text = doc.createTextNode(unicode(entry['title']).encode('ascii', 'xmlcharrefreplace'))
-            title_text = doc.createTextNode(entry['title'])
+            title_text = doc.createTextNode(strascii(entry['title']))
             title_element.appendChild(title_text)
             xmlentry.appendChild(title_element)
 

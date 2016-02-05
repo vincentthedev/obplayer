@@ -309,12 +309,21 @@ class ObPlayer (object):
                 if len(unpatch_list) > 0:
                     if set(unpatch_list) == self.pipes[pipe].mode:
                         self.pipes[pipe].stop()
+                        """
+                        requeued = [ ]
+                        for output in unpatch_list:
+                            if self.requests[output] and self.requests[output] not in requeued:
+                                requeued.push(self.requests[output])
+                                self.requests[output]['controller'].requeue_request(self.requests[output])
+                                print("*** Requeued request " + repr(self.requests[output]))
+                        """
                         if self.requests[unpatch_list[0]]:
                             self.requests[unpatch_list[0]]['controller'].requeue_request(self.requests[unpatch_list[0]])
-                            print("*** Requeued request " + repr(self.requests[unpatch_list[0]]))
+                            #print("*** Requeued request " + repr(self.requests[unpatch_list[0]]))
                         else:
                             # TODO requeue any request for which we stop the pipe
                             print("*** We didn't requeue " + repr(unpatch_list[0]))
+
                     self.pipes[pipe].unpatch('/'.join(unpatch_list))
 
         if media_type is not None:
