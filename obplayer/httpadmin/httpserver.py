@@ -96,7 +96,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if not self.server.username and not self.server.readonly_username:
             return True
 
-        authdata = self.headers['Authorization']
+        authdata = self.headers.get('Authorization')
         if type(authdata) == str:
             (username, _, password) = base64.b64decode(authdata.split(' ')[-1].encode('utf-8')).decode('utf-8').partition(':')
             #authdata = authdata.split(' ')[-1].decode('base64')
