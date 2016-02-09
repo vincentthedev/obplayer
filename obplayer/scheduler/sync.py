@@ -251,10 +251,10 @@ class ObSync:
         schedule_xml = self.sync_request('schedule')
 
         # TODO for debugging purposes, write schedule to file
-        if self.previous != schedule_xml:
-            self.previous = schedule_xml
-            with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
-                f.write(schedule_xml)
+        #if self.previous != schedule_xml:
+        #    self.previous = schedule_xml
+        #    with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
+        #        f.write(schedule_xml)
         #print schedule_xml
 
 
