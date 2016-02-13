@@ -137,6 +137,8 @@ class ObConfigData (ObData):
             datatype = row['type']
             if datatype == 'int':
                 value = int(value)
+            elif datatype == 'float':
+                value = float(value)
             elif datatype == 'bool':
                 value = bool(int(value))
             else:
@@ -261,10 +263,12 @@ class ObConfigData (ObData):
 
         return None
 
+    """
     def set(self, setting_name, setting_value):
         settings = {}
         settings[setting_name] = setting_value
         self.save_settings(settings)
+    """
 
     # make sure we have all our required settings. if not, add setting with default value.
     def check_defaults(self):
@@ -405,10 +409,7 @@ class ObConfigData (ObData):
 
     # save our settings into the database. update settings_edit_cache to handle subsequent edits.
     def save_settings(self, settings):
-
         for (name, value) in settings.items():
-            self.query('UPDATE settings set value="' + self.escape(str(value)) + '" where name="' + self.escape(name) + '"')
-
             dataType = self.settings_type[name]
             if dataType == 'int':
                 self.settings_edit_cache[name] = int(value)
@@ -418,5 +419,10 @@ class ObConfigData (ObData):
                 self.settings_edit_cache[name] = bool(int(value))
             else:
                 self.settings_edit_cache[name] = str(value)
+
+            self.query('UPDATE settings set value="' + self.escape(str(value)) + '" where name="' + self.escape(name) + '"')
+
+    def list_settings(self):
+        return self.settings_cache.copy()
 
 

@@ -195,8 +195,6 @@ class ObSync:
     def __init__(self):
         self.quit = False
         self.emerg_sync_running = False
-        # TODO for debugging purposes
-        self.previous = ''
 
     def curl_progress(self, download_t, download_d, upload_t, upload_d):
         if self.quit:
@@ -251,10 +249,8 @@ class ObSync:
         schedule_xml = self.sync_request('schedule')
 
         # TODO for debugging purposes, write schedule to file
-        #if self.previous != schedule_xml:
-        #    self.previous = schedule_xml
-        #    with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
-        #        f.write(schedule_xml)
+        #with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
+        #    f.write(schedule_xml)
         #print schedule_xml
 
 

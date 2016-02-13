@@ -47,7 +47,7 @@ class ObAlertFetcher (obplayer.ObThread):
 
         self.processor = processor
         self.socket = None
-        self.buffer = u""
+        self.buffer = b""
         self.receiving_data = False
         self.last_received = 0
         self.close_lock = threading.Lock()
@@ -70,13 +70,13 @@ class ObAlertFetcher (obplayer.ObThread):
         while True:
             if self.buffer:
                 if self.receiving_data is False:
-                    i = self.buffer.find('<?xml')
+                    i = self.buffer.find(b'<?xml')
                     if i >= 0:
                         self.buffer = self.buffer[i:]
                         self.receiving_data = True
 
                 if self.receiving_data is True:
-                    data, endtag, remain = self.buffer.partition('</alert>')
+                    data, endtag, remain = self.buffer.partition(b'</alert>')
                     if endtag:
                         self.buffer = remain
                         self.receiving_data = False
@@ -108,7 +108,7 @@ class ObAlertFetcher (obplayer.ObThread):
 
                         # TODO for testing only
                         with open(obplayer.ObData.get_datadir() + "/alerts/" + obplayer.alerts.ObAlert.reference(alert.sent, alert.identifier) + '.xml', 'wb') as f:
-                            f.write(data.encode('utf-8'))
+                            f.write(data)
 
                 except socket.error as e:
                     obplayer.Log.log("Socket Error: " + str(e), 'error')
@@ -168,10 +168,10 @@ class ObAlertTCPFetcher (ObAlertFetcher):
         return False
 
     def receive(self):
-        return self.socket.recv(4096).decode('utf-8')
+        return self.socket.recv(4096)
 
     def send(self, data):
-        self.socket.send(data.encode('utf-8'))
+        self.socket.send(data)
 
 
 class ObAlertUDPFetcher (ObAlertFetcher):
@@ -184,10 +184,10 @@ class ObAlertUDPFetcher (ObAlertFetcher):
         #self.socket.bind(('', self.port))
 
     def receive(self):
-        return self.socket.recv(4096).decode('utf-8')
+        return self.socket.recv(4096)
 
     def send(self, data):
-        self.socket.sendto(data.encode('utf-8'), (self.host, self.port))
+        self.socket.sendto(data, (self.host, self.port))
 
 
 class ObAlertProcessor (object):
@@ -246,7 +246,7 @@ class ObAlertProcessor (object):
     def inject_alert(self, filename):
         obplayer.Log.log("injecting test alert from file " + filename, 'alerts')
         with open(filename, 'rb') as f:
-            data = f.read().decode('utf-8')
+            data = f.read()
         alert = obplayer.alerts.ObAlert(data)
         alert.add_geocode(self.target_geocodes[0])
         alert.max_plays = 1
@@ -350,11 +350,11 @@ class ObAlertProcessor (object):
                         r = requests.get(url)
 
                         if r.status_code == 200:
-                            r.encoding = 'utf-8'
+                            #r.encoding = 'utf-8'
                             with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
-                                f.write(r.text.encode('utf-8'))
+                                f.write(r.content)
 
-                            alert = obplayer.alerts.ObAlert(r.text)
+                            alert = obplayer.alerts.ObAlert(r.content)
                             self.handle_dispatch(alert)
                             break
                     except requests.ConnectionError:

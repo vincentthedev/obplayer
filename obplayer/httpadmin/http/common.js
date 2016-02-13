@@ -217,9 +217,10 @@ Site.updateStatusInfo = function()
 
 Site.updateMapInfo = function()
 {
-  if($('#tabs .tab[data-content="map"]').hasClass('selected')){
-        map.invalidateSize();
-        }
+  if($('#tabs .tab[data-content="map"]').hasClass('selected'))
+  {
+    map.invalidateSize();
+  }
 }
 
 Site.formatLogs = function(lines)
@@ -317,6 +318,31 @@ Site.friendlyTime = function(timestamp)
   return hours+':'+minutes+':'+seconds;
 }
 
+Site.updateIntervals = function ()
+{
+  if (document.hidden) {
+    if (Site.updateAlertInfoInterval) {
+      clearInterval(Site.updateAlertInfoInterval);
+      Site.updateAlertInfoInterval = null;
+    }
+
+    if (Site.updateStatusInfoInterval) {
+      clearInterval(Site.updateStatusInfoInterval);
+      Site.updateStatusInfoInterval = null;
+    }
+  }
+  else {
+    if (Site.updateAlertInfoInterval)
+      clearInterval(Site.updateAlertInfoInterval);
+    Site.updateAlertInfoInterval = setInterval(Site.updateAlertInfo, 2000);
+
+    if (Site.updateStatusInfoInterval)
+      clearInterval(Site.updateStatusInfoInterval);
+    Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 1000);
+  }
+}
+
+
 $(document).ready(function()
 {
 
@@ -395,12 +421,31 @@ $(document).ready(function()
   });
   $('#http_admin_secure').change();
 
-  Site.updateAlertInfoInterval = setInterval(Site.updateAlertInfo, 2000);
+  document.addEventListener('visibilitychange', Site.updateIntervals);
+  Site.updateIntervals();
   Site.updateAlertInfo();
-
-  Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 1000);
   Site.updateStatusInfo();
   $('#log_level').change(Site.updateStatusInfo);
+
+  $('#import-settings').submit(function (event)
+  {
+    event.preventDefault();
+    console.log(this);
+    $.ajax( {
+      url: '/import_settings',
+      type: 'POST',
+      data: new FormData(this),
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        $('#notice').hide();
+        $('#error').hide();
+
+        if(response.status) $('#notice').html(response.notice).show();
+        else $('#error').html(response.error).show();
+      }
+    });
+  });
 
   $('#alerts_inject_button').click(Site.injectAlert);
   $('#alerts_cancel_button').click(Site.cancelAlert);

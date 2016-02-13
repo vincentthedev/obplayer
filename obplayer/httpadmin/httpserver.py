@@ -43,6 +43,33 @@ else:
     import BaseHTTPServer
 
 
+class Response (object):
+    def __init__(self):
+        self.status = 200
+        self.mimetype = None
+        self.headers = [ ]
+
+    def send_content(self, mimetype, content):
+        self.mimetype = mimetype
+        self.content = content
+        return self
+
+    def send_json(self, data):
+        self.mimetype = 'application/json'
+        self.content = json.dumps(data)
+        return self
+
+    def redirect(self, redirect):
+        self.status = 302
+        self.content = ''
+        self.headers.append( ('Location', redirect) )
+        return self
+
+    def add_header(self, name, value):
+        self.headers.append( (name, value) )
+        return self
+
+
 class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     #protocol_version = 'HTTP/1.1'
     server_version = "OpenBroadcasterHTTP/0.1"
@@ -192,7 +219,8 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             pass
 
         if ctype == 'multipart/form-data':
-            postvars = cgi.parse_multipart(self.rfile, pdict)
+            postvars = cgi.FieldStorage(fp=self.rfile, headers=self.headers, environ={ 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': self.headers['Content-Type'] })
+            #postvars = cgi.parse_multipart(self.rfile, pdict)
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers['content-length'])
             postvars = parse_qs(self.rfile.read(length).decode('utf-8'), keep_blank_values=True)
@@ -201,7 +229,10 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         ret = self.server.handle_post(self.path, postvars, self.admin_access)
 
-        self.send_content(200, 'application/json', json.dumps(ret))
+        if type(ret) == Response:
+            self.send_content(ret.status, ret.mimetype, ret.content, headers=ret.headers)
+        else:
+            self.send_content(200, 'application/json', json.dumps(ret))
 
     @staticmethod
     def is_valid_path(path):
@@ -376,5 +407,6 @@ class WebSocketConnection (object):
                 else:
                     obplayer.Log.log("websocket: received close message")
                 return
+
 
 

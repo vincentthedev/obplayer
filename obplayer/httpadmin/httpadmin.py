@@ -38,7 +38,7 @@ else:
     import SocketServer
     import BaseHTTPServer
 
-from obplayer.httpadmin.httpserver import ObHTTPRequestHandler
+from obplayer.httpadmin.httpserver import ObHTTPRequestHandler, Response
 
 
 class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
@@ -150,12 +150,43 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                         return { 'status' : False, 'error' : error }
 
                 # we didn't get an errors on validate, so update each setting now.
-                for key in postvars:
-                    setting_name = key
-                    setting_value = postvars[key][0]
-                    obplayer.Config.set(setting_name, setting_value)
+                settings = { key: value[0] for (key, value) in postvars.items() }
+                obplayer.Config.save_settings(settings)
 
                 return { 'status' : True }
+
+            elif path == '/import_settings':
+                content = postvars.getvalue('importfile').decode('utf-8')
+
+                errors = ''
+                settings = { }
+                for line in content.split('\n'):
+                    (name, _, value) = line.strip().partition(':')
+                    name = name.strip()
+                    if not name:
+                        continue
+                    error = obplayer.Config.validate_setting(name, value)
+                    if error:
+                        errors += error + '<br/>'
+                    else:
+                        settings[name] = value
+                        obplayer.Log.log("importing setting '{0}': '{1}'".format(name, value), 'config')
+
+                if errors:
+                    return { 'status' : False, 'error' : errors }
+
+                obplayer.Config.save_settings(settings)
+                return { 'status' : True, 'notice' : "Settings imported successfully.  Please restart the player for the settings to take effect." }
+
+            elif path == '/export_settings':
+                settings = ''
+                for (name, value) in sorted(obplayer.Config.list_settings().items()):
+                    settings += "{0}:{1}\n".format(name, value if type(value) != bool else int(value))
+
+                res = Response()
+                res.add_header('Content-Disposition', 'attachment; filename=obsettings.txt')
+                res.send_content('text/plain', settings)
+                return res
 
             elif path == "/alerts/inject_test":
                 if hasattr(obplayer, 'alerts'):

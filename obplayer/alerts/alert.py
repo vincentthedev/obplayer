@@ -86,7 +86,7 @@ class ObAlert (object):
         self.media_info = { }
 
         if xmlcode is not None:
-            self.parse_cap_xml(xmlcode.encode('utf-8'))
+            self.parse_cap_xml(xmlcode)
 
     def parse_cap_xml(self, xmlcode):
         try:
@@ -388,6 +388,6 @@ class ObAlertResource (object):
 
 def parse_alert_file(xmlfile):
     with open(xmlfile, 'rb') as f:
-        alert = ObAlert(f.read().decode('utf-8'))
+        alert = ObAlert(f.read())
     return alert
 
