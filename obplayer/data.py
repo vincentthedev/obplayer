@@ -256,9 +256,9 @@ class ObConfigData (ObData):
 
         lat_regex = re.compile(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$')
         lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
-        if setting_name == 'device_latitude' and lat_regex.match(setting_value) == None:
-             return 'Invalid latitdue coordinate.'
-        if setting_name == 'device_longitude' and lng_regex.match(setting_value) == None:
+        if setting_name == 'location_latitude' and lat_regex.match(setting_value) == None:
+             return 'Invalid latitude coordinate.'
+        if setting_name == 'location_longitude' and lng_regex.match(setting_value) == None:
              return 'Invalid longitude coordinate.'
 
         return None
@@ -337,6 +337,7 @@ class ObConfigData (ObData):
         self.add_setting('http_admin_secure', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
+        self.add_setting('http_admin_language', 'en', 'text')
 
         self.add_setting('http_show_sync', '1', 'bool')
         self.add_setting('http_show_streaming', '1', 'bool')
@@ -381,9 +382,9 @@ class ObConfigData (ObData):
 
         self.add_setting('testsignal_enable', '1', 'bool')
 
-        self.add_setting('enable_location', '1', 'bool')
-        self.add_setting('device_longitude','-134.18537', 'float')
-        self.add_setting('device_latitude','60.27434', 'float')
+        self.add_setting('location_enable', '1', 'bool')
+        self.add_setting('location_longitude', '-134.18537', 'float')
+        self.add_setting('location_latitude', '60.27434', 'float')
 
     def add_setting(self, name, value, datatype=None):
 

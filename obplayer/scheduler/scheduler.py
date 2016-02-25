@@ -183,17 +183,15 @@ class ObShow (object):
             self.play_current(present_time)
 
         else:
-            self.ctrl.stop_requests()
-            #if present_time >= self.next_media_update - 2:
-            if self.playlist.advance_to_current(present_time - self.start_time()):
-                self.play_current(present_time)
+            #self.ctrl.stop_requests()
+            if present_time >= self.next_media_update - 2:
+                if self.playlist.advance_to_current(present_time - self.start_time()):
+                    self.play_current(present_time)
 
-            """
             if self.ctrl.has_requests():
                 return False
-            print("Fucking up")
+            print("This is a bug...")
             self.media_start_time = 0
-            """
 
             # NOTE this usually only happens when a media item fails to play, in which case we don't want to fill the
             # space with a pause, we want to let the fallback player take over

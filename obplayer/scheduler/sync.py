@@ -207,8 +207,8 @@ class ObSync:
         postfields['id'] = obplayer.Config.setting('sync_device_id')
         postfields['pw'] = obplayer.Config.setting('sync_device_password')
         postfields['version'] = obplayer.Config.version
-        postfields['longitude'] = obplayer.Config.setting('device_longitude')
-        postfields['latitude'] = obplayer.Config.setting('device_latitude')
+        postfields['longitude'] = obplayer.Config.setting('location_longitude')
+        postfields['latitude'] = obplayer.Config.setting('location_latitude')
 
         curl = pycurl.Curl()
 

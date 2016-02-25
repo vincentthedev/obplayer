@@ -14,7 +14,7 @@
 
   <body>
 
-    <h1><img src="/oblogo.jpg" /><% obplayer.HTTPAdmin.title %></h1>
+    <h1><img src="/oblogo.svg" width="150" /><% obplayer.HTTPAdmin.title %></h1>
 
     <div id="tabs">
       <div class="tab selected" data-content="status">Status</div>
@@ -173,7 +173,7 @@
 	  </tr>
           <tr>
             <td>Device Coordinates:</td>
-            <td>[<% obplayer.Config.setting('device_longitude') %>, <% obplayer.Config.setting('device_latitude') %>]</td>
+            <td>[<% obplayer.Config.setting('location_longitude') %>, <% obplayer.Config.setting('location_latitude') %>]</td>
           </tr>
 	  <tr class="padding">
 	    <td>Scheduler/Sync Enabled?:</td>
@@ -1079,14 +1079,14 @@
         <tbody>
           <tr>
             <td>Enable Map Display</td>
-            <td><input type="checkbox" name="enable_location" value="1"<% obplayer.HTTPAdmin.form_item_checked('enable_location') %>></td>
+            <td><input type="checkbox" name="location_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('location_enable') %>></td>
           </tr>
           <tr>
             <td colspan="2">Device Location (use decimal degrees)</td>
           </tr>
           <tr>
-            <td>Longitude: <input type="text" name="device_longitude" value="<% obplayer.Config.setting('device_longitude', True) %>" onchange="updateMap()"></td>
-            <td>Latitude: <input type="text" name="device_latitude" value="<% obplayer.Config.setting('device_latitude', True) %>" onchange="updateMap()"></td>
+            <td>Longitude: <input type="text" name="location_longitude" value="<% obplayer.Config.setting('location_longitude', True) %>" onchange="updateMap()"></td>
+            <td>Latitude: <input type="text" name="location_latitude" value="<% obplayer.Config.setting('location_latitude', True) %>" onchange="updateMap()"></td>
           </tr>
           <tr>
             <td colspan="2"><input name="save" type="button" onclick="javascript: Site.save('map');" value="Save"></td>
