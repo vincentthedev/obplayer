@@ -303,6 +303,11 @@
 	  </tr>
 
 	  <tr class="padding">
+	    <td>LED Sign Enabled?:</td>
+	    <td><% obplayer.Config.setting('led_sign_enable') %></td>
+	  </tr>
+
+	  <tr class="padding">
 	    <td>Test Signal Enabled?:</td>
 	    <td><% obplayer.Config.setting('testsignal_enable') %></td>
 	  </tr>
@@ -793,6 +798,29 @@
             <tr>
               <td>Fixed Framerate</td>
               <td><input type="text" name="images_framerate" value="<% obplayer.Config.setting('images_framerate', True) %>"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>LED Sign Settings</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td>Enable LED Sign</td>
+              <td><input type="checkbox" name="led_sign_enable" value="1"<% obplayer.HTTPAdmin.form_item_checked('led_sign_enable') %>></td>
+            </tr>
+            <tr>
+                <td>LED Device Filename</td>
+                <td><input type="text" name="led_sign_serial_file" value="<% obplayer.Config.setting('led_sign_serial_file',True) %>" title="The device filename of the serial port of the LED sign to which a message is sent while an alert cycle is under way."></td>
+            </tr>
+            <tr>
+              <td>Enable LED Time</td>
+              <td><input type="checkbox" name="led_sign_timedisplay" value="1"<% obplayer.HTTPAdmin.form_item_checked('led_sign_timedisplay') %>></td>
+            </tr>
+            <tr>
+                <td>LED Initialize Message</td>
+                <td><input type="text" name="led_sign_init_message" value="<% obplayer.Config.setting('led_sign_init_message',True) %>" title="The message to display during initialization of LED sign."></td>
             </tr>
           </tbody>
         </table>

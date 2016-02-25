@@ -386,6 +386,11 @@ class ObConfigData (ObData):
         self.add_setting('location_longitude', '-134.18537', 'float')
         self.add_setting('location_latitude', '60.27434', 'float')
 
+	self.add_setting('led_sign_enable','1','bool')
+	self.add_setting('led_sign_serial_file','','text')
+	self.add_setting('led_sign_timedisplay','1','bool')
+	self.add_setting('led_sign_init_message','','text')
+
     def add_setting(self, name, value, datatype=None):
 
         check_setting = self.query("SELECT name,value,type from 'settings' WHERE name = '" + self.escape(name) + "'")
