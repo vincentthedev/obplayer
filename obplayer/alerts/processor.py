@@ -33,13 +33,14 @@ import os
 import os.path
 
 import requests
-import subprocess
 import threading
+
 
 if sys.version.startswith('3'):
     import urllib.parse as urlparse
 else:
     import urlparse
+
 
 class ObAlertFetcher (obplayer.ObThread):
     def __init__(self, processor):
@@ -220,17 +221,20 @@ class ObAlertProcessor (object):
         self.play_moderates = obplayer.Config.setting('alerts_play_moderates')
         self.play_tests = obplayer.Config.setting('alerts_play_tests')
 
-        self.trigger_streamer = obplayer.Config.setting('alerts_trigger_streamer')
-        self.trigger_serial = obplayer.Config.setting('alerts_trigger_serial')
-        self.trigger_serial_file = obplayer.Config.setting('alerts_trigger_serial_file')
-        self.trigger_serial_fd = None
-        self.trigger_initialize()
+        self.triggers = [ ]
 
-	self.trigger_sign = obplayer.Config.setting('led_sign_enable')
-	self.sign_serial_file = obplayer.Config.setting('led_sign_serial_file')
-	self.sign_timedisplay = obplayer.Config.setting('led_sign_timedisplay')
-        self.trigger_serial_sign = None
-	self.sign_initialize()
+        if obplayer.Config.setting('alerts_trigger_serial'):
+            from obplayer.alerts.triggers.rs232 import SerialTrigger
+            self.triggers.append(SerialTrigger())
+
+        if obplayer.Config.setting('alerts_trigger_streamer'):
+            from obplayer.alerts.triggers.streamer import StreamerTrigger
+            self.triggers.append(StreamerTrigger())
+
+        if obplayer.Config.setting('led_sign_enable'):
+            from obplayer.alerts.triggers.ledsign import LEDSignTrigger
+            self.triggers.append(LEDSignTrigger())
+
 
         self.ctrl = obplayer.Player.create_controller('alerts', priority=100, default_play_mode='overlap', allow_overlay=True)
         #self.ctrl.do_player_request = self.do_player_request
@@ -366,169 +370,14 @@ class ObAlertProcessor (object):
                             break
                     except requests.ConnectionError:
                         obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
-   
-    def sign_initialize(self):
-	if self.trigger_sign:
-	    try:
-		obplayer.Log.log("initializing LED sign" + self.sign_serial_file,'alerts')
-		
-		global serial
-		import serial
-
-		serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
-                self.sign_set_date()
-                self.sign_set_time()
-		self.sign_run_demo()
-		if self.sign_timedisplay:
-		     self.sign_display_time()
-
-
-            except:
-                obplayer.Log.log("failed to initalize serial LED sign", 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-
-    def sign_set_time(self):
-        self.trigger_serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
-        self.trigger_serial_sign.write("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-	self.trigger_serial_sign.write("\x01Z00\x02\x45\x20")
-        loc_time = time.localtime
-	self.trigger_serial_sign.write(time.strftime("%H%M", time.localtime()))
-	self.trigger_serial_sign.write("\x04")
-	self.trigger_serial_sign.close()
-
-    def sign_set_date(self):
-        self.trigger_serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
-        self.trigger_serial_sign.write("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-	self.trigger_serial_sign.write("\x01Z00\x02\x45\x3B")
-        loc_time = time.localtime
-	self.trigger_serial_sign.write(time.strftime("%m%d%y", time.localtime()))
-	self.trigger_serial_sign.write("\x04")
-	self.trigger_serial_sign.close()
-
-    def sign_reset(self):
-        self.trigger_serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
-        self.trigger_serial_sign.write("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-	self.trigger_serial_sign.write("\x01Z00\x02AA")
-	self.trigger_serial_sign.write("\x1B b")
-	self.trigger_serial_sign.write(" ")
-	self.trigger_serial_sign.write("\x04")
-	self.trigger_serial_sign.close()
-
-    def sign_display_time(self):
-        self.trigger_serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
-        self.trigger_serial_sign.write("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-	self.trigger_serial_sign.write("\x01Z00\x02AA")
-	self.trigger_serial_sign.write("\x1B b\x1C2\x0B\x31\x20\x13")
-	self.trigger_serial_sign.write("")
-	self.trigger_serial_sign.write("\x04")
-	self.trigger_serial_sign.close()
-
-    def sign_run_demo(self):
-	self.trigger_serial_sign = serial.Serial(self.sign_serial_file, baudrate=9600)
- 	self.trigger_serial_sign.write("\x00\x00\x00\x00\x00\x00")
-	self.trigger_serial_sign.write("\x01Z00\x02AA")
-	self.trigger_serial_sign.write("\x1B\x30\x61\x15\x1A\x33\x1C9")
-	message = obplayer.Config.setting('led_sign_init_message')
-	self.trigger_serial_sign.write(message) 
-	#self.trigger_serial_sign.write("\x1B\x30\x6E\x56") #DDAD message
-	self.trigger_serial_sign.write("\x04")  
-	time.sleep(7)
-	self.sign_reset()
-
-    def sign_write_message(self):
-
-	if self.trigger_sign:
-            try:
-                obplayer.Log.log("sent message to LED sign on serial port " + self.sign_serial_file, 'alerts')
-                if self.trigger_serial_sign:
-                    self.trigger_serial_sign.close()
-
-                self.trigger_serial_sign = serial.Serial(self.sign_serial_file,baudrate=9600)
-		self.trigger_serial_sign.write('\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
-		with open('/tmp/textfile') as f:
-		     message= f.read()
-		self.trigger_serial_sign.write("\x01Z00") #SOH type, address(0=all signs)
-		self.trigger_serial_sign.write("\x02AA") #STX
-		#command codes (See p80 alphasign protocol doc)
-		# fill display, RTL,slowest, standard 7 hi character set
-		self.trigger_serial_sign.write("\x1B\x30\x61\x15\x1A\x33") 
-		self.trigger_serial_sign.write(message) #message!
-		self.trigger_serial_sign.write("\x04") # EOT
-		self.trigger_serial_sign.close()
-
-            except:
-                obplayer.Log.log("failed to send message LED sign on serial port " + self.sign_serial_file, 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-
-    def sign_clear_message(self):
-
-	if self.trigger_sign:
-            try:
-                obplayer.Log.log("sent clear to LED sign on serial port " + self.sign_serial_file, 'alerts')
-                if self.trigger_serial_sign:
-                    self.trigger_serial_sign.close()
-     		
-                if self.sign_timedisplay:
-		    self.sign_display_time()
-		else:
-	            self.sign_reset()
-
-            except:
-                obplayer.Log.log("failed to send message LED sign on serial port " + self.sign_serial_file, 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-
-
-    def trigger_initialize(self):
-        if self.trigger_serial:
-            try:
-                obplayer.Log.log("initializing serial trigger on port " + self.trigger_serial_file, 'alerts')
-                global serial
-                import serial
-
-                serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
-                serial_fd.setDTR(False)
-                serial_fd.close()
-            except:
-                obplayer.Log.log("failed to initalize serial trigger", 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def trigger_alert_cycle_start(self):
-        if self.trigger_serial:
-            try:
-                obplayer.Log.log("asserted DTR on serial port " + self.trigger_serial_file, 'alerts')
-                if self.trigger_serial_fd:
-                    self.trigger_serial_fd.close()
-                self.trigger_serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
-                self.trigger_serial_fd.setDTR(True)
-            except:
-                obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-
-        if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
-            obplayer.Log.log("starting icecast streamer for alert cycle", 'alerts')
-            obplayer.Streamer.start()
-
-	if self.trigger_sign:
-	    self.sign_write_message()
+        for trigger in self.triggers:
+            trigger.alert_cycle_start()
 
     def trigger_alert_cycle_stop(self):
-        if self.trigger_serial:
-            try:
-                obplayer.Log.log("resetting DTR on serial port " + self.trigger_serial_file, 'alerts')
-                if self.trigger_serial_fd:
-                    self.trigger_serial_fd.setDTR(False)
-                    self.trigger_serial_fd.close()
-                    self.trigger_serial_fd = None
-            except:
-                obplayer.Log.log("failed to assert DTR on serial port " + self.trigger_serial_file, 'alerts')
-                obplayer.Log.log(traceback.format_exc(), 'error')
-
-        if self.trigger_streamer and hasattr(obplayer, 'Streamer'):
-            obplayer.Log.log("stopping icecast streamer after alert cycle", 'alerts')
-            obplayer.Streamer.stop()
-
-	if self.trigger_sign:
-	    self.sign_clear_message()
+        for trigger in self.triggers:
+            trigger.alert_cycle_stop()
 
     def run(self):
         self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
@@ -584,52 +433,21 @@ class ObAlertProcessor (object):
 
                     expired_list = [ ]
                     with self.lock:
-			with open('/tmp/textfile','w') as f:
-			    f.write('')
+                        for trigger in self.triggers:
+                            trigger.alert_cycle_init()
+
                         for alert in self.alerts_active.values():
                             alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
                             if alert_media['primary']:
                                 alert.times_played += 1
                                 self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['artist'], title=alert_media['primary']['title'], overlay_text=alert_media['primary']['overlay_text'])
                                 self.ctrl.add_request(**alert_media['primary'])
-				#prim_text = alert_media['primary']['overlay_text']
-				alert_info = alert.get_first_info(self.language_primary)
-				severity = alert_info.severity.lower()
-				if obplayer.Config.setting('alerts_truncate'):
-				    parts = alert_info.description.split('\n\n', 1)
-            			    message_text = parts[0].replace('\n', ' ').replace('\r', '')
-				else:
-				    message_text = alert_info.description
-				head_text = alert_info.headline.title()
-				sign_message = head_text + ':' + message_text + '........'
-				if severity == 'moderate':
-				    with open('/tmp/textfile','a') as f:
-				        f.write('\x1C3')
-				elif severity == "minor":
-				    with open('/tmp/textfile','a') as f:
-				        f.write('\x1C2')
-				else:
-				    with open('/tmp/textfile','a') as f:
-				        f.write('\x1C1')
-				    
-				if sign_message:
-				    with open('/tmp/textfile','a') as f:
-				        f.write(sign_message + '\n')
 
                                 if alert_media['secondary']:
                                     self.ctrl.add_request(**alert_media['secondary'])
-				    secd_info = alert.get_first_info(self.language_secondary)
-				    head_text = secd_info.headline.title()
-				    if obplayer.Config.setting('alerts_truncate'):
-				        parts = secd_info.description.split('\n\n', 1)
-            			        message_text = parts[0].replace('\n', ' ').replace('\r', '')
-				    else:
-				        message_text = secd_info.description
-				    s = head_text + ':' + message_text + '........'
-				    sign_message = s.encode('cp863')
-                                    if sign_message:
-                                        with open('/tmp/textfile','a') as f:
-                                            f.write(sign_message + '\n')
+
+                                for trigger in self.triggers:
+                                    trigger.alert_cycle_each(alert, alert_media, self)
 
                                 if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
                                     expired_list.append(alert)

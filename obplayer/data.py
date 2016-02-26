@@ -233,10 +233,10 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
             return 'Geocodes must be specified as a list of comma-separated numbers.'
 
-        if setting_name == 'alerts_leadin_delay' and setting_value <= 0:
+        if setting_name == 'alerts_leadin_delay' and int(setting_value) <= 0:
             return 'The alert lead-in delay must be 1s or greater.'
 
-        if setting_name == 'alerts_leadout_delay' and setting_value <= 0:
+        if setting_name == 'alerts_leadout_delay' and int(setting_value) <= 0:
             return 'The alert lead-out delay must be 1s or greater.'
 
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
@@ -386,10 +386,10 @@ class ObConfigData (ObData):
         self.add_setting('location_longitude', '-134.18537', 'float')
         self.add_setting('location_latitude', '60.27434', 'float')
 
-	self.add_setting('led_sign_enable','1','bool')
-	self.add_setting('led_sign_serial_file','','text')
-	self.add_setting('led_sign_timedisplay','1','bool')
-	self.add_setting('led_sign_init_message','','text')
+        self.add_setting('led_sign_enable', '0', 'bool')
+        self.add_setting('led_sign_serial_file', '', 'text')
+        self.add_setting('led_sign_timedisplay', '1', 'bool')
+        self.add_setting('led_sign_init_message', '', 'text')
 
     def add_setting(self, name, value, datatype=None):
 
