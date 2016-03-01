@@ -147,7 +147,7 @@ class SyncPlaylogThread (obplayer.ObThread):
             self.remove_thread()
             return
 
-        self.synctime = int(60 * obplayer.Config.setting('sync_freq_log'))
+        self.synctime = int(60 * obplayer.Config.setting('sync_freq_playlog'))
         while not self.stopflag.wait(self.synctime):
             try:
                 obplayer.Sync.sync_playlog()
@@ -162,7 +162,7 @@ class SyncPlaylogThread (obplayer.ObThread):
 
 class SyncEmergThread (obplayer.ObThread):
     def run(self):
-        self.synctime = int(60 * obplayer.Config.setting('sync_freq_emerg'))
+        self.synctime = int(60 * obplayer.Config.setting('sync_freq_priority'))
         while not self.stopflag.wait(self.synctime):
             try:
                 obplayer.Sync.sync_priority_broadcasts()
@@ -194,7 +194,7 @@ class ObSync:
 
     def __init__(self):
         self.quit = False
-        self.emerg_sync_running = False
+        self.priority_sync_running = False
 
     def curl_progress(self, download_t, download_d, upload_t, upload_d):
         if self.quit:
@@ -338,7 +338,7 @@ class ObSync:
     #
     def sync_priority_broadcasts(self):
 
-        self.emerg_sync_running = True
+        self.priority_sync_running = True
 
         syncfiles = {}
 
@@ -412,7 +412,7 @@ class ObSync:
         # self.sync_media();
         self.sync_media_required = True
 
-        self.emerg_sync_running = False
+        self.priority_sync_running = False
 
         obplayer.RemoteData.get_priority_broadcasts()
         obplayer.PriorityBroadcaster.check_update()
@@ -481,10 +481,10 @@ class ObSync:
             context_element.appendChild(context_text)
             xmlentry.appendChild(context_element)
 
-            emerg_id_element = doc.createElement('emerg_id')
-            emerg_id_text = doc.createTextNode(str(entry['emerg_id']))
-            emerg_id_element.appendChild(emerg_id_text)
-            xmlentry.appendChild(emerg_id_element)
+            priority_id_element = doc.createElement('emerg_id')
+            priority_id_text = doc.createTextNode(str(entry['emerg_id']))
+            priority_id_element.appendChild(priority_id_text)
+            xmlentry.appendChild(priority_id_element)
 
             notes_element = doc.createElement('notes')
             notes_text = doc.createTextNode(str(entry['notes']))

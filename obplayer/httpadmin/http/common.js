@@ -3,11 +3,11 @@ Site = new Object();
 Site.fullscreen = function()
 {
   
-  $('#command_fullscreen').val('Fullscreen');
+  $('#command_fullscreen').text(Site.t('Miscellaneous', 'Fullscreen'));
 
   $.get('/command/fstoggle',{},function(response)
   {
-    $('#command_fullscreen').val('Fullscreen ('+response.fullscreen+')');
+    $('#command_fullscreen').text(Site.t('Miscellaneous', 'Fullscreen ('+response.fullscreen+')'));
   },'json');
 }
 
@@ -16,7 +16,7 @@ Site.restart = function(extra)
   var postvars = {};
   if (extra) postvars['extra'] = extra;
 
-  $('#command_restart').val('Restarting...');
+  $('#command_restart').text(Site.t('Miscellaneous', 'Restarting') + '...');
 
   $.get('/command/restart',postvars,function(response)
   {
@@ -29,7 +29,7 @@ Site.restartCountdownCount = 10;
 Site.restartCountdown = function()
 {
   Site.restartCountdownCount--;
-  $('#command_restart').val('Restarting ('+Site.restartCountdownCount+')');
+  $('#command_restart').text(Site.t('Miscellaneous', 'Restarting') + ' ('+Site.restartCountdownCount+')');
 
   if(Site.restartCountdownCount==0)
   {
@@ -57,14 +57,20 @@ Site.save = function(section)
     postfields[$(element).attr('name')] = value;	
   });
 
-  $.post('/save',postfields,Site.saveSuccess,'json');
+  $.post('/save',postfields,function(response)
+  {
+    //Site.saveSuccess,'json');
+    var namespace = $('#content-'+section).attr('data-tns');
+    if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
+    else $('#error').text(Site.t(namespace ? namespace : 'Responses', response.error)).show();
+  });
 
 }
 
 Site.saveSuccess = function(response)
 {
-  if(response.status) $('#notice').text('Settings saved.').show();
-  else $('#error').text(response.error).show();
+  if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
+  else $('#error').text(Site.t('Responses', response.error)).show();
 }
 
 
@@ -74,8 +80,8 @@ Site.injectAlert = function()
 
   $.post('/alerts/inject_test',{'alert':test_alert},function(response)
   {
-    if(response.status) $('#notice').text('Test alert injected successfully.').show();
-    else $('#error').text(response.error).show();
+    if(response.status) $('#notice').text(Site.t('Responses', 'alerts-inject-success')).show();
+    else $('#error').text(Site.t('Responses', response.error)).show();
   },'json');
 }
 
@@ -92,8 +98,8 @@ Site.cancelAlert = function()
   if(ids.length>0){
     $.post('/alerts/cancel',{'identifier[]':ids},function(response)
     {
-      if(response.status) $('#notice').text('Alert(s) cancelled successfully.').show();
-      else $('#error').text(response.error).show();
+      if(response.status) $('#notice').text(Site.t('Responses', 'alerts-cancel-success')).show();
+      else $('#error').text(Site.t('Responses', response.error)).show();
     },'json');
   }
 }
@@ -107,7 +113,7 @@ Site.updateAlertInfo = function()
 	var alerts = response.active;
 	var existing = $('#active-alerts');
 	var alert_list = [ ];
-	alert_list.push('<tr><th class="fit">Cancel</th><th>Sender</th><th>Times Played</th><th>Headline</th></tr>');
+	alert_list.push('<tr data-tns="Alerts Tab"><th class="fit" data-t>Cancel</th><th data-t>Sender</th><th data-t>Times Played</th><th data-t>Headline</th></tr>');
 	for(var key in alerts){
 	  var row;
 	  row = '<tr>';
@@ -119,15 +125,16 @@ Site.updateAlertInfo = function()
 	  alert_list.push(row);
 	}
 	$('#active-alerts').html(alert_list);
+        Site.translateHTML($('#active-alerts'));
       }
       else{
-	$('#active-alerts').html($('<tr><td>').html("No Active Alerts"));
+	$('#active-alerts').html($('<tr><td>').html(Site.t('Alerts Tab', "No Active Alerts")));
       }
 
       if(response.expired.length){
 	var alerts = response.expired;
 	var alert_list = [ ];
-	alert_list.push('<tr><th>Sender</th><th>Times Played</th><th>Description</th></tr>');
+	alert_list.push('<tr data-tns="Alerts Tab"><th data-t>Sender</th><th data-t>Times Played</th><th data-t>Description</th></tr>');
 	for(var key in alerts){
 	  var row;
 	  row = '<tr>';
@@ -138,14 +145,15 @@ Site.updateAlertInfo = function()
 	  alert_list.push(row);
 	}
 	$('#expired-alerts').html(alert_list);
+        Site.translateHTML($('#expired-alerts'));
       }
       else{
-	$('#expired-alerts').html($('<tr><td>').html("No Expired Alerts"));
+	$('#expired-alerts').html($('<tr><td>').html(Site.t('Alerts Tab', "No Expired Alerts")));
       }
 
       // display the last time a heartbeat was received
       if(response.last_heartbeat==0){
-	$('#alerts-last-heartbeat').html('(none received)');
+	$('#alerts-last-heartbeat').html('('+Site.t('Alert Tab', 'none received')+')');
 	$('#alerts-last-heartbeat').css('color','red');
       }
       else{
@@ -163,8 +171,8 @@ Site.updateAlertInfo = function()
       $('#alerts-last-heartbeat').html("");
       $('#alerts-next-play').html("");
 
-      $('#active-alerts').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
-      $('#expired-alerts').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
+      $('#active-alerts').html('<span style="color: red; font-weight: bold;">('+Site.t('Responses', 'player-connection-lost')+'</span>');
+      $('#expired-alerts').html('<span style="color: red; font-weight: bold;">('+Site.t('Responses', 'player-connection-lost')+')</span>');
     });
   }
 }
@@ -179,7 +187,7 @@ Site.updateStatusInfo = function()
       if(response.show){
 	$('#show-summary-time').html(Site.friendlyTime(response.time));
 	$('#show-summary-uptime').html(response.uptime);
-	$('#show-summary-type').html(response.show.type);
+	$('#show-summary-type').html(Site.t('Status Show Type', response.show.type));
 	$('#show-summary-id').html(response.show.id);
 	$('#show-summary-name').html(response.show.name);
 	$('#show-summary-description').html(response.show.description);
@@ -187,7 +195,7 @@ Site.updateStatusInfo = function()
       }
 
       if(response.audio){
-	$('#audio-summary-media-type').html(response.audio.media_type);
+	$('#audio-summary-media-type').html(Site.t('Status Media Type', response.audio.media_type));
 	$('#audio-summary-order-num').html(response.audio.order_num);
 	$('#audio-summary-media-id').html(response.audio.media_id);
 	$('#audio-summary-artist').html(response.audio.artist);
@@ -198,7 +206,7 @@ Site.updateStatusInfo = function()
       }
 
       if(response.visual){
-	$('#visual-summary-media-type').html(response.visual.media_type);
+	$('#visual-summary-media-type').html(Site.t('Status Media Type', response.visual.media_type));
 	$('#visual-summary-order-num').html(response.visual.order_num);
 	$('#visual-summary-media-id').html(response.visual.media_id);
 	$('#visual-summary-artist').html(response.visual.artist);
@@ -210,14 +218,14 @@ Site.updateStatusInfo = function()
       Site.formatLogs(response.logs);
     },'json').error(function()
     {
-      $('#log-data').html('<span style="color: red; font-weight: bold;">(connection to player lost)</span>');
+      $('#log-data').html('<span style="color: red; font-weight: bold;">(' + Site.t('Responses', 'player-connection-lost') + ')</span>');
     });
   }
 }
 
 Site.updateMapInfo = function()
 {
-  if($('#tabs .tab[data-content="map"]').hasClass('selected'))
+  if($('#tabs .tab[data-content="location"]').hasClass('selected'))
   {
     map.invalidateSize();
   }
@@ -240,7 +248,8 @@ Site.formatLogs = function(lines)
     if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[data\\\]')>0) lines[i] = '<span style="color: #333333;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[emerg\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[scheduler\\\]')>0) lines[i] = '<span style="color: #005555;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[sync\\\]')>0) lines[i] = '<span style="color: #000055;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[sync download\\\]')>0) lines[i] = '<span style="color: #AA4400;">'+lines[i]+'</span>';
@@ -343,8 +352,124 @@ Site.updateIntervals = function ()
 }
 
 
+Site.loadStrings = function (cb)
+{
+  $.post('/strings', {}, function (response)
+  {
+    Site.strings = response;
+    if (cb)
+        cb();
+  }, 'json');
+}
+
+Site.translateHTML = function( $element )
+{
+  $namespaces = $element.find('[data-tns]');
+
+  // include this if it also has data-tns (would not be picked up using find)
+  if( $element.attr('data-tns') !== undefined ) $namespaces = $namespaces.add($element);
+
+  // sort namespaces by number of parents desc (work from inside out)
+  $namespaces.sort(function(a, b)
+  {
+    return $(a).parents().length > $(b).parents().length ? -1 : 1;
+  });
+
+  // translate data-t items in namespace
+  $namespaces.each(function(index,namespace) 
+  {
+
+    var tns = $(namespace).attr('data-tns');
+
+    // is this namespace a single thing to translate?
+    if( $(namespace).attr('data-t') !== undefined )
+      $strings = $(namespace);
+
+    // if not, find child elements with data-t.
+    else $strings = $(namespace).find('[data-t]');
+
+    $strings.each(function(index,string) {
+      $(string).text(Site.t(tns,$(string).text()));
+      if($(string).attr('placeholder') !== undefined) $(string).attr('placeholder', Site.t(tns,$(string).attr('placeholder')));
+      if($(string).attr('title') !== undefined) $(string).attr('title', Site.t(tns,$(string).attr('title')));
+      $(string).removeAttr('data-t'); // remove data-t so we don't end up translating again.
+    });
+
+    //$(namespace).removeAttr('data-tns');
+
+  });
+
+}
+
+
+// translate based on namespace, name. returns name (which should be human readable ish at least) if no translation found.
+Site.translate = function(namespace,name,data)
+{
+
+  // don't have first argument? huh.
+  if(typeof(namespace)=='undefined') return '';
+
+  // don't have second argument, and first arg is a string? then we just pass it back.
+  if(typeof(namespace)=='string' && typeof(name)=='undefined') return namespace;
+
+  // don't have second argument, but first is an array/object? arguments were passed as an array instead maybe.
+  if(typeof(namespace)=='object' && typeof(name)=='undefined')
+  {
+    var tmp = namespace;
+
+    if(tmp.length==0) return '';
+
+    if(tmp.length==1) return tmp[0];
+
+    if(tmp.length>=2)
+    {
+      namespace = tmp[0];
+      name = tmp[1];
+    }
+
+    if(tmp.length>=3)
+    {
+      data = tmp[2];
+    }
+  }
+
+  if(typeof(Site.strings[namespace])=='undefined') return name;
+  if(typeof(Site.strings[namespace][name])=='undefined') return name;
+
+  var string = Site.strings[namespace][name];
+
+  // if we have a singular data item passed as a string, make it an array.
+  if(typeof(data)=='string') data = [data];
+
+  string = string.replace(/(\\)?%([0-9])+/g,function(match_string,is_escaped,data_index) { 
+
+    // is this escaped? also data_index = 0 is not valid.
+    if(is_escaped || data_index==0) return '%'+data_index;
+ 
+    // do we have a data at the data_index?
+    if(!data || !data[data_index-1]) return '';
+    
+    // we have everything we need, do replace.
+    return data[data_index-1]; 
+  });
+
+  return string;
+}
+
+Site.t = Site.translate;
+
+
 $(document).ready(function()
 {
+
+  Site.loadStrings(function () {
+    Site.translateHTML($(document.body));
+
+    $('table.settings input').each(function ()
+    {
+      $(this).parent().parent().first().attr('title', $(this).attr('title'));
+    });
+  }); 
 
   // hide some home page (setting list) settings, if not applicable.
   if($('#sync_mode_value').text()=='remote') $('.local_media_location').hide();
@@ -361,7 +486,7 @@ $(document).ready(function()
 
     if($(this).attr('data-content')=='alerts') Site.updateAlertInfo();
     if($(this).attr('data-content')=='status') Site.updateStatusInfo();
-    if($(this).attr('data-content')=='map') Site.updateMapInfo();
+    if($(this).attr('data-content')=='location') Site.updateMapInfo();
   });
 
   $('#sync_media_mode').change(function()
@@ -441,8 +566,8 @@ $(document).ready(function()
         $('#notice').hide();
         $('#error').hide();
 
-        if(response.status) $('#notice').html(response.notice).show();
-        else $('#error').html(response.error).show();
+        if(response.status) $('#notice').html(Site.t('Responses', response.notice)).show();
+        else $('#error').html(Site.t('Responses', response.error)).show();
       }
     });
   });
@@ -482,9 +607,4 @@ $(document).ready(function()
   });
   $('#live_assist_monitor_mode_select').change();
 
-  $('table.settings input').each(function ()
-  {
-    $(this).parent().parent().first().attr('title', $(this).attr('title'));
-  });
-  init_map();
 });

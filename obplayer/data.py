@@ -184,25 +184,25 @@ class ObConfigData (ObData):
         # error = 'The SYNC URL you have provided does not appear to be valid.';
 
         if setting_name == 'sync_device_id' and self.is_int(setting_value) == False:
-            return 'The device ID is not valid.'
+            return 'sync_device_id_invalid'
 
         if setting_name == 'sync_buffer' and self.is_int(setting_value) == False:
-            return 'The sync buffer is not valid.'
+            return 'sync_buffer_invalid'
 
         if setting_name == 'sync_showlock' and self.is_int(setting_value) == False:
-            return 'The show lock is not valid.'
+            return 'sync_showlock_invalid'
 
         if setting_name == 'sync_freq' and self.is_int(setting_value) == False:
-            return 'The show sync frequency is not valid.'
+            return 'sync_freq_invalid'
 
-        if setting_name == 'sync_freq_emerg' and self.is_int(setting_value) == False:
-            return 'The priority sync frequency is not valid.'
+        if setting_name == 'sync_freq_priority' and self.is_int(setting_value) == False:
+            return 'sync_freq_priority_invalid'
 
         if setting_name == 'sync_freq_playlog' and self.is_int(setting_value) == False:
-            return 'The playlog sync frequency is not valid.'
+            return 'sync_freq_playlog_invalid'
 
         if setting_name == 'sync_device_password' and setting_value == '':
-            return 'A device password is required.'
+            return 'sync_device_password_invalid'
 
         url_regex = re.compile(
                 r'^(?:http|ftp)s?://' # http:// or https://
@@ -212,54 +212,55 @@ class ObConfigData (ObData):
                 r'(?::\d+)?' # optional port
                 r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         if setting_name == 'sync_url' and setting_value and url_regex.match(setting_value) == None:
-            return 'The sync URL does not appear to be valid.'
+            return 'sync_url_invalid'
 
         if setting_name == 'alerts_naad_stream1' and url_regex.match(setting_value) == None:
-            return 'The stream #1 URL does not appear to be valid.'
+            return 'alerts_naad_stream1_invalid'
 
         if setting_name == 'alerts_naad_stream2' and url_regex.match(setting_value) == None:
-            return 'The stream #2 URL does not appear to be valid.'
+            return 'alerts_naad_stream2_invalid'
 
         if setting_name == 'alerts_naad_archive1' and url_regex.match(setting_value) == None:
-            return 'The archive #1 URL does not appear to be valid.'
+            return 'alerts_naad_archive1_invalid'
 
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
-            return 'The archive #2 URL does not appear to be valid.'
+            return 'alerts_naad_archive2_invalid'
 
         if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
-            return 'The RS-232 device filename does not appear to be valid.'
+            return 'alerts_trigger_serial_file_invalid'
 
         geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
-            return 'Geocodes must be specified as a list of comma-separated numbers.'
+            return 'alerts_geocode_invalid'
 
         if setting_name == 'alerts_leadin_delay' and int(setting_value) <= 0:
-            return 'The alert lead-in delay must be 1s or greater.'
+            return 'alerts_leadin_delay_invalid'
 
         if setting_name == 'alerts_leadout_delay' and int(setting_value) <= 0:
-            return 'The alert lead-out delay must be 1s or greater.'
+            return 'alerts_leadout_delay_invalid'
 
         if setting_name == 'fallback_media' and os.access(setting_value, os.F_OK) == False:
-            return 'The fallback media directory you have specified does not exist.'
+            return 'fallback_media_invalid'
 
         if setting_name == 'local_media' and settings['sync_mode'] != 'remote' and setting_value != '' and os.access(setting_value, os.F_OK) == False:
-            return 'The local media directory you have specified does not exist.'
+            return 'local_media_invalid'
 
         if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
-            return 'The web admin port is not valid.'
+            return 'http_admin_port_invalid'
 
         if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
-            return 'To use the web admin with SSL, a valid certiciate file is required.'
+            return 'http_admin_sslcert_invalid'
 
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
-            return 'Live Assist and HTTP Admin cannot use the same port.'
+            return 'live_assist_port_invalid'
 
         lat_regex = re.compile(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$')
-        lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
         if setting_name == 'location_latitude' and lat_regex.match(setting_value) == None:
-             return 'Invalid latitude coordinate.'
+            return 'location_latitude_invalid'
+
+        lng_regex = re.compile(r'[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$')
         if setting_name == 'location_longitude' and lng_regex.match(setting_value) == None:
-             return 'Invalid longitude coordinate.'
+            return 'location_longitude_invalid'
 
         return None
 
@@ -321,8 +322,8 @@ class ObConfigData (ObData):
         self.add_setting('sync_showlock', '20', 'int')
         self.add_setting('sync_playlog_enable', '1', 'bool')
         self.add_setting('sync_freq', '2', 'int')
-        self.add_setting('sync_freq_emerg', '1', 'int')
-        self.add_setting('sync_freq_log', '3', 'int')
+        self.add_setting('sync_freq_priority', '1', 'int')
+        self.add_setting('sync_freq_playlog', '3', 'int')
         self.add_setting('sync_mode', 'remote', 'text')
         self.add_setting('sync_copy_media_to_backup', '0', 'bool')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
@@ -373,7 +374,7 @@ class ObConfigData (ObData):
         self.add_setting('alerts_play_moderates', '1', 'bool')
         self.add_setting('alerts_play_tests', '0', 'bool')
         self.add_setting('alerts_trigger_serial', '0', 'bool')
-        self.add_setting('alerts_trigger_serial_file', '', 'text')
+        self.add_setting('alerts_trigger_serial_file', '/dev/ttyS0', 'text')
         self.add_setting('alerts_trigger_streamer', '0', 'bool')
         self.add_setting('alerts_purge_files', '1', 'bool')
 
@@ -387,7 +388,7 @@ class ObConfigData (ObData):
         self.add_setting('location_latitude', '60.27434', 'float')
 
         self.add_setting('led_sign_enable', '0', 'bool')
-        self.add_setting('led_sign_serial_file', '', 'text')
+        self.add_setting('led_sign_serial_file', '/dev/ttyS1', 'text')
         self.add_setting('led_sign_timedisplay', '1', 'bool')
         self.add_setting('led_sign_init_message', '', 'text')
 
@@ -428,7 +429,11 @@ class ObConfigData (ObData):
 
             self.query('UPDATE settings set value="' + self.escape(str(value)) + '" where name="' + self.escape(name) + '"')
 
-    def list_settings(self):
-        return self.settings_cache.copy()
+    def list_settings(self, hidepasswords=False):
+        result = { }
+        for (name, value) in self.settings_cache.items():
+            if not hidepasswords or name not in [ 'streamer_icecast_password', 'sync_device_password', 'http_admin_password', 'http_readonly_password' ]:
+                result[name] = value
+        return result
 
 

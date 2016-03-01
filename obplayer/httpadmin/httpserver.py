@@ -42,6 +42,8 @@ else:
     from urlparse import parse_qs,urlparse
     import BaseHTTPServer
 
+from obplayer.httpadmin.pyhtml import PyHTML
+
 
 class Response (object):
     def __init__(self):
@@ -84,6 +86,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         self.server.log(self.address_string() + ' ' + format % args)
 
+    """
     def parse(self, data, params=None):
         scope = { }
         scope['t'] = self.translate
@@ -111,6 +114,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             data = second[2]
 
         return ret
+    """
 
     def translate(self, string):
         return string
@@ -198,7 +202,8 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             with open(filename, 'rb') as f:
                 contents = f.read()
                 if self.extension == 'html':
-                    contents = self.parse(contents.decode('utf-8'), params)
+                    #contents = self.parse(contents.decode('utf-8'), params)
+                    contents = PyHTML(None, params, filename, contents.decode('utf-8')).get_output()
                 self.send_content(200, self.mimetype, contents)
                 return
 

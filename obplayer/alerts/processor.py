@@ -421,7 +421,7 @@ class ObAlertProcessor (object):
                         (year, month, day) = filename[:10].split('_')
                         filedate = datetime.datetime(int(year), int(month), int(day))
                         if filedate < then:
-                            obplayer.Log.log("deleting alert file " + filename, 'alerts')
+                            obplayer.Log.log("deleting alert file " + filename, 'debug')
                             os.remove(os.path.join(basedir, filename))
 
                 # play active alerts

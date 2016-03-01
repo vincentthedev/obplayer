@@ -34,3 +34,8 @@ function updateMap(){
   Devices.addLayer(Device).addTo(map);
   map.panTo(newLatLng,9);
 }
+
+$(document).ready(function () {
+  init_map();
+});
+

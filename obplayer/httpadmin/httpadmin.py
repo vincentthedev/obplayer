@@ -92,7 +92,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
     def command_restart(self, access, getvars):
         if not self.readonly_allow_restart and not access:
-            return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
+            return { 'status' : False, 'error' : "permissions-error-guest" }
         if 'extra' in getvars and getvars['extra'][0] == 'hard':
             obplayer.Main.exit_code = 37
         os.kill(os.getpid(), signal.SIGINT)
@@ -100,7 +100,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
     def command_fstoggle(self, access, getvars):
         if not self.readonly_allow_restart and not access:
-            return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest", 'fullscreen' : 'N/A' }
+            return { 'status' : False, 'error' : "permissions-error-guest", 'fullscreen' : 'N/A' }
 
         if obplayer.Config.headless:
             return { 'status' : False, 'fullscreen' : 'N/A' }
@@ -134,9 +134,16 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 return obplayer.alerts.Processor.get_alerts()
             return { 'status' : False }
 
+        elif path == '/strings':
+            strings = { '': { } }
+
+            self.load_strings('default', strings)
+            self.load_strings(obplayer.Config.setting('http_admin_language'), strings)
+            return strings
+
         else:
             if not access:
-                return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
+                return { 'status' : False, 'error' : "permissions-error-guest" }
 
             if path == "/save":
                 # run through each setting and make sure it's valid. if not, complain.
@@ -165,6 +172,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                     name = name.strip()
                     if not name:
                         continue
+
                     error = obplayer.Config.validate_setting(name, value)
                     if error:
                         errors += error + '<br/>'
@@ -176,11 +184,11 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                     return { 'status' : False, 'error' : errors }
 
                 obplayer.Config.save_settings(settings)
-                return { 'status' : True, 'notice' : "Settings imported successfully.  Please restart the player for the settings to take effect." }
+                return { 'status' : True, 'notice' : "settings-imported-success" }
 
             elif path == '/export_settings':
                 settings = ''
-                for (name, value) in sorted(obplayer.Config.list_settings().items()):
+                for (name, value) in sorted(obplayer.Config.list_settings(hidepasswords=True).items()):
                     settings += "{0}:{1}\n".format(name, value if type(value) != bool else int(value))
 
                 res = Response()
@@ -192,13 +200,36 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 if hasattr(obplayer, 'alerts'):
                     obplayer.alerts.Processor.inject_alert(postvars['alert'][0])
                     return { 'status' : True }
-                return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
+                return { 'status' : False, 'error' : "alerts-disabled-error" }
 
             elif path == "/alerts/cancel":
                 if hasattr(obplayer, 'alerts'):
                     for identifier in postvars['identifier[]']:
                         obplayer.alerts.Processor.cancel_alert(identifier)
                     return { 'status' : True }
-                return { 'status' : False, 'error' : "The emergency alerts module is currently disabled" }
+                return { 'status' : False, 'error' : "alerts-disabled-error" }
 
+
+    @staticmethod
+    def load_strings(lang, strings):
+        namespace = ''
+        for (dirname, dirnames, filenames) in os.walk(os.path.join('obplayer/httpadmin/strings', lang)):
+            for filename in filenames:
+                if filename.endswith('.txt'):
+                    with open(os.path.join(dirname, filename), 'rb') as f:
+                        while True:
+                            line = f.readline()
+                            if not line:
+                                break
+                            if line.startswith(b'\xEF\xBB\xBF'):
+                                line = line[3:]
+                            (name, _, text) = line.decode('utf-8').partition(':')
+                            (name, text) = (name.strip(), text.strip())
+                            if name:
+                                if text:
+                                    strings[namespace][name] = text
+                                else:
+                                    namespace = name
+                                    strings[namespace] = { }
+        return strings
 
