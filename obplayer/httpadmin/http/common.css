@@ -27,27 +27,27 @@ h2:first-child
 
 #tabs
 {
-  border-bottom: 5px solid #9E1D22;
+  border-bottom: 5px solid #2A2D79;
 }
 
 #tabs .tab
 {
   cursor: pointer;
   float: left;
-  border-right: 1px solid #9E1D22;
-  border-top: 1px solid #9E1D22;
+  border-right: 1px solid #2A2D79;
+  border-top: 1px solid #2A2D79;
   padding: 8px;
   font-size: 14px;
 }
 
 #tabs .tab:first-child
 {
-  border-left: 1px solid #9E1D22;
+  border-left: 1px solid #2A2D79;
 }
 
 #tabs .selected
 {
-  background-color: #9E1D22;
+  background-color: #2A2D79;
   color: #fff;
 }
 
@@ -59,7 +59,7 @@ h2:first-child
 #content 
 {
   padding: 30px;
-  border-left: 1px solid #9E1D22;
+  border-left: 1px solid #2A2D79;
   min-height: 300px;
 }
 
@@ -147,7 +147,7 @@ h2:first-child
 
 #alert-details table
 {
-  border: 1px solid #9E1D22;
+  border: 1px solid #2A2D79;
   width: 100%;
   margin: 4px;
 }
@@ -169,7 +169,7 @@ h2:first-child
 .advanced-settings {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
-  border: 1px solid #9E1D22;
+  border: 1px solid #2A2D79;
 }
 
 .advanced-settings > input + label + table {
