@@ -35,6 +35,7 @@ import time
 import socket
 import sys
 import os
+import os.path
 
 import requests
 import subprocess
@@ -111,6 +112,11 @@ class ObAlert (object):
             for node in xml_get_tags(alert, 'info'):
                 self.info.append(ObAlertInfo(node))
 
+            self.signatures = [ ]
+            for signature in xml_get_tags(alert, 'Signature'):
+                self.signatures.append(ObAlertSignature(signature))
+
+
     def print_data(self):
         print(self.identifier)
         print(self.sent + " by " + self.sender)
@@ -167,38 +173,22 @@ class ObAlert (object):
             self.media_info[language] = None
             return False
 
+        truncate = not self.broadcast_immediately() and obplayer.Config.setting('alerts_truncate')
+        message_text = info.get_message_text(truncate)
+
         # TODO there needs to be a better way to get the datadir
         location = obplayer.ObData.get_datadir() + "/alerts"
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
         filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
 
-        if not info.description:
-            message_text = info.headline
-        elif not self.broadcast_immediately() and obplayer.Config.setting('alerts_truncate'):
-            parts = info.description.split('\n\n', 1)
-            message_text = parts[0].replace('\n', ' ').replace('\r', '')
-        else:
-            message_text = info.description.replace('\n', ' ').replace('\r', '')
-
-        resource = info.get_resource('audio')
-        if resource:
-            if resource.write_file(location + "/" + filename) is False:
+        resources = info.get_resources('audio')
+        if resources:
+            if resources[0].write_file(os.path.join(location, filename)) is False:
                 return False
 
         elif message_text:
-            if not voice:
-                voice = 'en'
-            #os.system("echo \"%s\" | text2wave > %s/%s" % (message_text[0], location, filename))
-            #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
-            #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
-            #cmd += u"\"" + message_text[0] + u"\""
-            proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-            (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + b" <break time=\"2s\" /> " + message_text.encode('utf-8') + b" <break time=\"3s\" /> ")
-            proc.wait()
-
-            with open(location + '/' + filename, 'wb') as f:
-                f.write(stdout)
+            self.write_tts_file(os.path.join(location, filename), message_text, voice)
 
         else:
             return False
@@ -206,7 +196,8 @@ class ObAlert (object):
         d = GstPbutils.Discoverer()
         mediainfo = d.discover_uri("file:///%s/%s" % (location, filename))
 
-        self.media_info[language] = {
+        self.media_info[language] = { }
+        self.media_info[language]['audio'] = {
             'media_type' : 'audio',
             'artist' : 'Emergency Alert',
             'title' : str(self.identifier),
@@ -217,8 +208,25 @@ class ObAlert (object):
         }
 
         # the NPAS Common Look and Feel guide states that audio content should not be more than 120 seconds
-        if self.media_info[language]['duration'] > 120.0:
-            self.media_info[language]['duration'] = 120.0
+        if self.media_info[language]['audio']['duration'] > 120.0:
+            self.media_info[language]['audio']['duration'] = 120.0
+
+        resources = info.get_resources('image')
+        if resources:
+            filename = self.reference(self.sent, self.identifier) + "-" + language + ".jpg"
+            if resources[0].write_file(os.path.join(location, filename)) is False:
+                return False
+            self.media_info[language]['visual'] = {
+                'media_type' : 'image',
+                'artist' : 'Emergency Alert',
+                'title' : str(self.identifier),
+                #'overlay_text' : message_text,
+                'file_location' : location,
+                'filename' : filename,
+                'duration' : self.media_info[language]['audio']['duration']
+            }
+            self.media_info[language]['audio']['overlay_text'] = None
+
         return True
 
     def get_media_info(self, primary_language, primary_voice, secondary_language, secondary_voice):
@@ -229,6 +237,20 @@ class ObAlert (object):
         if self.media_info[primary_language] is None:
             return { 'primary' : self.media_info[secondary_language], 'secondary' : None }
         return { 'primary': self.media_info[primary_language], 'secondary' : self.media_info[secondary_language] if secondary_language else None }
+
+    def write_tts_file(self, path, message_text, voice=None):
+        if not voice:
+            voice = 'en'
+        #os.system("echo \"%s\" | text2wave > %s/%s" % (message_text[0], location, filename))
+        #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
+        #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
+        #cmd += u"\"" + message_text[0] + u"\""
+        proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+        (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + b" <break time=\"2s\" /> " + message_text.encode('utf-8') + b" <break time=\"3s\" /> ")
+        proc.wait()
+
+        with open(path, 'wb') as f:
+            f.write(stdout)
 
     @staticmethod
     def reference(timestamp, identifier):
@@ -305,11 +327,17 @@ class ObAlertInfo (object):
                 return param[1];
         return None
 
-    def get_resource(self, typename):
-        for resource in self.resources:
-            if typename in resource.mimetype:
-                return resource
-        return None
+    def get_resources(self, typename=None):
+        return [ resource for resource in self.resources if not typename or typename in resource.mimetype ]
+
+    def get_message_text(self, truncate=False):
+        if not self.description:
+            return self.headline
+        elif truncate:
+            parts = self.description.split('\n\n', 1)
+            return parts[0].replace('\n', ' ').replace('\r', '')
+        else:
+            return self.description.replace('\n', ' ').replace('\r', '')
 
 
 class ObAlertArea (object):
@@ -358,7 +386,7 @@ class ObAlertResource (object):
         derefuri = xml_get_first_tag_value(resource, 'derefUri')
         if derefuri is not None:
             digest = xml_get_first_tag_value(resource, 'digest')
-            calculated_digest = hashlib.sha1(derefuri).hexdigest()
+            calculated_digest = hashlib.sha1(derefuri.encode('utf-8')).hexdigest()
             if digest != calculated_digest:
                 obplayer.Log.log("emergency alert resource corrupted: " + str(self.uri), 'error')
             else:
@@ -384,6 +412,16 @@ class ObAlertResource (object):
             return False
         with open(filename, 'wb') as f:
             f.write(self.data)
+
+
+class ObAlertSignature (object):
+    def __init__(self, element):
+        self.parse_signature(element)
+
+    def parse_signature(self, signature):
+        self.signed_info = xml_get_first_tag_value(signature, 'SignedInfo')
+        # TODO finish this, although it's not clear from the cap specs if you're suppose to reject a message that isn't verified or signed
+
 
 
 def parse_alert_file(xmlfile):

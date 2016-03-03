@@ -440,17 +440,25 @@ class ObAlertProcessor (object):
                             alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
                             if alert_media['primary']:
                                 alert.times_played += 1
-                                self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['artist'], title=alert_media['primary']['title'], overlay_text=alert_media['primary']['overlay_text'])
-                                self.ctrl.add_request(**alert_media['primary'])
+
+                                start_time = self.ctrl.get_requests_endtime()
+                                self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
+                                self.ctrl.add_request(**alert_media['primary']['audio'])
+                                if 'visual' in alert_media['primary']:
+                                    self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])
 
                                 if alert_media['secondary']:
-                                    self.ctrl.add_request(**alert_media['secondary'])
+                                    start_time = self.ctrl.get_requests_endtime()
+                                    self.ctrl.add_request(**alert_media['secondary']['audio'])
+                                    if 'visual' in alert_media['secondary']:
+                                        self.ctrl.add_request(start_time=start_time, **alert_media['secondary']['visual'])
 
                                 for trigger in self.triggers:
                                     trigger.alert_cycle_each(alert, alert_media, self)
 
                                 if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
                                     expired_list.append(alert)
+
                     for alert in expired_list:
                         self.mark_expired(alert)
                     self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
