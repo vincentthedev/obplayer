@@ -292,6 +292,7 @@ class ObConfigData (ObData):
 
         self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'auto', 'text')
+        self.add_setting('video_out_resolution', 'default', 'text')
 
         self.add_setting('images_transitions_enable', '1', 'bool')
         self.add_setting('images_width', '640', 'int')

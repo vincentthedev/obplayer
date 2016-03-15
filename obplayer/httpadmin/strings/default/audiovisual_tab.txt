@@ -30,6 +30,7 @@ AudioVisual Tab
 
   video_out_enable: Enable Video Output
   video_out_mode: Video Output Mode
+  video_out_resolution: Video Output Resolution
 
 
   Video Overlay Settings: Video Overlay Settings

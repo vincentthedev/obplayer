@@ -37,6 +37,7 @@ Gst.init(None)
 
 from . import pipes
 from . import outputs
+from . import xrandr
 
 if sys.version.startswith('3'):
     unicode = str
@@ -55,6 +56,8 @@ class ObPlayer (object):
         self.pipes = { }
         self.audio_levels = None
         self.audio_silence = 0
+
+        xrandr.init()
 
     def start_player(self):
         self.thread = obplayer.ObThread('PlayerThread', target=self.try_run)
