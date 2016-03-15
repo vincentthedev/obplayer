@@ -74,7 +74,7 @@ def load_modes():
     #print(modes)
 
 def get_modes():
-    return modes.copy()
+    return modes
 
 def set_mode(mode):
     if mode == 'default':
