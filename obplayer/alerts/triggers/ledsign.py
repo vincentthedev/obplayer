@@ -44,12 +44,15 @@ class LEDSignTrigger (object):
         #prim_text = alert_media['primary']['overlay_text']
         alert_info = alert.get_first_info(processor.language_primary)
         severity = alert_info.severity.lower()
-        if obplayer.Config.setting('alerts_truncate'):
-            parts = alert_info.description.split('\n\n', 1)
-            message_text = parts[0].replace('\n', ' ').replace('\r', '')
-        else:
-            message_text = alert_info.description
-        head_text = alert_info.headline.title()
+	if alert_info.description:
+            if obplayer.Config.setting('alerts_truncate'):
+                parts = alert_info.description.split('\n\n', 1)
+                message_text = parts[0].replace('\n', ' ').replace('\r', '')
+            else:
+                message_text = alert_info.description
+	else:
+	    message_text = ' '
+        head_text = alert_info.headline
         sign_message = head_text + ':' + message_text + '........'
         if severity == 'moderate':
             with open('/tmp/textfile', 'a') as f:
@@ -67,13 +70,17 @@ class LEDSignTrigger (object):
 
         if alert_media['secondary']:
             secd_info = alert.get_first_info(processor.language_secondary)
-            head_text = secd_info.headline.title()
-            if obplayer.Config.setting('alerts_truncate'):
-                parts = secd_info.description.split('\n\n', 1)
-                message_text = parts[0].replace('\n', ' ').replace('\r', '')
-            else:
-                message_text = secd_info.description
+            head_text = secd_info.headline
+	    if secd_info.description:
+                if obplayer.Config.setting('alerts_truncate'):
+                    parts = secd_info.description.split('\n\n', 1)
+                    message_text = parts[0].replace('\n', ' ').replace('\r', '')
+                else:
+                    message_text = secd_info.description
+	    else:
+		message_text = ' '
             s = head_text + ':' + message_text + '........'
+	    #Encoding for cp863 works best for Canadian French
             sign_message = s.encode('cp863')
             if sign_message:
                 with open('/tmp/textfile','a') as f:
