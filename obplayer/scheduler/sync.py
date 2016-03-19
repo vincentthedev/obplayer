@@ -251,7 +251,7 @@ class ObSync:
         # TODO for debugging purposes, write schedule to file
         #with open(obplayer.ObData.get_datadir() + "/schedules/" + time.strftime('%Y.%m.%d %H:%M:%S') + ".xml", 'w') as f:
         #    f.write(schedule_xml)
-        #print schedule_xml
+        #print(schedule_xml)
 
 
         # trying to quit?
@@ -661,7 +661,8 @@ class ObSync:
         postfields['id'] = obplayer.Config.setting('sync_device_id')
         postfields['pw'] = obplayer.Config.setting('sync_device_password')
         postfields['hbuffer'] = obplayer.Config.setting('sync_buffer')
-        postfields['data'] = data
+        if data:
+            postfields['data'] = data
 
         enc_postfields = urllib.urlencode(postfields)
 
