@@ -528,6 +528,16 @@ class ObPlayerController (object):
                     start_time = req['end_time']
         return start_time
 
+    def adjust_request_times(self, start_time):
+        if len(self.queue) <= 0:
+            return
+
+        with self.lock:
+            diff = start_time - self.queue[0]['start_time']
+            for req in self.queue:
+                req['start_time'] += diff
+                req['end_time'] += diff
+
     def hold_requests(self, value):
         self.hold_requests_flag = value
 
