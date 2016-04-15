@@ -572,6 +572,20 @@ $(document).ready(function()
     });
   });
 
+  $('#update-player').click(function (event)
+  {
+    $.post('/update_player', {}, function (response) {
+      $('#update-output').html($('<pre>').html(response.output));
+    }, 'json');
+  });
+
+  $('#toggle-scheduler').click(function (event)
+  {
+    $.post('/toggle_scheduler', {}, function (response) {
+      $('#toggle-scheduler-status').html(Site.t('Sync Tab', response.enabled ? 'Enabled' : 'Disabled'));
+    }, 'json');
+  });
+
   $('#alerts_inject_button').click(Site.injectAlert);
   $('#alerts_cancel_button').click(Site.cancelAlert);
 

@@ -23,4 +23,6 @@ Admin Tab
   Import: Import
   Export Settings: Export Settings
   Export: Export
+  Update Player: Update Player
+  Update: Update
 

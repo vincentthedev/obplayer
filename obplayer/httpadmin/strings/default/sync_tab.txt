@@ -48,3 +48,8 @@ Sync Tab
 
   remote_media: Remote Media Location
 
+  Enable/Disable Scheduler: Enable/Disable Scheduler
+  Toggle: Toggle
+  Enabled: Enabled
+  Disabled: Disabled
+

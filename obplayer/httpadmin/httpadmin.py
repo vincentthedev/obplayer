@@ -196,6 +196,21 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 res.send_content('text/plain', settings)
                 return res
 
+            elif path == "/update_player":
+                srcpath = os.path.dirname(os.path.dirname(obplayer.__file__))
+                proc = subprocess.Popen('cd "' + srcpath + '" && git pull', stdout=subprocess.PIPE, shell=True)
+                (output, _) = proc.communicate()
+                print(output)
+                return { 'output': output }
+
+            elif path == "/toggle_scheduler":
+                ctrl = obplayer.Scheduler.ctrl
+                if ctrl.enabled:
+                    ctrl.disable()
+                else:
+                    ctrl.enable()
+                return { 'enabled': ctrl.enabled }
+
             elif path == "/alerts/inject_test":
                 if hasattr(obplayer, 'alerts'):
                     obplayer.alerts.Processor.inject_alert(postvars['alert'][0])

@@ -397,6 +397,7 @@ class ObPlayerController (object):
             default_play_mode = 'exclusive'
         self.player = player
         self.name = name
+        self.enabled = True
         self.priority = priority
         self.default_play_mode = default_play_mode
         self.allow_requeue = allow_requeue
@@ -410,9 +411,20 @@ class ObPlayerController (object):
         # TODO you could have a list of failed requests, where the request is automatically added (auto limit to say 5 entries)
         self.failed = [ ]
 
+    def enable(self):
+        self.enabled = True
+        self.call_player_request(time.time())
+
+    def disable(self):
+        self.enabled = False
+        self.clear_queue()
+
     # media_type can be: audio, video, image, linein, break, testsignal
     # play_mode can be:  exclusive, overlap
     def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
+        if not self.enabled:
+            return
+
         # expand file location if necessary and check that media file exists
         if file_location:
             file_location = ObPlayer.get_media_location(file_location)

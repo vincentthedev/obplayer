@@ -27,6 +27,7 @@ import sys
 import time
 import magic
 import random
+import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
@@ -69,28 +70,32 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
 
         for (dirname, dirnames, filenames) in os.walk(obplayer.Config.setting('fallback_media')):
             for filename in filenames:
-                filetype = m.file(os.path.join(dirname, filename)).split(';')[0]
+                try:
+                    filetype = m.file(os.path.join(dirname, filename)).split(';')[0]
 
-                if filetype in self.media_types:
-                    d = GstPbutils.Discoverer()
-                    mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
+                    if filetype in self.media_types:
+                        d = GstPbutils.Discoverer()
+                        mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
 
-                    media_type = None
-                    for stream in mediainfo.get_video_streams():
-                        if stream.is_image():
-                            media_type = 'image'
-                        else:
-                            media_type = 'video'
-                            break
-                    if not media_type and len(mediainfo.get_audio_streams()) > 0:
-                        media_type = 'audio'
+                        media_type = None
+                        for stream in mediainfo.get_video_streams():
+                            if stream.is_image():
+                                media_type = 'image'
+                            else:
+                                media_type = 'video'
+                                break
+                        if not media_type and len(mediainfo.get_audio_streams()) > 0:
+                            media_type = 'audio'
 
-                    if media_type:
-                        # we discovered some more fallback media, add to our media list.
-                        self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
+                        if media_type:
+                            # we discovered some more fallback media, add to our media list.
+                            self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
 
-                if filetype in self.image_types:
-                    self.media.append([ dirname, filename, 'image', self.image_duration ])
+                    if filetype in self.image_types:
+                        self.media.append([ dirname, filename, 'image', self.image_duration ])
+                except:
+                    obplayer.Log.log("exception while loading fallback media: " + dirname + '/' + filename, 'error')
+                    obplayer.Log.log(traceback.format_exc(), 'error')
 
         # shuffle the list
         random.shuffle(self.media)
