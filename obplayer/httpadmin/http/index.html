@@ -601,28 +601,54 @@
               <td data-t>sync_url</td>
               <td><input type="text" name="sync_url" value="<%= obplayer.Config.setting('sync_url',True) %>"></td>
             </tr>
-            <tr>
-              <td data-t>http_show_sync</td>
-              <td><input type="checkbox" name="http_show_sync" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_sync') %>></td>
-            </tr>
-            <tr>
-              <td data-t>http_show_streaming</td>
-              <td><input type="checkbox" name="http_show_streaming" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_streaming') %>></td>
-            </tr>
-            <tr>
-              <td data-t>http_show_alerts</td>
-              <td><input type="checkbox" name="http_show_alerts" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_alerts') %>></td>
-            </tr>
-            <tr>
-              <td data-t>http_show_location</td>
-              <td><input type="checkbox" name="http_show_location" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_location') %>></td>
-            </tr>
-            <tr>
-              <td data-t>http_show_liveassist</td>
-              <td><input type="checkbox" name="http_show_liveassist" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_liveassist') %>></td>
-            </tr>
+          </tbody>
+        </table>
+
+        <div class="advanced-settings">
+          <input type="checkbox" id="alert-advanced" />
+          <label for="alert-advanced" data-t>Advanced Settings</label>
+          <table class="settings">
+            <tbody>
+              <tr>
+                <td data-t>http_show_sync</td>
+                <td><input type="checkbox" name="http_show_sync" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_sync') %>></td>
+              </tr>
+              <tr>
+                <td data-t>http_show_streaming</td>
+                <td><input type="checkbox" name="http_show_streaming" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_streaming') %>></td>
+              </tr>
+              <tr>
+                <td data-t>http_show_alerts</td>
+                <td><input type="checkbox" name="http_show_alerts" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_alerts') %>></td>
+              </tr>
+              <tr>
+                <td data-t>http_show_location</td>
+                <td><input type="checkbox" name="http_show_location" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_location') %>></td>
+              </tr>
+              <tr>
+                <td data-t>http_show_liveassist</td>
+                <td><input type="checkbox" name="http_show_liveassist" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_show_liveassist') %>></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <table class="settings">
+          <tbody>
             <tr>
               <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('admin');" data-tns="Common" data-t>Save</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <br/>
+
+        <table>
+          <tbody>
+            <tr>
+              <td data-t>Enable/Disable Scheduler</td>
+              <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
+              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' %></td>
             </tr>
           </tbody>
         </table>
@@ -664,8 +690,30 @@
         <table>
           <tbody>
             <tr>
+              <td data-t>Reset To Defaults and Restart</td>
+              <td><button name="defaults-restart" type="button" onclick="javascript: Site.restart('defaults');" data-tns="Miscellaneous" data-t>Restart</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <br/>
+
+        <table>
+          <tbody>
+            <tr>
               <td data-t>Update Player</td>
+              <td><button id="update-check" type="button" data-t>Check</button></td>
               <td><button id="update-player" type="button" data-t>Update</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table>
+          <tbody>
+            <tr>
+              <td data-t>Current Version</td><td><%= obplayer.Config.version %></td>
+            </tr>
+            <tr id="update-check-output-row" style="display: none;">
             </tr>
             <tr>
               <td id="update-output" colspan="0"></td>
@@ -734,18 +782,6 @@
             </tr>
             <tr>
               <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('sync');" data-tns="Common" data-t>Save</button></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <br/>
-
-        <table>
-          <tbody>
-            <tr>
-              <td data-t>Enable/Disable Scheduler</td>
-              <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
-              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' %></td>
             </tr>
           </tbody>
         </table>

@@ -5,7 +5,7 @@ Site.fullscreen = function()
   
   $('#command_fullscreen').text(Site.t('Miscellaneous', 'Fullscreen'));
 
-  $.get('/command/fstoggle',{},function(response)
+  $.post('/command/fstoggle',{},function(response)
   {
     $('#command_fullscreen').text(Site.t('Miscellaneous', 'Fullscreen ('+response.fullscreen+')'));
   },'json');
@@ -16,9 +16,12 @@ Site.restart = function(extra)
   var postvars = {};
   if (extra) postvars['extra'] = extra;
 
+  if (extra == 'defaults' && !confirm("Are you sure you want to reset all settings to their default values?"))
+    return;
+
   $('#command_restart').text(Site.t('Miscellaneous', 'Restarting') + '...');
 
-  $.get('/command/restart',postvars,function(response)
+  $.post('/command/restart',postvars,function(response)
   {
     $('#command_restart').attr('onclick','');
     Site.restartInterval = setInterval(Site.restartCountdown, 1000);
@@ -576,6 +579,16 @@ $(document).ready(function()
   {
     $.post('/update_player', {}, function (response) {
       $('#update-output').html($('<pre>').html(response.output));
+    }, 'json');
+  });
+
+  $('#update-check').click(function (event)
+  {
+    $.post('/update_check', {}, function (response) {
+      if (response.available)
+        $('#update-check-output-row').html($('<td>' + Site.t('Admin Tab', 'Latest Version') + '</td><td>' + response.version + '</td>')).show();
+      else
+        $('#update-check-output-row').html($('<td>' + Site.t('Admin Tab', 'Already up to date') + '</td>')).show();
     }, 'json');
   });
 

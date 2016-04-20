@@ -29,23 +29,12 @@ import traceback
 
 import json
 
-import OpenSSL
-
-if sys.version.startswith('3'):
-    import socketserver as SocketServer
-    import http.server as BaseHTTPServer
-else:
-    import SocketServer
-    import BaseHTTPServer
-
 from obplayer.httpadmin import httpserver
 
 from . import microphone
 
 
-class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-    daemon_threads = True
-
+class ObLiveAssist (httpserver.ObHTTPServer):
     def __init__(self):
         self.root = 'obplayer/liveassist/http'
         self.username = None
@@ -54,7 +43,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         server_address = ('', obplayer.Config.setting('live_assist_port'))  # (address, port)
 
-        BaseHTTPServer.HTTPServer.__init__(self, server_address, httpserver.ObHTTPRequestHandler)
+        httpserver.ObHTTPServer.__init__(self, server_address, None)
         sa = self.socket.getsockname()
         self.log('serving live assist http on port ' + str(sa[1]))
 
@@ -64,7 +53,7 @@ class ObLiveAssist(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     def shutdown(self):
         for conn in self.websockets:
             conn.websocket_write_close(200, "Server Exiting")
-        BaseHTTPServer.HTTPServer.shutdown(self)
+        httpserver.ObHTTPServer.shutdown(self)
 
     def handle_post(self, path, postvars, access):
         #if not access:

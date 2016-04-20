@@ -34,15 +34,27 @@ import struct
 import random
 import hashlib
 
+import OpenSSL
+
 if sys.version.startswith('3'):
     from urllib.parse import parse_qs,urlparse
+    import socketserver as SocketServer
     import http.server as BaseHTTPServer
     unicode = str
 else:
     from urlparse import parse_qs,urlparse
+    import SocketServer
     import BaseHTTPServer
 
 from obplayer.httpadmin.pyhtml import PyHTML
+
+
+class Request (object):
+    def __init__(self, path, access, args, headers):
+        self.path = path
+        self.access = access
+        self.args = args
+        self.headers = headers
 
 
 class Response (object):
@@ -72,8 +84,20 @@ class Response (object):
         return self
 
 
+class ObHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+    daemon_threads = True
+
+    def __init__(self, server_address, sslcert):
+        BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
+        if sslcert:
+            self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+
+    def shutdown(self):
+        BaseHTTPServer.HTTPServer.shutdown(self)
+
+
 class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    #protocol_version = 'HTTP/1.1'
+    protocol_version = 'HTTP/1.1'
     server_version = "OpenBroadcasterHTTP/0.1"
 
     extensions = {
@@ -85,36 +109,6 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         self.server.log(self.address_string() + ' ' + format % args)
-
-    """
-    def parse(self, data, params=None):
-        scope = { }
-        scope['t'] = self.translate
-        scope['time'] = time
-        scope['obplayer'] = obplayer
-
-        ret = ''
-        while data != '':
-            first = data.partition('<%')
-            ret += first[0]
-            second = first[2].partition('%>')
-            code = second[0].lstrip(' ')
-
-            try:
-                if code:
-                    if code.startswith('exec '):
-                        exec(code[5:], scope)
-                    else:
-                        # TODO this might introduce a conversion error in python2 when displaying utf-8 characters
-                        ret += str(eval(code, scope))
-                        #ret += unicode(eval(code, scope)).encode('utf-8')
-            except Exception as e:
-                ret += '<b>Eval Error</b>: ' + '(line ' + str(ret.count('\n') + 1) + ') ' + repr(e) + '<br>\n'
-
-            data = second[2]
-
-        return ret
-    """
 
     def translate(self, string):
         return string
@@ -170,6 +164,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.handle_websocket(params)
             return
 
+        """
         # handle commands sent via GET
         if url.path.startswith('/command/'):
             command = url.path[9:]
@@ -183,6 +178,7 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             ret = command_func(self.admin_access, params)
             self.send_content(200, 'application/json', json.dumps(ret))
             return
+        """
 
         if not self.is_valid_path(url.path):
             self.send_404()

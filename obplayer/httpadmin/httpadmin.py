@@ -29,21 +29,11 @@ import time
 import signal
 import subprocess
 
-import OpenSSL
 
-if sys.version.startswith('3'):
-    import socketserver as SocketServer
-    import http.server as BaseHTTPServer
-else:
-    import SocketServer
-    import BaseHTTPServer
-
-from obplayer.httpadmin.httpserver import ObHTTPRequestHandler, Response
+from obplayer.httpadmin import httpserver
 
 
-class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
-    daemon_threads = True
-
+class ObHTTPAdmin (httpserver.ObHTTPServer):
     def __init__(self):
         self.root = 'obplayer/httpadmin/http'
 
@@ -59,12 +49,26 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
         server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
 
-        BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
-        if sslenable:
-            self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+        httpserver.ObHTTPServer.__init__(self, server_address, sslcert if sslenable else None)
 
         sa = self.socket.getsockname()
         obplayer.Log.log('serving http(s) on port ' + str(sa[1]), 'admin')
+
+        """
+        if path ==   "/status_info":
+        elif path == "/alerts/list":
+        elif path == '/strings':
+        elif path == '/command/restart':
+        elif path == '/command/fstoggle':
+        if path ==   "/save":
+        elif path == '/import_settings':
+        elif path == '/export_settings':
+        elif path == "/update_player":
+        elif path == "/update_check":
+        elif path == "/toggle_scheduler":
+        elif path == "/alerts/inject_test":
+        elif path == "/alerts/cancel":
+        """
 
     def log(self, message):
         if not "POST /status_info" in message and not "POST /alerts/list" in message:
@@ -89,24 +93,6 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
             return 'On'
         else:
             return 'Off'
-
-    def command_restart(self, access, getvars):
-        if not self.readonly_allow_restart and not access:
-            return { 'status' : False, 'error' : "permissions-error-guest" }
-        if 'extra' in getvars and getvars['extra'][0] == 'hard':
-            obplayer.Main.exit_code = 37
-        os.kill(os.getpid(), signal.SIGINT)
-        return { 'status' : True }
-
-    def command_fstoggle(self, access, getvars):
-        if not self.readonly_allow_restart and not access:
-            return { 'status' : False, 'error' : "permissions-error-guest", 'fullscreen' : 'N/A' }
-
-        if obplayer.Config.headless:
-            return { 'status' : False, 'fullscreen' : 'N/A' }
-        else:
-            obplayer.Gui.fullscreen_toggle(None)
-            return { 'status' : True, 'fullscreen' : 'On' if obplayer.Gui.gui_window_fullscreen else 'Off' }
 
     def handle_post(self, path, postvars, access):
         error = None
@@ -140,6 +126,27 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
             self.load_strings('default', strings)
             self.load_strings(obplayer.Config.setting('http_admin_language'), strings)
             return strings
+
+        elif path == '/command/restart':
+            if not self.readonly_allow_restart and not access:
+                return { 'status' : False, 'error' : "permissions-error-guest" }
+            if 'extra' in postvars:
+                if postvars['extra'][0] == 'defaults':
+                    os.remove(obplayer.ObData.get_datadir() + '/settings.db')
+                if postvars['extra'][0] == 'hard' or postvars['extra'][0] == 'defaults':
+                    obplayer.Main.exit_code = 37
+            os.kill(os.getpid(), signal.SIGINT)
+            return { 'status' : True }
+
+        elif path == '/command/fstoggle':
+            if not self.readonly_allow_restart and not access:
+                return { 'status' : False, 'error' : "permissions-error-guest", 'fullscreen' : 'N/A' }
+
+            if obplayer.Config.headless:
+                return { 'status' : False, 'fullscreen' : 'N/A' }
+            else:
+                obplayer.Gui.fullscreen_toggle(None)
+                return { 'status' : True, 'fullscreen' : 'On' if obplayer.Gui.gui_window_fullscreen else 'Off' }
 
         else:
             if not access:
@@ -191,7 +198,7 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 for (name, value) in sorted(obplayer.Config.list_settings(hidepasswords=True).items()):
                     settings += "{0}:{1}\n".format(name, value if type(value) != bool else int(value))
 
-                res = Response()
+                res = httpserver.Response()
                 res.add_header('Content-Disposition', 'attachment; filename=obsettings.txt')
                 res.send_content('text/plain', settings)
                 return res
@@ -200,8 +207,24 @@ class ObHTTPAdmin(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 srcpath = os.path.dirname(os.path.dirname(obplayer.__file__))
                 proc = subprocess.Popen('cd "' + srcpath + '" && git pull', stdout=subprocess.PIPE, shell=True)
                 (output, _) = proc.communicate()
-                print(output)
-                return { 'output': output }
+                return { 'output': output.decode('utf-8') }
+
+            elif path == "/update_check":
+                srcpath = os.path.dirname(os.path.dirname(obplayer.__file__))
+                branch = subprocess.Popen('cd "{0}" && git branch'.format(srcpath), stdout=subprocess.PIPE, shell=True)
+                (output, _) = branch.communicate()
+                branchname = 'master'
+                for name in output.decode('utf-8').split('\n'):
+                    if name.startswith('*'):
+                        branchname = name.strip('* ')
+                        break
+
+                diff = subprocess.Popen('cd "{0}" && git fetch && git diff origin/{1} --quiet'.format(srcpath, branchname), stdout=subprocess.PIPE, shell=True)
+                (output, _) = diff.communicate()
+
+                version = subprocess.Popen('cd "{0}" && git show origin/{1}:VERSION'.format(srcpath, branchname), stdout=subprocess.PIPE, shell=True)
+                (output, _) = version.communicate()
+                return { 'available': False if diff.returncode == 0 else True, 'version': output.decode('utf-8') }
 
             elif path == "/toggle_scheduler":
                 ctrl = obplayer.Scheduler.ctrl
