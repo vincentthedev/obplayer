@@ -314,6 +314,10 @@
 	    <td data-t>video_out_mode</td>
 	    <td><%= obplayer.Config.setting('video_out_mode') %></td>
 	  </tr>
+	  <tr>
+	    <td data-t>video_out_resolution</td>
+	    <td><%= obplayer.Config.setting('video_out_resolution') %></td>
+	  </tr>
 
 	  <tr class="padding">
 	    <td data-t>images_transitions_enable</td>
@@ -832,6 +836,15 @@
                   <option value="egl"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','egl') %> data-t>EGL/GLES</option>
                   <option value="wayland"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','wayland') %> data-t>Wayland</option>
                   <option value="ascii"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','ascii') %> data-t>Coloured ASCII</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td data-t>video_out_resolution</td>
+              <td><select name="video_out_resolution">
+                  <option value="default"<%= obplayer.HTTPAdmin.form_item_selected('video_out_resolution','default') %>>default</option>
+                  <% for mode in obplayer.player.xrandr.get_modes(): %>
+                  <option value="<%= mode %>"<%= obplayer.HTTPAdmin.form_item_selected('video_out_resolution',mode) %>><%= mode %></option>
+                  <% end %>
                 </select></td>
             </tr>
           </tbody>

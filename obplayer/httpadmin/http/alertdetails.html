@@ -82,7 +82,7 @@
 	</tr>
 	<tr class="padding">
 	  <td><span data-t>Description</span>:</td>
-	  <td><%= alert_info.description.replace('\n', '<br />\n') %></td>
+	  <td><%= alert_info.description.replace('\n', '<br />\n') if alert_info.description else '(none)' %></td>
 	</tr>
 	<tr class="padding">
 	  <td><span data-t>Instruction</span>:</td>
