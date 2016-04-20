@@ -464,6 +464,7 @@ class ObAlertProcessor (object):
                     self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
 
                     self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
+                    self.ctrl.adjust_request_times(time.time())
                     self.ctrl.hold_requests(False)
 
                     """
