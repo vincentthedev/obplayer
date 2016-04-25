@@ -9,6 +9,15 @@ Sync Tab
   fallback_enable: Enable Fallback Media Player
   fallback_enable_tooltip: If enabled, and the scheduler is unable to played scheduled content, then content from the fallback media directory will be played until scheduled content is available.
 
+  sync_device_id: Device ID
+  sync_device_id_invalid: The device ID is not valid.
+
+  sync_device_password: Device Password
+  sync_device_password_invalid: A device password is required.
+
+  sync_url: Sync URL
+  sync_url_invalid: The sync URL does not appear to be valid.
+
   sync_buffer: Sync Amount (buffer)
   sync_buffer_tooltip: The Player will fetch this many hours of schedules from the Server.
   sync_buffer_invalid: The sync buffer is not valid.

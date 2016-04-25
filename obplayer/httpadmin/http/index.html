@@ -587,23 +587,6 @@
       </div>
       <div style="display: none;" id="content-admin" data-tns="Admin Tab">
 
-        <table class="settings">
-          <tbody>
-            <tr>
-              <td data-t>sync_device_id</td>
-              <td><input type="text" name="sync_device_id" value="<%= obplayer.Config.setting('sync_device_id',True) %>"></td>
-            </tr>
-            <tr>
-              <td data-t>sync_device_password</td>
-              <td><input type="password" name="sync_device_password" value="<%= obplayer.Config.setting('sync_device_password',True) %>"></td>
-            </tr>
-            <tr>
-              <td data-t>sync_url</td>
-              <td><input type="text" name="sync_url" value="<%= obplayer.Config.setting('sync_url',True) %>"></td>
-            </tr>
-          </tbody>
-        </table>
-
         <div class="advanced-settings">
           <input type="checkbox" id="admin-advanced" />
           <label for="admin-advanced" data-t>Advanced Settings</label>
@@ -640,20 +623,6 @@
             </tr>
           </tbody>
         </table>
-
-        <br/>
-
-        <% if obplayer.Config.setting('scheduler_enable'): %>
-        <table>
-          <tbody>
-            <tr>
-              <td data-t>Enable/Disable Scheduler</td>
-              <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
-              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' %></td>
-            </tr>
-          </tbody>
-        </table>
-        <% end %>
 
         <br/>
 
@@ -734,33 +703,30 @@
               <td data-t>scheduler_enable</td>
               <td><input type="checkbox" name="scheduler_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('scheduler_enable') %> title="scheduler_enable_tooltip" data-t></td>
             </tr>
+
             <tr>
+              <td data-t>sync_device_id</td>
+              <td><input type="text" name="sync_device_id" value="<%= obplayer.Config.setting('sync_device_id',True) %>"></td>
+            </tr>
+            <tr>
+              <td data-t>sync_device_password</td>
+              <td><input type="password" name="sync_device_password" value="<%= obplayer.Config.setting('sync_device_password',True) %>"></td>
+            </tr>
+            <tr>
+              <td data-t>sync_url</td>
+              <td><input type="text" name="sync_url" value="<%= obplayer.Config.setting('sync_url',True) %>"></td>
+            </tr>
+            <tr class="padding">
               <td data-t>fallback_enable</td>
               <td><input type="checkbox" name="fallback_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('fallback_enable') %> title="fallback_enable_tooltip" data-t></td>
             </tr>
             <tr>
-              <td data-t>sync_buffer</td>
-              <td><input type="text" name="sync_buffer" value="<%= obplayer.Config.setting('sync_buffer', True) %>" title="sync_buffer_tooltip" data-t></td>
+              <td data-t>fallback_media</td>
+              <td><input type="text" name="fallback_media" value="<%= obplayer.Config.setting('fallback_media',True) %>"></td>
             </tr>
-            <tr>
-              <td data-t>sync_showlock</td>
-              <td><input type="text" name="sync_showlock" value="<%= obplayer.Config.setting('sync_showlock', True) %>" title="sync_showlock_tooltip" data-t></td>
-            </tr>
-            <tr>
+            <tr class="padding">
               <td data-t>sync_playlog_enable</td>
               <td><input type="checkbox" name="sync_playlog_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('sync_playlog_enable') %> title="sync_playlog_enable_tooltip" data-t></td>
-            </tr>
-            <tr>
-              <td data-t>sync_freq</td>
-              <td><input type="text" name="sync_freq" value="<%= obplayer.Config.setting('sync_freq', True) %>" title="sync_freq_tooltip" data-t></td>
-            </tr>
-            <tr>
-              <td data-t>sync_freq_priority</td>
-              <td><input type="text" name="sync_freq_priority" value="<%= obplayer.Config.setting('sync_freq_priority', True) %>" title="sync_freq_priority_tooltip" data-t></td>
-            </tr>
-            <tr>
-              <td data-t>sync_freq_playlog</td>
-              <td><input type="text" name="sync_freq_playlog" value="<%= obplayer.Config.setting('sync_freq_playlog', True) %>" title="sync_freq_playlog_tooltip" data-t></td>
             </tr>
             <tr>
               <td data-t title="sync_mode_tooltip">sync_mode</td>
@@ -774,19 +740,63 @@
               <td data-t>sync_copy_media_to_backup</td>
               <td><input type="checkbox" name="sync_copy_media_to_backup" value="1"<%= obplayer.HTTPAdmin.form_item_checked('sync_copy_media_to_backup') %>></td>
             </tr>
-            <tr>
-              <td data-t>fallback_media</td>
-              <td><input type="text" name="fallback_media" value="<%= obplayer.Config.setting('fallback_media',True) %>"></td>
-            </tr>
             <tr class="sync_display_adjust sync_backup sync_local">
               <td data-t>local_media</td>
               <td><input type="text" name="local_media" value="<%= obplayer.Config.setting('local_media',True) %>"></td>
             </tr>
+          </tbody>
+        </table>
+
+        <div class="advanced-settings">
+          <input type="checkbox" id="sync-advanced" />
+          <label for="sync-advanced" data-t>Advanced Settings</label>
+          <table class="settings">
+            <tbody>
+              <tr>
+                <td data-t>sync_buffer</td>
+                <td><input type="text" name="sync_buffer" value="<%= obplayer.Config.setting('sync_buffer', True) %>" title="sync_buffer_tooltip" data-t></td>
+              </tr>
+              <tr>
+                <td data-t>sync_showlock</td>
+                <td><input type="text" name="sync_showlock" value="<%= obplayer.Config.setting('sync_showlock', True) %>" title="sync_showlock_tooltip" data-t></td>
+              </tr>
+              <tr>
+                <td data-t>sync_freq</td>
+                <td><input type="text" name="sync_freq" value="<%= obplayer.Config.setting('sync_freq', True) %>" title="sync_freq_tooltip" data-t></td>
+              </tr>
+              <tr>
+                <td data-t>sync_freq_priority</td>
+                <td><input type="text" name="sync_freq_priority" value="<%= obplayer.Config.setting('sync_freq_priority', True) %>" title="sync_freq_priority_tooltip" data-t></td>
+              </tr>
+              <tr>
+                <td data-t>sync_freq_playlog</td>
+                <td><input type="text" name="sync_freq_playlog" value="<%= obplayer.Config.setting('sync_freq_playlog', True) %>" title="sync_freq_playlog_tooltip" data-t></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <table class="settings">
+          <tbody>
             <tr>
-              <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('sync');" data-tns="Common" data-t>Save</button></td>
+              <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('admin');" data-tns="Common" data-t>Save</button></td>
             </tr>
           </tbody>
         </table>
+
+        <br/>
+
+        <% if obplayer.Config.setting('scheduler_enable'): %>
+        <table>
+          <tbody>
+            <tr>
+              <td data-t>Enable/Disable Scheduler</td>
+              <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
+              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' %></td>
+            </tr>
+          </tbody>
+        </table>
+        <% end %>
 
       </div>
       <% end %>

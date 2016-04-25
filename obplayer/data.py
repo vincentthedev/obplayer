@@ -201,9 +201,6 @@ class ObConfigData (ObData):
         if setting_name == 'sync_freq_playlog' and self.is_int(setting_value) == False:
             return 'sync_freq_playlog_invalid'
 
-        if setting_name == 'sync_device_password' and setting_value == '':
-            return 'sync_device_password_invalid'
-
         url_regex = re.compile(
                 r'^(?:http|ftp)s?://' # http:// or https://
                 r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
@@ -315,10 +312,10 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_public', '1', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
 
-        self.add_setting('scheduler_enable', '1', 'bool')
+        self.add_setting('scheduler_enable', '0', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
-        self.add_setting('sync_device_password', 'password', 'text')
-        self.add_setting('sync_url', 'https://demo.openbroadcaster.pro/remote.php', 'text')
+        self.add_setting('sync_device_password', '', 'text')
+        self.add_setting('sync_url', '', 'text')
         self.add_setting('sync_buffer', '24', 'int')
         self.add_setting('sync_showlock', '20', 'int')
         self.add_setting('sync_playlog_enable', '1', 'bool')
@@ -341,11 +338,11 @@ class ObConfigData (ObData):
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
         self.add_setting('http_admin_language', 'en', 'text')
 
-        self.add_setting('http_show_sync', '1', 'bool')
-        self.add_setting('http_show_streaming', '1', 'bool')
+        self.add_setting('http_show_sync', '0', 'bool')
+        self.add_setting('http_show_streaming', '0', 'bool')
         self.add_setting('http_show_alerts', '1', 'bool')
         self.add_setting('http_show_location', '1', 'bool')
-        self.add_setting('http_show_liveassist', '1', 'bool')
+        self.add_setting('http_show_liveassist', '0', 'bool')
 
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')

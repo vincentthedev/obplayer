@@ -3,15 +3,6 @@ Admin Tab
 
   Admin: Admin
 
-  sync_device_id: Device ID
-  sync_device_id_invalid: The device ID is not valid.
-
-  sync_device_password: Device Password
-  sync_device_password_invalid: A device password is required.
-
-  sync_url: Sync URL
-  sync_url_invalid: The sync URL does not appear to be valid.
-
   http_show_sync: Show Sync Tab
   http_show_streaming: Show Streaming Tab
   http_show_alerts: Show Alerts Tab
