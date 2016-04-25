@@ -436,6 +436,7 @@ Site.translate = function(namespace,name,data)
     }
   }
 
+  if(!Site.strings) return;
   if(typeof(Site.strings[namespace])=='undefined') return name;
   if(typeof(Site.strings[namespace][name])=='undefined') return name;
 
