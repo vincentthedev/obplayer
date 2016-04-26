@@ -175,7 +175,7 @@ class ObConfigData (ObData):
         try:
             self.settings_cache[setting_name]
         except:
-            return 'One or more setting names were not valid.' + setting_name
+            return 'One or more setting names were not valid. ' + setting_name
 
         # disabled for now - this was locking the UI while waiting to timeout (if network problems)
         # try:

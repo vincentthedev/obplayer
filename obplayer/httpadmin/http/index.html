@@ -792,7 +792,7 @@
             <tr>
               <td data-t>Enable/Disable Scheduler</td>
               <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
-              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' %></td>
+              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' if hasattr(obplayer, 'Scheduler') else '(refresh dashboard)' %></td>
             </tr>
           </tbody>
         </table>
@@ -1094,7 +1094,6 @@
                   <option value="french"<%= obplayer.HTTPAdmin.form_item_selected('alerts_language_primary','french') %> data-t>french</option>
                 </select>
 	      </td>
-            </tr>
             </tr>
             <tr>
               <td data-t>alerts_voice_primary</td>

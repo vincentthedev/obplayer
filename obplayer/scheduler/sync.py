@@ -201,6 +201,8 @@ class ObSync:
             return True
 
     def version_update(self):
+        if not obplayer.Config.setting('sync_url'):
+            return
         obplayer.Log.log('reporting version to server: ' + obplayer.Config.version, 'sync')
 
         postfields = {}
@@ -599,6 +601,9 @@ class ObSync:
     # Update 'now playing' information
     #
     def now_playing_update_thread(self, playlist_id, playlist_end, media_id, media_end, show_name):
+
+        if not obplayer.Config.setting('sync_url'):
+            return
 
         postfields = {}
         postfields['id'] = obplayer.Config.setting('sync_device_id')
