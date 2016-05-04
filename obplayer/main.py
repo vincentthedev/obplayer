@@ -2,235 +2,161 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright 2012-2013 OpenBroadcaster, Inc.
+Copyright 2012-2015 OpenBroadcaster, Inc.
 
-This file is part of OpenBroadcaster Remote.
+This file is part of OpenBroadcaster Player.
 
-OpenBroadcaster Remote is free software: you can redistribute it and/or modify
+OpenBroadcaster Player is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-OpenBroadcaster Remote is distributed in the hope that it will be useful,
+OpenBroadcaster Player is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with OpenBroadcaster Remote.  If not, see <http://www.gnu.org/licenses/>.
+along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import obplayer
 
-import thread
-import threading
-
-import signal
 import sys
-import os
-
-import gobject
-#import gtk
+import time
+import signal
+import traceback
 
 import argparse
 
+import gi
+from gi.repository import GObject
 
-class Task (threading.Thread):
-    threads = []
-
-    def __init__(self):
-	threading.Thread.__init__(self)
-	Task.threads.append(self)
-	self.stopflag = threading.Event()
-
-    def remove_task(self):
-	Task.threads.remove(self)
-
-    def stop(self):
-	self.stopflag.set()
-
-    @staticmethod
-    def stop_all():
-	for t in Task.threads:
-	    t.stop()
-
-    @staticmethod
-    def join_all():
-	for t in Task.threads:
-	    t.join()
-
-
-class SchedulerTask (Task):
-    def run(self):
-	while not self.stopflag.wait(0.25):
-	    obplayer.Scheduler.schedule_loop()
-	    obplayer.FallbackPlayer.run()
-
-
-class HTTPAdminTask (Task):
-    def run(self):
-	obplayer.HTTPAdmin = obplayer.ObHTTPAdmin()
-        obplayer.HTTPAdmin.serve_forever()
-
-    def stop(self):
-	if obplayer.HTTPAdmin:
-	    obplayer.HTTPAdmin.shutdown()
-
-
-class LiveAssistTask (Task):
-    def run(self):
-	obplayer.LiveAssist = obplayer.ObLiveAssist()
-        obplayer.LiveAssist.serve_forever()
-
-    def stop(self):
-	if obplayer.LiveAssist:
-	    obplayer.LiveAssist.shutdown()
-
-
-class VersionUpdateTask (Task):
-    def run(self):
-	obplayer.Sync.version_update()
-	self.remove_task()
-
-
-class SyncShowsTask (Task):
-    def run(self):
-	self.synctime = int(60 * obplayer.Main.timer_scale * obplayer.Config.setting('syncfreq'))
-	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_shows()
-
-
-class SyncPlaylogTask (Task):
-    def run(self):
-	self.synctime = int(60 * obplayer.Main.timer_scale * obplayer.Config.setting('syncfreq_log'))
-	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_playlog()
-
-
-class SyncEmergTask (Task):
-    def run(self):
-	self.synctime = int(60 * obplayer.Main.timer_scale * obplayer.Config.setting('syncfreq_emerg'))
-	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_emergency_broadcasts()
-
-
-class SyncMediaTask (Task):
-    def run(self):
-	self.synctime = int(5 * obplayer.Main.timer_scale)
-	while not self.stopflag.wait(self.synctime):
-	    obplayer.Sync.sync_media()
-
+GObject.threads_init()
 
 
 class ObMainApp:
 
     def __init__(self):
-	# we can use this to speed up (or slow down) our timer for debugging.
-        self.timer_scale = 1
+        self.modules = [ ]
+        self.exit_code = 0
 
-        self.quit = False
-        self.sync_run_state = False
-	self.stopflag = threading.Event()
-
-        parser = argparse.ArgumentParser(prog='obremote', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Remote')
+        parser = argparse.ArgumentParser(prog='obplayer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Player')
         parser.add_argument('-f', '--fullscreen', action='store_true', help='start fullscreen', default=False)
         parser.add_argument('-m', '--minimize', action='store_true', help='start minimized', default=False)
-        parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and emergency broadcast databases', default=False)
+        parser.add_argument('-r', '--reset', action='store_true', help='reset show, media, and priority broadcast databases', default=False)
         parser.add_argument('-H', '--headless', action='store_true', help='run headless (audio only)', default=False)
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
-        parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ None ])
+        parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ '~/.openbroadcaster' ])
         parser.add_argument('--disable-http', action='store_true', help='disables the http admin', default=False)
 
         self.args = parser.parse_args()
-        self.headless = self.args.headless
+        obplayer.ObData.set_datadir(self.args.configdir[0])
 
-	obplayer.Log = obplayer.ObLog()
-	obplayer.Log.set_debug(self.args.debug)
+        obplayer.Log = obplayer.ObLog()
+        obplayer.Log.set_debug(self.args.debug)
 
-	obplayer.Config = obplayer.ObConfigData(self.args.configdir[0])
-	obplayer.RemoteData = obplayer.ObRemoteData(self.args.configdir[0])
-	obplayer.PlaylogData = obplayer.ObPlaylogData(self.args.configdir[0])
+        obplayer.Config = obplayer.ObConfigData()
+        obplayer.Config.args = self.args
 
-	obplayer.Sync = obplayer.ObSync()
-	obplayer.Player = obplayer.ObPlayer()
-	#obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
-	obplayer.Scheduler = obplayer.ObScheduler()
+        if self.args.headless is True:
+            obplayer.Config.headless = self.args.headless
 
-	obplayer.Gui = obplayer.ObGui()
-	obplayer.Main = self
+        obplayer.Main = self
 
     def start(self):
 
-	gobject.threads_init()
-	signal.signal(signal.SIGINT, self.sigint_handler)
+        signal.signal(signal.SIGINT, self.sigint_handler)
 
-	obplayer.FallbackPlayer = obplayer.ObFallbackPlayer()
+        try:
+            self.loop = GObject.MainLoop()
 
-	obplayer.Gui.create_window()
-        obplayer.Player.player_init()
+            obplayer.Gui = obplayer.ObGui()
+            obplayer.Gui.create_window()
 
-	# reset show/show_media tables, emergency tables
-        if self.args.reset:
-            obplayer.Log.log('resetting show, media, and emergency data', 'data')
-            obplayer.RemoteData.empty_table('shows')
-            obplayer.RemoteData.empty_table('shows_media')
-            obplayer.RemoteData.empty_table('groups')
-            obplayer.RemoteData.empty_table('group_items')
-            obplayer.RemoteData.empty_table('emergency_broadcasts')
+            self.load_module('player')
+            self.load_module('httpadmin')
 
-	# run our admin web server.
-        if self.args.disable_http is False:
-	    HTTPAdminTask().start()
+            if obplayer.Config.setting('testsignal_enable'):
+                    self.load_module('testsignal')
+            if obplayer.Config.setting('alerts_enable'):
+                self.load_module('alerts')
+            if obplayer.Config.setting('fallback_enable'):
+                    self.load_module('fallback')
+            if obplayer.Config.setting('audio_in_enable'):
+                    self.load_module('linein')
+            if obplayer.Config.setting('scheduler_enable'):
+                self.load_module('scheduler')
+            if obplayer.Config.setting('live_assist_enable'):
+                self.load_module('liveassist')
+            if obplayer.Config.setting('audiolog_enable'):
+                self.load_module('audiolog')
+            if obplayer.Config.setting('streamer_enable'):
+                self.load_module('streamer')
 
-	# determine our version from the VERSION file.  if we can do that, report the version to the server.
-        if os.path.exists('VERSION'):
-            self.version = open('VERSION').read().strip()
-	    VersionUpdateTask().start()
+            #### TEST CODE ####
 
-	# if resetting the databases, run our initial sync.  otherwise skip and setup other sync interval timers.
-        if self.args.reset:
-	    obplayer.Sync.sync_shows(True)
-	    obplayer.Sync.sync_emergency_broadcasts()
-	    obplayer.Sync.sync_media()
+            #time.sleep(2)
 
-	# run our live assist web server.
-        if obplayer.Config.setting('live_assist_enable'):
-	    LiveAssistTask().start()
+            #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/2example_CAPCP_with_Embedded_Large_Audio_File(2).xml")
+            #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
+            #obplayer.alerts.Processor.dispatch(alert)
 
-	# Start scheduler thread
-	SchedulerTask().start()
+            #ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
+            #ctrl.add_request(media_type='break', duration=40)
+            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
+            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='image', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=30)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
+            #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
 
-	# Start sync threads
-	SyncShowsTask().start()
-	SyncPlaylogTask().start()
-	SyncEmergTask().start()
-	SyncMediaTask().start()
+            #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
+            #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
+            #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
 
-	self.loop = gobject.MainLoop()
-        self.loop.run()
-	#gtk.main()
+            #### END TEST CODE ####
 
-	self.application_shutdown(False)
+            obplayer.Player.start_player()
+            self.loop.run()
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt")
+        except:
+            obplayer.Log.log("exception occurred in main thead. Terminating...", 'error')
+            obplayer.Log.log(traceback.format_exc(), 'error')
+
+        self.application_shutdown()
+
+    def quit(self):
+        self.loop.quit()
 
     def sigint_handler(self, signal, frame):
-	#gtk.main_quit()
-	self.loop.quit()
-        #self.application_shutdown(False)
+        self.quit()
 
-    def application_shutdown(self, widget):
+    def application_shutdown(self):
+        obplayer.Log.log("shutting down player...", 'debug')
 
-	# backup our main db to disk.
-        obplayer.RemoteData.backup()
+        # call quit() or all modules to allow them to shutdown
+        self.quit_modules()
 
-        self.quit = True
+        # send stop signals to all threads
+        obplayer.ObThread.stop_all()
 
-	# send stop signals to all threads
-	Task.stop_all()
+        # wait for all threads to complete
+        obplayer.ObThread.join_all()
 
-	# wait for all threads to complete
-	Task.join_all()
+        # quit main thread.
+        sys.exit(self.exit_code)
 
-	# quit main thread.
-        sys.exit(0)
+    def load_module(self, name):
+        if name in self.modules:
+            return
+        obplayer.Log.log('loading module ' + name, 'module')
+        exec('import obplayer.%s; obplayer.%s.init()' % (name, name))
+        self.modules.append(name)
 
+    def quit_modules(self):
+        for name in self.modules:
+            exec('obplayer.%s.quit()' % (name,))
 

@@ -1,0 +1,24 @@
+
+Admin Tab
+
+  Admin: Admin
+
+  http_show_sync: Show Sync Tab
+  http_show_streaming: Show Streaming Tab
+  http_show_alerts: Show Alerts Tab
+  http_show_location: Show Location Tab
+  http_show_liveassist: Show LiveAssist Tab
+
+  delete_and_reset: Delete data.db and Restart
+  Reset To Defaults and Restart: Reset To Defaults and Restart
+  Import Settings: Import Settings
+  Import: Import
+  Export Settings: Export Settings
+  Export: Export
+  Update Player: Update Player
+  Update: Update
+  Check: Check
+  Current Version: Current Version
+  Latest Version: Latest Version
+  Already up to date: Already up to date
+

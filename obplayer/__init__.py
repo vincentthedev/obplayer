@@ -2,65 +2,38 @@
 # -*- coding: utf-8 -*-
 
 """
-    Copyright 2012-2013 OpenBroadcaster, Inc.
+Copyright 2012-2015 OpenBroadcaster, Inc.
 
-    This file is part of OpenBroadcaster Remote.
+This file is part of OpenBroadcaster Player.
 
-    OpenBroadcaster Remote is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+OpenBroadcaster Player is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    OpenBroadcaster Remote is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+OpenBroadcaster Player is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with OpenBroadcaster Remote.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Affero General Public License
+along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import absolute_import 
 
-import sys
-
-# workaround for gstreamer stealing -h (help) argument.
-# thanks to: http://29a.ch/2009/2/14/pygst-messing-with-sys-argv
-argv = sys.argv
-sys.argv = []
-
-from obplayer.data import *
-from obplayer.log import *
-from obplayer.sync import *
-from obplayer.scheduler import *
-from obplayer.player import *
-from obplayer.fallback_player import *
-from obplayer.httpadmin import *
-from obplayer.liveassist import *
-from obplayer.gui import *
-from obplayer.main import *
-
-sys.argv = argv
-del argv
+from obplayer.task import ObThread
+from obplayer.log import ObLog
+from obplayer.data import ObData, ObConfigData
+from obplayer.main import ObMainApp
+from obplayer.gui import ObGui
 
 Log = None
-
 Config = None
-RemoteData = None
-PlaylogData = None
-
-Sync = None
-Player = None
-FallbackPlayer = None
-Scheduler = None
 
 Gui = None
 Main = None
 
-HTTPAdmin = None
-LiveAssist = None
-
 def main():
-    main = ObMainApp()
-    main.start()
+    ObMainApp().start()
 
