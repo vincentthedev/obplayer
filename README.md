@@ -1,2 +1,0 @@
-# obplayer
-OpenBroadcaster Player Application
