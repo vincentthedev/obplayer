@@ -1,0 +1,230 @@
+body
+{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+h1
+{
+  font-weight: normal;
+  font-size: 24px;
+  padding: 0;
+  margin: 15px 0 15px 0;
+}
+
+h2
+{
+  font-weight: normal;
+  font-size: 20px;
+  padding: 0;
+  margin: 30px 0 15px 0;
+}
+
+h2:first-child
+{
+  margin-top: 0;
+}
+
+#tabs
+{
+  border-bottom: 5px solid #2A2D79;
+}
+
+#tabs .tab
+{
+  cursor: pointer;
+  float: left;
+  border-right: 1px solid #2A2D79;
+  border-top: 1px solid #2A2D79;
+  padding: 8px;
+  font-size: 14px;
+}
+
+#tabs .tab:first-child
+{
+  border-left: 1px solid #2A2D79;
+}
+
+#tabs .selected
+{
+  background-color: #2A2D79;
+  color: #fff;
+}
+
+#commands
+{
+  text-align: right;
+}
+
+#content 
+{
+  padding: 30px;
+  border-left: 1px solid #2A2D79;
+  min-height: 300px;
+}
+
+#content table .padding td
+{
+  padding-top: 15px;
+}
+
+#content table td:first-child
+{
+  width: 16em;
+}
+
+#error
+{
+  border: 1px solid #333;
+  padding: 5px;
+  background-color: #f99;
+  margin-bottom: 20px;
+}
+
+#notice
+{
+  border: 1px solid #333;
+  padding: 5px;
+  background-color: #9f9;
+  margin-bottom: 20px;
+}
+
+.summary
+{
+  vertical-align: top;
+  display: inline-block;
+  width: 25em;
+}
+
+.summary h4
+{
+  margin-top: 0px;
+  margin-bottom: 5px;
+  text-decoration: underline;
+}
+
+.summary div label
+{
+  display: inline-block;
+  width: 10em;
+}
+
+#log-data
+{
+  height: 30em;
+  overflow: auto;
+}
+
+.alerts-table
+{
+  width: 100%;
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid #000;
+}
+
+.alerts-table .headline
+{
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.alerts-table .fit
+{
+  width: 1%;
+  white-space: nowrap;
+}
+
+.alerts-table .center
+{
+  text-align: center;
+}
+
+#audio-levels
+{
+  border: 1px solid black;
+}
+
+#alert-details table
+{
+  border: 1px solid #2A2D79;
+  width: 100%;
+  margin: 4px;
+}
+
+#alert-details table td:first-child
+{
+  width: 8em;
+  text-align: right;
+  font-weight: bold;
+  vertical-align: top;
+}
+
+#alert-details table .padding td
+{
+  padding-top: 10px;
+}
+
+
+.advanced-settings {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border: 1px solid #2A2D79;
+}
+
+.advanced-settings > input + label + table {
+  padding-top: 2px;
+  padding-left: 20px;
+}
+
+.advanced-settings > input {
+  display: none;
+}
+
+.advanced-settings > input ~ table {
+  display: none;
+}
+
+.advanced-settings > input:checked ~ table {
+  display: block;
+}
+
+.advanced-settings > input + label::before {
+  content: "\229e";
+  margin-right: 4px;
+  margin-left: 4px;
+  vertical-align: bottom;
+}
+
+.advanced-settings > input:checked + label::before {
+  content: "\229f";
+  margin-right: 4px;
+  margin-left: 4px;
+  vertical-align: bottom;
+}
+
+label.advanced-settings,
+label.advanced-settings::before {
+  cursor: pointer;
+  display: inline-block;
+}
+
+#map-container {
+  height:400px;
+  width:400px;
+  border: 1px solid #0f0f0f;
+  border-radius: 5px;
+  padding: 2px;
+  overflow: hidden;
+}
+
+#map {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  border-radius: 5px;
+  width:400px;
+  height:400px;
+  overflow:hidden;
+}
+

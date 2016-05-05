@@ -1,0 +1,21 @@
+#!/bin/bash
+
+RESET=""
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+
+while [ 1 ]
+do
+	./obplayer_check $@ $RESET
+
+        if [ $? -eq 37 ]
+        then
+            echo "deleting data.db and restarting with -r"
+            rm ~/.openbroadcaster/data.db
+            RESET="-r"
+        else
+            RESET=""
+        fi
+	sleep 5
+done
