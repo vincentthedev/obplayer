@@ -248,11 +248,11 @@ Site.formatLogs = function(lines)
     lines[i] = lines[i].replace(/\>/g,'&gt;');
     lines[i] = lines[i].replace(/\&/g,'&amp;');
 
-    if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
+    if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #880000;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[data\\\]')>0) lines[i] = '<span style="color: #333333;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #550000;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[scheduler\\\]')>0) lines[i] = '<span style="color: #005555;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[sync\\\]')>0) lines[i] = '<span style="color: #000055;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[sync download\\\]')>0) lines[i] = '<span style="color: #AA4400;">'+lines[i]+'</span>';

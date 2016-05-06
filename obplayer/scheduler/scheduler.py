@@ -503,6 +503,15 @@ class ObScheduler:
             if not request or requests[key]['priority'] > request['priority']:
                 request = requests[key]
 
+        if not request:
+            data['status'] = 'override'
+            data['artist'] = ''
+            data['title'] = ''
+            data['duration'] = 0
+            data['position'] = 0
+            data['track'] = -1
+            return data
+
         if request['controller'] != self.ctrl:
             data['status'] = 'override'
         elif self.ctrl.request_is_playing():
@@ -523,35 +532,6 @@ class ObScheduler:
             else:
                 data['mode'] = 'playlist'
                 data['track'] = self.present_show.playlist.current_pos()
-
-        """
-        #status = obplayer.Player.status()
-        status = self.ctrl.request_is_playing()
-        if status == True:
-            data['status'] = 'playing'
-        else:
-            data['status'] = 'stopped'
-        data['audio_levels'] = self.ctrl.player.get_audio_levels()
-
-        if self.present_show != None and self.present_show.now_playing != None:
-            now_playing = self.present_show.now_playing
-
-            data['artist'] = now_playing['artist']
-            data['title'] = now_playing['title']
-            data['position'] = self.present_show.position()
-
-            if 'group_id' in now_playing:
-                data['mode'] = 'group'
-                (data['group_num'], data['group_item_num']) = self.find_group_item_pos(now_playing['id'])
-            else:
-                data['mode'] = 'playlist'
-                data['track'] = self.present_show.playlist.current_pos()
-        else:
-            data['artist'] = ''
-            data['title'] = ''
-            data['position'] = 0
-            data['track'] = -1
-        """
 
         return data
 
