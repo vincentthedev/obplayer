@@ -25,6 +25,7 @@ import obplayer
 import os
 import sys
 import time
+import os.path
 import traceback
 
 import subprocess
@@ -32,6 +33,7 @@ import subprocess
 
 output = None
 modes = [ ]
+xrandrcmd = '/usr/bin/xrandr'
 
 def init():
     load_modes()
@@ -43,7 +45,10 @@ def load_modes():
     global modes, output
     modes = [ ]
 
-    proc = subprocess.Popen([ 'xrandr' ], stdout=subprocess.PIPE)
+    if not os.path.exists(xrandrcmd):
+        return
+
+    proc = subprocess.Popen([ xrandrcmd ], stdout=subprocess.PIPE)
     (output, _) = proc.communicate()
 
     displays = [ ]
@@ -84,6 +89,10 @@ def set_mode(mode):
         obplayer.Log.log("invalid xrandr video mode " + mode, 'error')
         return
 
+    if not os.path.exists(xrandrcmd):
+        obplayer.Log.log("xrandr binary is missing; unable to change resolution", 'error')
+        return
+
     obplayer.Log.log("changing xrandr video mode to " + mode, 'player')
-    os.system('xrandr --output {0} --mode {1}'.format(output, mode))
+    os.system('{0} --output {1} --mode {2}'.format(xrandrcmd, output, mode))
 

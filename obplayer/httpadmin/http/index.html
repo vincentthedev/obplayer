@@ -914,8 +914,10 @@
               <td data-t>video_out_resolution</td>
               <td><select name="video_out_resolution">
                   <option value="default"<%= obplayer.HTTPAdmin.form_item_selected('video_out_resolution','default') %>>default</option>
+                  <% if hasattr(obplayer.player, 'xrandr'): %>
                   <% for mode in obplayer.player.xrandr.get_modes(): %>
                   <option value="<%= mode %>"<%= obplayer.HTTPAdmin.form_item_selected('video_out_resolution',mode) %>><%= mode %></option>
+                  <% end %>
                   <% end %>
                 </select></td>
             </tr>
