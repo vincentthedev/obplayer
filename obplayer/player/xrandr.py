@@ -54,7 +54,7 @@ def load_modes():
     displays = [ ]
     for line in output.split(b'\n'):
         if line.startswith(b' '):
-            if len(displays) < 0:
+            if len(displays) <= 0:
                 obplayer.Log.log("error reading output of xrandr", 'error')
                 break
             displays[-1].append(line.strip().split()[0])
