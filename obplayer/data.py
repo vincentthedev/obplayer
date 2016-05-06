@@ -226,7 +226,7 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
             return 'alerts_trigger_serial_file_invalid'
 
-        geocode_regex = re.compile(r'^(|\d+(|,\d+)*)$', re.IGNORECASE)
+        geocode_regex = re.compile(r'^\s*(|\d+(|\s*,\s*\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
             return 'alerts_geocode_invalid'
 

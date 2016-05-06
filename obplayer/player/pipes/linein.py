@@ -69,9 +69,13 @@ class ObLineInPipeline (ObGstPipeline):
 
         self.pipeline.add(self.audiosrc)
 
+        self.queue = Gst.ElementFactory.make('queue2')
+        self.pipeline.add(self.queue)
+        self.audiosrc.link(self.queue)
+
         self.audioconvert = Gst.ElementFactory.make('audioconvert')
         self.pipeline.add(self.audioconvert)
-        self.audiosrc.link(self.audioconvert)
+        self.queue.link(self.audioconvert)
 
         self.audiosink = None
         self.fakesink = Gst.ElementFactory.make('fakesink')
