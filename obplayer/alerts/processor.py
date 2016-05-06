@@ -208,7 +208,7 @@ class ObAlertProcessor (object):
         #self.archive_hosts = [ "capcp1.naad-adna.pelmorex.com", "capcp2.naad-adna.pelmorex.com" ]
         self.streaming_hosts = [ obplayer.Config.setting('alerts_naad_stream1'), obplayer.Config.setting('alerts_naad_stream2') ]
         self.archive_hosts = [ obplayer.Config.setting('alerts_naad_archive1'), obplayer.Config.setting('alerts_naad_archive2') ]
-        self.target_geocodes = obplayer.Config.setting('alerts_geocode').split(',')
+        self.target_geocodes = [ geocode.strip() for geocode in obplayer.Config.setting('alerts_geocode').split(',') ]
         self.repeat_interval = obplayer.Config.setting('alerts_repeat_interval')
         self.repeat_times = obplayer.Config.setting('alerts_repeat_times')
         self.leadin_delay = obplayer.Config.setting('alerts_leadin_delay')

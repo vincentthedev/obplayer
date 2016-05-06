@@ -42,34 +42,59 @@ class ObRTPInputPipeline (ObGstPipeline):
         self.pipeline = Gst.Pipeline()
         self.elements = [ ]
 
-        self.udpsrc = Gst.ElementFactory.make('udpsrc')
-        self.udpsrc.set_property('port', 5500)
-        self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
-        #self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,clock-rate=48000,encoding-name=OPUS"))
-        #self.udpsrc.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
-        self.elements.append(self.udpsrc)
-
-        #self.rtpbin = Gst.ElementFactory.make('rtpbin')
-        #self.elements.append(self.rtpbin)
-
         self.rtpdepay = Gst.ElementFactory.make('rtpopusdepay')
         self.elements.append(self.rtpdepay)
 
         self.decoder = Gst.ElementFactory.make('opusdec')
+        self.decoder.set_property('plc', True)  # Packet loss concealment
+        self.decoder.set_property('use-inband-fec', True)  # FEC
         self.elements.append(self.decoder)
 
         self.audioconvert = Gst.ElementFactory.make('audioconvert')
         self.elements.append(self.audioconvert)
-
-        self.audioconvert = Gst.ElementFactory.make('audioresample')
-        self.elements.append(self.audioconvert)
+        self.audioresample = Gst.ElementFactory.make('audioresample')
+        self.audioresample.set_property('quality', 6)
+        self.elements.append(self.audioresample)
 
         self.audiosink = None
         self.fakesink = Gst.ElementFactory.make('fakesink')
         self.set_property('audio-src', self.fakesink)
 
         self.build_pipeline(self.elements)
+
+        ## Hook up RTPBin
+        self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc')
+        self.udpsrc_rtp.set_property('port', 5500)
+        #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
+        self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,payload=96,media=audio,clock-rate=48000,encoding-name=OPUS"))
+        #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
+        #self.udpsrc_rtp.set_property('timeout', 3000000)
+        #self.elements.append(self.udpsrc_rtp)
+        self.pipeline.add(self.udpsrc_rtp)
+
+        self.udpsrc_rtcp = Gst.ElementFactory.make('udpsrc')
+        self.udpsrc_rtcp.set_property('port', 5500 + 1)
+        self.pipeline.add(self.udpsrc_rtcp)
+
+        self.rtpbin = Gst.ElementFactory.make('rtpbin')
+        self.rtpbin.set_property('latency', 2000)
+        #self.rtpbin.set_property('autoremove', True)
+        #self.rtpbin.set_property('do-lost', True)
+        #self.rtpbin.set_property('buffer-mode', 1)
+        #self.elements.append(self.rtpbin)
+        self.pipeline.add(self.rtpbin)
+
+        self.udpsrc_rtp.link_pads('src', self.rtpbin, 'recv_rtp_sink_0')
+        self.udpsrc_rtcp.link_pads('src', self.rtpbin, 'recv_rtcp_sink_0')
+
+        def rtpbin_pad_added(obj, pad):
+            self.rtpbin.unlink(self.rtpdepay)
+            self.rtpbin.link(self.rtpdepay)
+        self.rtpbin.connect('pad-added', rtpbin_pad_added)
+
         self.register_signals()
+        #self.bus.connect("message", self.message_handler_rtp)
+        #self.bus.add_signal_watch()
 
     def set_property(self, property, value):
         if property == 'audio-sink':
@@ -99,5 +124,14 @@ class ObRTPInputPipeline (ObGstPipeline):
             self.wait_state(Gst.State.PLAYING)
             if obplayer.Config.setting('gst_init_callback'):
                 os.system(obplayer.Config.setting('gst_init_callback'))
+
+    def message_handler_rtp(self, bus, message):
+        if message.type == Gst.MessageType.ERROR:
+            obplayer.Log.log("attempting to restart pipeline", 'info')
+            GObject.timeout_add(1.0, self.restart_pipeline)
+
+    def restart_pipeline(self):
+        self.wait_state(Gst.State.NULL)
+        self.wait_state(Gst.State.PLAYING)
 
 

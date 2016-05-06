@@ -45,7 +45,7 @@ class ObLiveAssist (httpserver.ObHTTPServer):
 
         httpserver.ObHTTPServer.__init__(self, server_address, None)
         sa = self.socket.getsockname()
-        self.log('serving live assist http on port ' + str(sa[1]))
+        obplayer.Log.log('serving live assist http on port ' + str(sa[1]), 'liveassist')
 
     def log(self, message):
         obplayer.Log.log(message, 'debug')

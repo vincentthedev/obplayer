@@ -36,6 +36,10 @@ class LiveAssistThread (obplayer.ObThread):
             obplayer.LiveAssist.shutdown()
 
 def init():
+    if not obplayer.Config.setting('scheduler_enable'):
+        obplayer.Log.log("error starting liveassist.  The scheduler must be enabled in order to use the liveassist interface, but it is currently disabled in the settings", 'error')
+        return
+
     if obplayer.Config.setting('live_assist_enable'):
         LiveAssistThread().start()
 
