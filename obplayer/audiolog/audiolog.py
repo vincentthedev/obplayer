@@ -23,7 +23,9 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import os
+import os.path
 import time
+import datetime
 import traceback
 
 import gi
@@ -35,6 +37,7 @@ AUDIOLOG_CHANNELS = '1'
 
 class ObAudioLog (object):
     def __init__(self):
+        self.purge_files = obplayer.Config.setting('audiolog_purge_files')
         self.pipeline = None
         self.date = time.strftime('%Y-%m-%d-%H')
         self.start()
@@ -126,6 +129,19 @@ class ObAudioLog (object):
             self.date = time.strftime('%Y-%m-%d-%H')
             self.stop()
             self.start()
+            if self.purge_files:
+                self.log_purge()
         GObject.timeout_add(10.0, self.log_rotate)
 
+    def log_purge(self):
+        basedir = obplayer.ObData.get_datadir() + "/audiologs"
+        then = datetime.datetime.now() - datetime.timedelta(days=90)
 
+        for filename in os.listdir(basedir):
+            parts = filename[:10].split('-')
+            if len(parts) != 3:
+                continue
+            filedate = datetime.datetime(int(parts[0]), int(parts[1]), int(parts[2]))
+            if filedate < then:
+                obplayer.Log.log("deleting audiolog file " + filename, 'debug')
+                os.remove(os.path.join(basedir, filename))

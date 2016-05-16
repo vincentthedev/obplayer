@@ -523,6 +523,13 @@ $(document).ready(function()
   });
   $('#audio_out_mode_select').change();
 
+  $('#audiolog_enable').change(function()
+  {
+    if($(this).is(':checked')) $('#audiolog_purge_files_row').show();
+    else $('#audiolog_purge_files_row').hide();
+  });
+  $('#audiolog_enable').change();
+
   $('#audio_in_mode_select').change(function()
   {
     if($('#audio_in_mode_select').val()=='alsa') $('#audio_in_alsa_device_row').show();
