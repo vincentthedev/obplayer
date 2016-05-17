@@ -16,7 +16,8 @@ AudioVisual Tab
   audio_out_visualization: Enable Audio Visualization
   gst_init_callback: Gstreamer Init Callback
   audiolog_enable: Enable Audio Logging
-
+  audiolog_purge_files: Purge Audio Logs After 90 days
+  audiolog_purge_files_tooltip: Delete audio log files after 90 days.
 
   Audio Input Settings: Audio Input Settings
 

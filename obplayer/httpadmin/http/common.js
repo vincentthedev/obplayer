@@ -168,7 +168,7 @@ Site.updateAlertInfo = function()
 
       // display the next time alerts will be played
       var next_check = response.next_play - (Date.now() / 1000);
-      $('#alerts-next-play').html(Site.friendlyDuration(next_check) + " min");
+      $('#alerts-next-play').html(Site.friendlyDuration(next_check >= 0 ? next_check : 0) + " min");
     },'json').error(function()
     {
       $('#alerts-last-heartbeat').html("");
@@ -522,6 +522,13 @@ $(document).ready(function()
     }
   });
   $('#audio_out_mode_select').change();
+
+  $('#audiolog_enable').change(function()
+  {
+    if($(this).is(':checked')) $('#audiolog_purge_files_row').show();
+    else $('#audiolog_purge_files_row').hide();
+  });
+  $('#audiolog_enable').change();
 
   $('#audio_in_mode_select').change(function()
   {

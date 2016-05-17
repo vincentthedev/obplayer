@@ -286,6 +286,7 @@ class ObConfigData (ObData):
         self.add_setting('audio_in_jack_name', '', 'text')
 
         self.add_setting('audiolog_enable', '0', 'bool')
+        self.add_setting('audiolog_purge_files', '0', 'bool')
 
         self.add_setting('video_out_enable', '1', 'bool')
         self.add_setting('video_out_mode', 'auto', 'text')
