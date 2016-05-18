@@ -373,11 +373,35 @@ class ObAlertProcessor (object):
 
     def trigger_alert_cycle_start(self):
         for trigger in self.triggers:
-            trigger.alert_cycle_start()
+            try:
+                trigger.alert_cycle_start()
+            except:
+                obplayer.Log.log("error during alert cycle start trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def trigger_alert_cycle_stop(self):
         for trigger in self.triggers:
-            trigger.alert_cycle_stop()
+            try:
+                trigger.alert_cycle_stop()
+            except:
+                obplayer.Log.log("error during alert cycle stop trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
+
+    def trigger_alert_cycle_init(self):
+        for trigger in self.triggers:
+            try:
+                trigger.alert_cycle_init()
+            except:
+                obplayer.Log.log("error during alert cycle init trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
+
+    def trigger_alert_cycle_each(self, alert, alert_media, processor):
+        for trigger in self.triggers:
+            try:
+                trigger.alert_cycle_each(alert, alert_media, processor)
+            except:
+                obplayer.Log.log("error during alert cycle each trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def run(self):
         self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
@@ -434,8 +458,7 @@ class ObAlertProcessor (object):
 
                         expired_list = [ ]
                         with self.lock:
-                            for trigger in self.triggers:
-                                trigger.alert_cycle_init()
+                            self.trigger_alert_cycle_init()
 
                             for alert in self.alerts_active.values():
                                 alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
@@ -454,8 +477,7 @@ class ObAlertProcessor (object):
                                         if 'visual' in alert_media['secondary']:
                                             self.ctrl.add_request(start_time=start_time, **alert_media['secondary']['visual'])
 
-                                    for trigger in self.triggers:
-                                        trigger.alert_cycle_each(alert, alert_media, self)
+                                    self.trigger_alert_cycle_each(alert, alert_media, self)
 
                                     if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
                                         expired_list.append(alert)
