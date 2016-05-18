@@ -192,7 +192,7 @@
 	  </tr>
         </table>
 
-	<table data-tns="Admin Tab">
+	<table data-tns="Sync Tab">
 	  <tr>
 	    <td data-t>sync_device_id</td>
 	    <td><%= obplayer.Config.setting('sync_device_id') %></td>
@@ -283,6 +283,10 @@
 	  <tr>
 	    <td data-t>audiolog_enable</td>
 	    <td><%= obplayer.Config.setting('audiolog_enable') %></td>
+	  </tr>
+	  <tr>
+	    <td data-t>audiolog_purge_files</td>
+	    <td><%= obplayer.Config.setting('audiolog_purge_files') %></td>
 	  </tr>
 
 	  <tr class="padding">
@@ -854,7 +858,11 @@
             </tr>
             <tr>
               <td data-t>audiolog_enable</td>
-              <td><input type="checkbox" name="audiolog_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('audiolog_enable') %>></td>
+              <td><input type="checkbox" id="audiolog_enable" name="audiolog_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('audiolog_enable') %>></td>
+            </tr>
+            <tr id="audiolog_purge_files_row">
+              <td data-t>audiolog_purge_files</td>
+              <td><input type="checkbox" name="audiolog_purge_files" value="1"<%= obplayer.HTTPAdmin.form_item_checked('audiolog_purge_files') %> title="audiolog_purge_files_tooltip" data-t></td>
             </tr>
           </tbody>
         </table>
