@@ -40,3 +40,8 @@ Status Show Type
   advanced: advanced
   liveassist: liveassist
 
+Logs Download:
+
+  Status Logs: Status Logs
+  Audio Logs: Audio Logs
+

@@ -63,7 +63,7 @@ Site.save = function(section)
   $.post('/save',postfields,function(response)
   {
     //Site.saveSuccess,'json');
-    var namespace = $('#content-'+section).attr('data-tns');
+    var namespace = undefined; // $('#content-'+section).attr('data-tns');
     if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
     else $('#error').text(Site.t(namespace ? namespace : 'Responses', response.error)).show();
   });
@@ -474,6 +474,10 @@ $(document).ready(function()
       $(this).parent().parent().first().attr('title', $(this).attr('title'));
     });
   }); 
+
+  $('#logs-open').on('click', function (e) {
+    window.open('/logs.html', '_blank', "width=600, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
+  });
 
   // hide some home page (setting list) settings, if not applicable.
   if($('#sync_mode_value').text()=='remote') $('.local_media_location').hide();
