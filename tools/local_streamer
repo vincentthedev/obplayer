@@ -17,14 +17,12 @@ Gst.init(None)
 
 class ObLocalStreamer (object):
     def __init__(self):
-        parser = argparse.ArgumentParser(prog='local_streamer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Stream local audio to an icecast server.")
+        parser = argparse.ArgumentParser(prog='local_streamer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Stream local audio to an RTP receiver.")
         parser.add_argument('-a', '--audio', type=str, help='Audio mode to use (alsa/pulse/jack/auto/etc).', default='auto')
         parser.add_argument('-D', '--alsa-device', type=str, help='Name of the ALSA device to monitor.', default='default')
         parser.add_argument('-J', '--jack-port', type=str, help='Name of the jack port to monitor.', default='default')
-        parser.add_argument('-i', '--ip', type=str, help='Icecast server IP address.', default='127.0.0.1')
-        parser.add_argument('-p', '--port', type=str, help='Icecast server port number.', default='5500')
-        parser.add_argument('-P', '--password', type=str, help='Icecast server password.', default='')
-        parser.add_argument('-m', '--mount', type=str, help='Icecast mountpoint to send to.', default='stream')
+        parser.add_argument('-i', '--ip', type=str, help='RTP receiver IP address.', default='127.0.0.1')
+        parser.add_argument('-p', '--port', type=str, help='RTP receiver port number.', default='5500')
 
         self.args = parser.parse_args()
 

@@ -96,6 +96,10 @@ class ObRTPInputPipeline (ObGstPipeline):
         #self.bus.connect("message", self.message_handler_rtp)
         #self.bus.add_signal_watch()
 
+    def start(self):
+        # We start the pipe without waiting because it wont enter the playing state until the transmitting end is connected 
+        self.pipeline.set_state(Gst.State.PLAYING)
+
     def set_property(self, property, value):
         if property == 'audio-sink':
             if self.audiosink:
@@ -111,7 +115,9 @@ class ObRTPInputPipeline (ObGstPipeline):
             self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
         ObGstPipeline.patch(self, mode)
 
-        self.wait_state(Gst.State.PLAYING)
+        #self.wait_state(Gst.State.PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
+
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
@@ -121,7 +127,9 @@ class ObRTPInputPipeline (ObGstPipeline):
             self.set_property('audio-sink', self.fakesink)
         ObGstPipeline.unpatch(self, mode)
         if len(self.mode) > 0:
-            self.wait_state(Gst.State.PLAYING)
+            #self.wait_state(Gst.State.PLAYING)
+            self.pipeline.set_state(Gst.State.PLAYING)
+
             if obplayer.Config.setting('gst_init_callback'):
                 os.system(obplayer.Config.setting('gst_init_callback'))
 
