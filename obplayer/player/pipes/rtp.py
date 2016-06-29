@@ -64,7 +64,7 @@ class ObRTPInputPipeline (ObGstPipeline):
 
         ## Hook up RTPBin
         self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc')
-        self.udpsrc_rtp.set_property('port', 5500)
+        self.udpsrc_rtp.set_property('port', 5004)
         #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
         self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,payload=96,media=audio,clock-rate=48000,encoding-name=OPUS"))
         #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
@@ -73,11 +73,11 @@ class ObRTPInputPipeline (ObGstPipeline):
         self.pipeline.add(self.udpsrc_rtp)
 
         self.udpsrc_rtcp = Gst.ElementFactory.make('udpsrc')
-        self.udpsrc_rtcp.set_property('port', 5500 + 1)
+        self.udpsrc_rtcp.set_property('port', 5004 + 1)
         self.pipeline.add(self.udpsrc_rtcp)
 
         self.rtpbin = Gst.ElementFactory.make('rtpbin')
-        self.rtpbin.set_property('latency', 2000)
+        #self.rtpbin.set_property('latency', 2000)
         #self.rtpbin.set_property('autoremove', True)
         #self.rtpbin.set_property('do-lost', True)
         #self.rtpbin.set_property('buffer-mode', 1)

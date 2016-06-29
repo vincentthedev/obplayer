@@ -54,6 +54,7 @@ class ObPlayer (object):
         self.patches = { }
         self.pipes = { }
         self.audio_levels = None
+        self.audio_levels_timestamp = 0
         self.audio_silence = 0
 
         if not obplayer.Config.headless:
@@ -88,6 +89,8 @@ class ObPlayer (object):
         self.pipes['break'] = pipes.ObBreakPipeline('audio-break', self)
         self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
         self.pipes['rtp'] = pipes.ObRTPInputPipeline('rtp-input', self)
+        #self.pipes['rtsp'] = pipes.ObRTSPInputPipeline('rtsp-input', self)
+        #self.pipes['sdp'] = pipes.ObSDPInputPipeline('sdp-input', self)
 
         def silence_request(self, present_time):
             obplayer.Log.log("player has no requests to play; outputting silence", 'player')
@@ -104,6 +107,7 @@ class ObPlayer (object):
         if media_type in [ 'video', 'testsignal' ]:
             return 'audio/visual'
         elif media_type in [ 'audio', 'linein', 'break', 'rtp' ]:
+        #elif media_type in [ 'audio', 'linein', 'break', 'rtp', 'rtsp', 'sdp' ]:
             return 'audio'
         elif media_type in [ 'image' ]:
             return 'visual'
@@ -381,7 +385,7 @@ class ObPlayer (object):
         return requests
 
     def get_audio_levels(self):
-        if self.audio_levels is None:
+        if self.audio_levels is None or time.time() - self.audio_levels_timestamp > 2:
             return [ -1000.0, -1000.0 ]
         return self.audio_levels
 

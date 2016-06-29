@@ -48,7 +48,8 @@ class ObLiveAssist (httpserver.ObHTTPServer):
         obplayer.Log.log('serving live assist http on port ' + str(sa[1]), 'liveassist')
 
     def log(self, message):
-        obplayer.Log.log(message, 'debug')
+        if not "POST /info/levels" in message:
+            obplayer.Log.log(message, 'debug')
 
     def shutdown(self):
         for conn in self.websockets:

@@ -23,6 +23,7 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 import obplayer
 
 import os
+import time
 import traceback
 
 import gi
@@ -136,6 +137,7 @@ class ObGstPipeline (object):
     def message_handler(self, bus, message):
         if message.type == Gst.MessageType.STATE_CHANGED:
             oldstate, newstate, pending = message.parse_state_changed()
+            #obplayer.Log.log("gstreamer state changed to " + str(newstate), 'debug')
             """
             if message.src == self.pipeline:
                 obplayer.Log.log("State Changed to " + str(newstate), "player")
@@ -173,8 +175,10 @@ class ObGstPipeline (object):
 
         elif message.type == Gst.MessageType.ELEMENT:
             struct = message.get_structure()
+            #print(struct.to_string())
             #self.player.audio_levels = [ pow(10, rms / 20) for rms in rms_values ]
             self.player.audio_levels = struct.get_value('rms')
+            self.player.audio_levels_timestamp = time.time()
             """
             peaks = struct.get_value('peak')
             if peaks is None:
