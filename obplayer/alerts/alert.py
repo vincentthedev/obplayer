@@ -331,13 +331,15 @@ class ObAlertInfo (object):
         return [ resource for resource in self.resources if not typename or typename in resource.mimetype ]
 
     def get_message_text(self, truncate=False):
-        if not self.description:
-            return self.headline
-        elif truncate:
-            parts = self.description.split('\n\n', 1)
-            return parts[0].replace('\n', ' ').replace('\r', '')
-        else:
-            return self.description.replace('\n', ' ').replace('\r', '')
+        text = self.get_parameter("layer:SOREM:1.0:Broadcast_Text");
+        if not text:
+            text = self.description if self.description else self.headline
+
+        if truncate:
+            parts = text.split('\n\n', 1)
+            text = parts[0]
+
+        return text.replace('\n', ' ').replace('\r', '')
 
 
 class ObAlertArea (object):
