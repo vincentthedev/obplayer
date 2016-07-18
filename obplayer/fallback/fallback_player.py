@@ -68,10 +68,10 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         m = magic.open(magic.MAGIC_MIME)
         m.load()
 
-        for (dirname, dirnames, filenames) in os.walk(obplayer.Config.setting('fallback_media')):
+        for (dirname, dirnames, filenames) in os.walk(unicode(obplayer.Config.setting('fallback_media'))):
             for filename in filenames:
                 try:
-                    filetype = m.file(os.path.join(dirname, filename)).split(';')[0]
+                    filetype = m.file(os.path.join(dirname, filename).encode('utf-8')).split(';')[0]
 
                     if filetype in self.media_types:
                         d = GstPbutils.Discoverer()
