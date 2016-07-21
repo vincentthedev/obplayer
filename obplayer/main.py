@@ -111,6 +111,10 @@ class ObMainApp:
             #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
             #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
             #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
+            #ctrl.add_request(media_type='rtsp', start_time=time.time() + 2, file_location="", filename="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov", duration=153)
+            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/home/obsuser", filename="xnode-rtsp.sdp", duration=3600)
+            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/media/work/OpenBroadcaster/Player/tools", filename="local_streamer.sdp", duration=3600)
+            #ctrl.add_request(media_type='rtp', start_time=time.time() + 2, duration=3600)
 
             #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
             #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)

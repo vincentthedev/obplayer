@@ -34,7 +34,8 @@ from obplayer.player.pipes.base import ObGstPipeline
 
 
 class ObImagePipeline (ObGstPipeline):
-    output_caps = [ 'visual' ]
+    min_class = [ 'visual' ]
+    max_class = [ 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)

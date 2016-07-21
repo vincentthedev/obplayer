@@ -27,12 +27,13 @@ import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import GObject, Gst, GstVideo
+gi.require_version('GstSdp', '1.0')
+from gi.repository import GObject, Gst, GstVideo, GstSdp
 
 from obplayer.player.pipes.base import ObGstPipeline
 
 
-class ObRTPInputPipeline (ObGstPipeline):
+class ObSDPInputPipeline (ObGstPipeline):
     min_class = [ 'audio' ]
     max_class = [ 'audio' ]
 
@@ -43,62 +44,50 @@ class ObRTPInputPipeline (ObGstPipeline):
         self.pipeline = Gst.Pipeline()
         self.elements = [ ]
 
-        self.prequeue = Gst.ElementFactory.make('queue2')
-        self.elements.append(self.prequeue)
+        self.filesrc = Gst.ElementFactory.make('filesrc')
+        self.pipeline.add(self.filesrc)
 
-        self.rtpdepay = Gst.ElementFactory.make('rtpopusdepay')
-        self.elements.append(self.rtpdepay)
+        self.sdpdemux = Gst.ElementFactory.make('sdpdemux')
+        #self.sdpdemux.set_property('debug', True)
+        self.pipeline.add(self.sdpdemux)
+        self.filesrc.link(self.sdpdemux)
 
-        self.decoder = Gst.ElementFactory.make('opusdec')
-        self.decoder.set_property('plc', True)  # Packet loss concealment
-        self.decoder.set_property('use-inband-fec', True)  # FEC
-        self.elements.append(self.decoder)
+        def sdpdemux_pad_added(obj, pad):
+            #print("Pad added " + str(pad))
+            #caps = pad.get_current_caps()
+            pad.link(self.decodebin.get_static_pad('sink'))
+        self.sdpdemux.connect('pad-added', sdpdemux_pad_added)
+
+        self.decodebin = Gst.ElementFactory.make('decodebin')
+        self.pipeline.add(self.decodebin)
+
+        def decodebin_pad_added(obj, pad):
+            caps = pad.get_current_caps().to_string()
+            #print(caps, pad.is_linked())
+
+            if caps.startswith('audio'):
+                pad.link(self.audioconvert.get_static_pad('sink'))
+            else:
+                print("Fake sink thing that we don't want")
+                fakesink = Gst.ElementFactory.make('fakesink')
+                self.pipeline.add(fakesink)
+                pad.link(fakesink.get_static_pad('sink'))
+
+            #for p in self.decodebin.iterate_pads():
+            #    print("Pad: ", p, p.is_linked())
+        self.decodebin.connect('pad-added', decodebin_pad_added)
 
         self.audioconvert = Gst.ElementFactory.make('audioconvert')
-        self.elements.append(self.audioconvert)
-        self.audioresample = Gst.ElementFactory.make('audioresample')
-        self.audioresample.set_property('quality', 6)
-        self.elements.append(self.audioresample)
+        self.pipeline.add(self.audioconvert)
 
-        self.postqueue = Gst.ElementFactory.make('queue2')
-        self.elements.append(self.postqueue)
+        self.queue = Gst.ElementFactory.make('queue2')
+        self.pipeline.add(self.queue)
+        self.audioconvert.link(self.queue)
 
-        self.build_pipeline(self.elements)
-
-        ## Hook up RTPBin
-        self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc')
-        self.udpsrc_rtp.set_property('port', 5004)
-        #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
-        self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,payload=96,media=audio,clock-rate=48000,encoding-name=OPUS"))
-        #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
-        #self.udpsrc_rtp.set_property('timeout', 3000000)
-        #self.elements.append(self.udpsrc_rtp)
-        self.pipeline.add(self.udpsrc_rtp)
-
-        self.udpsrc_rtcp = Gst.ElementFactory.make('udpsrc')
-        self.udpsrc_rtcp.set_property('port', 5004 + 1)
-        self.pipeline.add(self.udpsrc_rtcp)
-
-        self.rtpbin = Gst.ElementFactory.make('rtpbin')
-        #self.rtpbin.set_property('latency', 2000)
-        #self.rtpbin.set_property('autoremove', True)
-        #self.rtpbin.set_property('do-lost', True)
-        #self.rtpbin.set_property('buffer-mode', 1)
-        self.rtpbin.set_property('drop-on-latency', True)
-        #self.elements.append(self.rtpbin)
-        self.pipeline.add(self.rtpbin)
-
-        self.udpsrc_rtp.link_pads('src', self.rtpbin, 'recv_rtp_sink_0')
-        self.udpsrc_rtcp.link_pads('src', self.rtpbin, 'recv_rtcp_sink_0')
-
-        def rtpbin_pad_added(obj, pad):
-            self.rtpbin.unlink(self.elements[0])
-            self.rtpbin.link(self.elements[0])
-        self.rtpbin.connect('pad-added', rtpbin_pad_added)
 
         self.audiosink = None
         self.fakesink = Gst.ElementFactory.make('fakesink')
-        self.set_property('audio-src', self.fakesink)
+        self.set_property('audio-sink', self.fakesink)
 
         self.register_signals()
         #self.bus.connect("message", self.message_handler_rtp)
@@ -111,11 +100,12 @@ class ObRTPInputPipeline (ObGstPipeline):
     def set_property(self, property, value):
         if property == 'audio-sink':
             if self.audiosink:
+                self.queue.unlink(self.audiosink)
                 self.pipeline.remove(self.audiosink)
             self.audiosink = value
             if self.audiosink:
                 self.pipeline.add(self.audiosink)
-                self.elements[-1].link(self.audiosink)
+                self.queue.link(self.audiosink)
 
     def patch(self, mode):
         self.wait_state(Gst.State.NULL)
@@ -125,7 +115,6 @@ class ObRTPInputPipeline (ObGstPipeline):
 
         #self.wait_state(Gst.State.PLAYING)
         self.pipeline.set_state(Gst.State.PLAYING)
-
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
@@ -137,9 +126,12 @@ class ObRTPInputPipeline (ObGstPipeline):
         if len(self.mode) > 0:
             #self.wait_state(Gst.State.PLAYING)
             self.pipeline.set_state(Gst.State.PLAYING)
-
             if obplayer.Config.setting('gst_init_callback'):
                 os.system(obplayer.Config.setting('gst_init_callback'))
+
+    def set_request(self, req):
+        self.start_time = req['start_time']
+        self.filesrc.set_property('location', req['file_location'] + '/' + req['filename'])
 
     def message_handler_rtp(self, bus, message):
         if message.type == Gst.MessageType.ERROR:

@@ -86,8 +86,8 @@ class ObLocalStreamer (object):
         self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=48000"))
         self.elements.append(self.capsfilter)
 
-        self.queue = Gst.ElementFactory.make("queue2")
-        self.elements.append(self.queue)
+        self.prequeue = Gst.ElementFactory.make("queue2")
+        self.elements.append(self.prequeue)
 
         self.audioresample = Gst.ElementFactory.make("audioresample")
         self.audioresample.set_property('quality', 6)
@@ -98,12 +98,16 @@ class ObLocalStreamer (object):
         self.encoder = Gst.ElementFactory.make("opusenc")
         self.elements.append(self.encoder)
         self.payloader = Gst.ElementFactory.make("rtpopuspay")
+        self.payloader.set_property('max-ptime', 1000000000)        # maximum 1sec of audio per packet
         self.elements.append(self.payloader)
 
         #self.encoder = Gst.ElementFactory.make("lamemp3enc")
         #self.elements.append(self.encoder)
         #self.payloader = Gst.ElementFactory.make("rtpmpapay")
         #self.elements.append(self.payloader)
+
+        self.postqueue = Gst.ElementFactory.make("queue2")
+        self.elements.append(self.postqueue)
 
         self.build_pipeline(self.elements)
 
@@ -126,7 +130,7 @@ class ObLocalStreamer (object):
         #self.elements.append(self.udpsink_rtcp)
         self.pipeline.add(self.udpsink_rtcp)
 
-        self.payloader.link_pads('src', self.rtpbin, 'send_rtp_sink_0')
+        self.elements[-1].link_pads('src', self.rtpbin, 'send_rtp_sink_0')
         self.rtpbin.link_pads('send_rtp_src_0', self.udpsink_rtp, 'sink')
         self.rtpbin.link_pads('send_rtcp_src_0', self.udpsink_rtcp, 'sink')
 

@@ -34,7 +34,8 @@ from obplayer.player.pipes.base import ObGstPipeline
 
 
 class ObPlayBinPipeline (ObGstPipeline):
-    output_caps = [ 'audio', 'visual' ]
+    min_class = [ 'audio' ]
+    max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
@@ -186,7 +187,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
         for output in mode.split('/'):
             if output not in self.mode:
                 #print self.name + " -- Connecting " + output
-                self.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output])
+                self.set_property('audio-sink' if output == 'audio' else 'video-sink', self.player.outputs[output].get_bin())
                 self.mode.add(output)
 
         if state == Gst.State.PLAYING:
@@ -209,9 +210,9 @@ class ObDecodeBinPipeline (ObGstPipeline):
             self.seek_pause()
             self.wait_state(Gst.State.PLAYING)
 
-    def set_media_file(self, filename, start_time):
-        self.start_time = start_time
-        self.decodebin.set_property('uri', "file://" + filename)
+    def set_request(self, req):
+        self.start_time = req['start_time']
+        self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
         self.seek_pause()
 
     def seek_pause(self):
