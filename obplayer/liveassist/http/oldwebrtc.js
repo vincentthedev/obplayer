@@ -30,12 +30,12 @@
         pc.createOffer(function (desc) {
           pc.setLocalDescription(desc);
           console.log("Offer");
-          console.log(JSON.stringify(desc));
+          console.log(desc.sdp, JSON.stringify(desc));
 
           pc2.setRemoteDescription(desc);
           pc2.createAnswer(function (desc2) {
             console.log("Answer");
-            console.log(JSON.stringify(desc2));
+            console.log(desc2.sdp, JSON.stringify(desc2));
             pc.setRemoteDescription(new RTCSessionDescription(desc2));
 
             $.post('/command/open_stream', { 'sdp': desc.sdp, 'sdpanswer': desc2.sdp }, function () {

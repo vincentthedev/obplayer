@@ -133,7 +133,9 @@ body
   }
 
   #main-playlist .track[data-type=linein], #main-buttons .button[data-type=linein],
-  #main-playlist .track[data-type=rtp], #main-buttons .button[data-type=rtp]
+  #main-playlist .track[data-type=rtp], #main-buttons .button[data-type=rtp],
+  #main-playlist .track[data-type=sdp], #main-buttons .button[data-type=sdp],
+  #main-playlist .track[data-type=rtsp], #main-buttons .button[data-type=rtsp]
   {
     background: #666;
   }

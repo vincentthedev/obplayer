@@ -24,13 +24,20 @@ from __future__ import absolute_import
 
 import obplayer
 
-from .streamer import ObStreamer
+from .icecast import ObIcecastStreamer
 
 def init():
-    obplayer.Streamer = ObStreamer()
+    obplayer.Streamer = ObIcecastStreamer()
     if obplayer.Config.setting('streamer_play_on_startup'):
         obplayer.Streamer.start()
 
+    obplayer.RTSPStreamer = None
+    if obplayer.Config.setting('streamer_enable_rtsp'):
+        from .rtsp import ObRTSPStreamer
+        obplayer.RTSPStreamer = ObRTSPStreamer()
+
 def quit():
     obplayer.Streamer.quit()
+    if obplayer.RTSPStreamer:
+        obplayer.RTSPStreamer.quit()
 

@@ -249,6 +249,7 @@ Site.formatLogs = function(lines)
     lines[i] = lines[i].replace(/\&/g,'&amp;');
 
     if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #880000;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[warning\\\]')>0) lines[i] = '<span style="color: #888800;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
@@ -610,6 +611,7 @@ $(document).ready(function()
       $('#toggle-scheduler-status').html(Site.t('Sync Tab', response.enabled ? 'Enabled' : 'Disabled'));
     }, 'json');
   });
+  //$('#toggle-scheduler-time').timepicker({timeFormat: 'hh:mm:ss',showSecond: true});
 
   $('#alerts_inject_button').click(Site.injectAlert);
   $('#alerts_cancel_button').click(Site.cancelAlert);

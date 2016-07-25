@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
 
     <link href="/common.css" rel="stylesheet" type="text/css"/>
-    <script type="text/javascript" src="/jquery.min.js"></script>
+    <script type="text/javascript" src="/extras/jquery.min.js"></script>
     <script type="text/javascript" src="/common.js"></script>
 
     <% if obplayer.Config.setting('http_show_location'): %>
@@ -1040,6 +1040,13 @@
               <td data-t>streamer_audio_in_jack_name</td>
               <td><input type="text" name="streamer_audio_in_jack_name" value="<%= obplayer.Config.setting('streamer_audio_in_jack_name',True) %>"></td>
             </tr>
+          </tbody>
+        </table>
+
+        <h4 data-t>Icecast Streaming</h4>
+
+        <table class="settings">
+          <tbody>
             <tr>
               <td data-t>streamer_icecast_ip</td>
               <td><input type="text" name="streamer_icecast_ip" value="<%= obplayer.Config.setting('streamer_icecast_ip',True) %>"></td>
@@ -1076,6 +1083,26 @@
               <td data-t>streamer_play_on_startup</td>
               <td><input type="checkbox" name="streamer_play_on_startup" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_play_on_startup') %> title="streamer_play_on_startup_tooltip" data-t></td>
             </tr>
+          </tbody>
+        </table>
+
+        <h4 data-t>RTSP Server</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td data-t>streamer_enable_rtsp</td>
+              <td><input type="checkbox" name="streamer_enable_rtsp" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_enable_rtsp') %> title="streamer_enable_rtsp_tooltip" data-t></td>
+            </tr>
+            <tr>
+              <!--<td data-t>streamer_allow_sd</td>
+              <td><input type="checkbox" name="streamer_allow_sd" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_allow_sd') %> title="streamer_allow_sd_tooltip" data-t></td>-->
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="settings">
+          <tbody>
             <tr>
               <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('streamer');" data-tns="Common" data-t>Save</button></td>
             </tr>

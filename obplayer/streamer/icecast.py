@@ -31,7 +31,7 @@ gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
 
-class ObStreamer (object):
+class ObIcecastStreamer (object):
     def __init__(self):
         self.pipeline = Gst.Pipeline()
 

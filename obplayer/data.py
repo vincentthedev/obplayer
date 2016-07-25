@@ -312,6 +312,8 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_url', '', 'text')
         self.add_setting('streamer_icecast_public', '1', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
+        self.add_setting('streamer_enable_rtsp', '0', 'bool')
+        self.add_setting('streamer_allow_sd', '0', 'bool')
 
         self.add_setting('scheduler_enable', '0', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
