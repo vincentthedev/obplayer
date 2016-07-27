@@ -485,9 +485,9 @@ class ObScheduler:
             return False
 
         groups = self.present_show.get_groups()
-        for i in xrange(0, len(groups)):
+        for i in range(0, len(groups)):
             group_items = groups[i]['items']
-            for j in xrange(0, len(group_items)):
+            for j in range(0, len(group_items)):
                 if group_items[j]['id'] == group_id:
                     return (i, j)
         return (0, 0)
