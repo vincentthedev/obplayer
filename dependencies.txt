@@ -4,7 +4,6 @@ Dependencies are Debian/Ubuntu package names.
 
 - ntp
 - python
-- python-argparse
 - python-pycurl
 - python-openssl
 - python-apsw

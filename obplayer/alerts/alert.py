@@ -339,7 +339,7 @@ class ObAlertInfo (object):
             parts = text.split('\n\n', 1)
             text = parts[0]
 
-        return text.replace('\n', ' ').replace('\r', '')
+        return text.replace('\n', ' ').replace('\r', '').replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<')
 
 
 class ObAlertArea (object):
