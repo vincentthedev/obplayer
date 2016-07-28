@@ -253,6 +253,7 @@ class ObShow (object):
 
     def playlist_seek(self, track_num, seek):
         self.playlist.set(track_num)
+        self.paused = False
         self.auto_advance = True
         if not self.playlist.is_finished():
             self.ctrl.stop_requests()
@@ -273,6 +274,7 @@ class ObShow (object):
         media = group[group_item_num]
         self.ctrl.stop_requests()
         self.play_media(media, media['duration'] * (seek / 100), time.time())
+        self.paused = False
         self.auto_advance = False
         return True
 
