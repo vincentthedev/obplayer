@@ -339,7 +339,14 @@ class ObAlertInfo (object):
             parts = text.split('\n\n', 1)
             text = parts[0]
 
-        return text.replace('\n', ' ').replace('\r', '').replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<')
+        text = text.replace('\n', ' ').replace('\r', '')
+
+        if sys.version.startswith('3'):
+            import html
+            text = html.unescape(text)
+        else:
+            text = text.replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<')
+        return text
 
 
 class ObAlertArea (object):
