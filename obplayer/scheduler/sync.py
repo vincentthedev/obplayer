@@ -27,13 +27,19 @@ import pycurl
 import xml.dom.minidom
 
 import os
+import re
 import time
 import hashlib
 import shutil
 import sys
+import json
 import calendar
 import threading
 import traceback
+
+
+MIN_SERVER_VERSION = '4.1.1-20150507'
+
 
 if sys.version.startswith('3'):
     import urllib.parse as urllib
@@ -203,7 +209,7 @@ class ObSync:
     def version_update(self):
         if not obplayer.Config.setting('sync_url'):
             return
-        obplayer.Log.log('reporting version to server: ' + obplayer.Config.version, 'sync')
+        obplayer.Log.log('sending player version to server: ' + obplayer.Config.version, 'sync')
 
         postfields = {}
         postfields['id'] = obplayer.Config.setting('sync_device_id')
@@ -229,6 +235,15 @@ class ObSync:
         curl.setopt(pycurl.NOPROGRESS, 0)
         curl.setopt(pycurl.PROGRESSFUNCTION, self.curl_progress)
 
+        class CurlResponse:
+            def __init__(self):
+                self.buffer = u''
+            def __call__(self, data):
+                self.buffer += data.decode('utf-8')
+
+        curl_response = CurlResponse()
+        curl.setopt(pycurl.WRITEFUNCTION, curl_response)
+
         try:
             curl.perform()
         except:
@@ -236,6 +251,26 @@ class ObSync:
             obplayer.Log.log(traceback.format_exc(), 'error')
 
         curl.close()
+
+        if curl_response.buffer:
+            version = json.loads(curl_response.buffer)
+            obplayer.Log.log("server version reported as " + str(version), 'sync')
+            if not self.check_min_version(version):
+                obplayer.Log.log("minimum server version " + str(MIN_SERVER_VERSION) + " is required. Please update server software before continuing", 'error')
+        else:
+            obplayer.Log.log("server did not report a version number", 'warning')
+
+
+    def check_min_version(self, version):
+        cv = re.split('[.-]', version)
+        mv = re.split('[.-]', MIN_SERVER_VERSION)
+        for i in range(0, len(mv)):
+            try:
+                if int(cv[i]) < int(mv[i]):
+                    return False
+            except:
+                return False
+        return True
 
     #
     # Perform synchronization.
