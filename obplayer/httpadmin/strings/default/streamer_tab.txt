@@ -31,6 +31,6 @@ Streamer Tab
   streamer_enable_rtsp: Enable RTSP Server
   streamer_enable_rtsp_tooltip: Enable RTSP server which streams the audio output via RTSP/Multicast RTP.  Required for output to Livewire/Ravenna devices.
 
-  streamer_allow_sd: Allow RTSP Service Discovery
-  streamer_allow_sd_tooltip: Publish the RTSP Server via Avahi (mDNS-SD).  Required for automatic discovery by Livewire/Ravenna devices.
+  streamer_allow_discovery: Allow RTSP Service Discovery
+  streamer_allow_discovery_tooltip: Publish the RTSP Server via Avahi (mDNS-SD).  Required for automatic discovery by Livewire/Ravenna devices.
 
