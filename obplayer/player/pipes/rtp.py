@@ -68,7 +68,6 @@ class ObRTPInputPipeline (ObGstPipeline):
         ## Hook up RTPBin
         self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc')
         self.udpsrc_rtp.set_property('port', 5004)
-        #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp"))
         self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,payload=96,media=audio,clock-rate=48000,encoding-name=OPUS"))
         #self.udpsrc_rtp.set_property('caps', Gst.Caps.from_string("application/x-rtp,media=audio,channels=1,clock-rate=44100,encoding-name=L16"))
         #self.udpsrc_rtp.set_property('timeout', 3000000)
@@ -123,7 +122,6 @@ class ObRTPInputPipeline (ObGstPipeline):
             self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
         ObGstPipeline.patch(self, mode)
 
-        #self.wait_state(Gst.State.PLAYING)
         self.pipeline.set_state(Gst.State.PLAYING)
 
         if obplayer.Config.setting('gst_init_callback'):
@@ -135,7 +133,6 @@ class ObRTPInputPipeline (ObGstPipeline):
             self.set_property('audio-sink', self.fakesink)
         ObGstPipeline.unpatch(self, mode)
         if len(self.mode) > 0:
-            #self.wait_state(Gst.State.PLAYING)
             self.pipeline.set_state(Gst.State.PLAYING)
 
             if obplayer.Config.setting('gst_init_callback'):

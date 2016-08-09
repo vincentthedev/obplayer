@@ -49,7 +49,7 @@ class ObTestSignalPipeline (ObGstPipeline):
         self.videosink = None
 
         self.fakesinks = { }
-        for output in list(self.player.outputs.keys()) + [ 'audio', 'visual' ]:
+        for output in self.max_class:
             self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
         self.set_property('audio-sink', self.fakesinks['audio'])
