@@ -63,7 +63,7 @@ Site.save = function(section)
   $.post('/save',postfields,function(response)
   {
     //Site.saveSuccess,'json');
-    var namespace = $('#content-'+section).attr('data-tns');
+    var namespace = undefined; // $('#content-'+section).attr('data-tns');
     if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
     else $('#error').text(Site.t(namespace ? namespace : 'Responses', response.error)).show();
   });
@@ -168,7 +168,7 @@ Site.updateAlertInfo = function()
 
       // display the next time alerts will be played
       var next_check = response.next_play - (Date.now() / 1000);
-      $('#alerts-next-play').html(Site.friendlyDuration(next_check) + " min");
+      $('#alerts-next-play').html(Site.friendlyDuration(next_check >= 0 ? next_check : 0) + " min");
     },'json').error(function()
     {
       $('#alerts-last-heartbeat').html("");
@@ -249,6 +249,7 @@ Site.formatLogs = function(lines)
     lines[i] = lines[i].replace(/\&/g,'&amp;');
 
     if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #880000;">'+lines[i]+'</span>';
+    else if(lines[i].search('\\\[warning\\\]')>0) lines[i] = '<span style="color: #888800;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
     else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
@@ -475,6 +476,10 @@ $(document).ready(function()
     });
   }); 
 
+  $('#logs-open').on('click', function (e) {
+    window.open('/logs.html', '_blank', "width=600, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
+  });
+
   // hide some home page (setting list) settings, if not applicable.
   if($('#sync_mode_value').text()=='remote') $('.local_media_location').hide();
   if($('#sync_mode_value').text()!='backup') $('.backup_media').hide();
@@ -522,6 +527,13 @@ $(document).ready(function()
     }
   });
   $('#audio_out_mode_select').change();
+
+  $('#audiolog_enable').change(function()
+  {
+    if($(this).is(':checked')) $('#audiolog_purge_files_row').show();
+    else $('#audiolog_purge_files_row').hide();
+  });
+  $('#audiolog_enable').change();
 
   $('#audio_in_mode_select').change(function()
   {
@@ -599,6 +611,7 @@ $(document).ready(function()
       $('#toggle-scheduler-status').html(Site.t('Sync Tab', response.enabled ? 'Enabled' : 'Disabled'));
     }, 'json');
   });
+  //$('#toggle-scheduler-time').timepicker({timeFormat: 'hh:mm:ss',showSecond: true});
 
   $('#alerts_inject_button').click(Site.injectAlert);
   $('#alerts_cancel_button').click(Site.cancelAlert);

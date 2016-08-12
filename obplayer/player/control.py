@@ -54,15 +54,14 @@ class ObPlayer (object):
         self.patches = { }
         self.pipes = { }
         self.audio_levels = None
+        self.audio_levels_timestamp = 0
         self.audio_silence = 0
 
         if not obplayer.Config.headless:
             from . import xrandr
             xrandr.init()
 
-    def start_player(self):
-        self.thread = obplayer.ObThread('PlayerThread', target=self.try_run)
-        self.thread.start()
+        self.player_init()
 
     def player_init(self):
         self.outputs = { }
@@ -88,6 +87,8 @@ class ObPlayer (object):
         self.pipes['break'] = pipes.ObBreakPipeline('audio-break', self)
         self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
         self.pipes['rtp'] = pipes.ObRTPInputPipeline('rtp-input', self)
+        self.pipes['rtsp'] = pipes.ObRTSPInputPipeline('rtsp-input', self)
+        self.pipes['sdp'] = pipes.ObSDPInputPipeline('sdp-input', self)
 
         def silence_request(self, present_time):
             obplayer.Log.log("player has no requests to play; outputting silence", 'player')
@@ -96,22 +97,26 @@ class ObPlayer (object):
         self.silencectrl = self.create_controller('silence', priority=1, allow_requeue=False)
         self.silencectrl.set_request_callback(silence_request)
 
+    def start_player(self):
+        self.thread = obplayer.ObThread('PlayerThread', target=self.try_run)
+        self.thread.start()
+
     def player_quit(self):
         for pipe_name in self.pipes.keys():
             self.pipes[pipe_name].quit()
 
     def media_type_to_class(self, media_type):
+        """
         if media_type in [ 'video', 'testsignal' ]:
             return 'audio/visual'
-        elif media_type in [ 'audio', 'linein', 'break', 'rtp' ]:
+        elif media_type in [ 'audio', 'linein', 'break', 'rtp', 'rtsp', 'sdp' ]:
             return 'audio'
         elif media_type in [ 'image' ]:
             return 'visual'
         """
         if media_type not in self.pipes:
-            obplayer.Log.log("unknown media type request", 'error')
-        return '/'.join(self.pipes[media_type].output_caps)
-        """
+           raise Exception("unknown media type request")
+        return '/'.join(self.pipes[media_type].min_class)
 
     @staticmethod
     def get_media_location(file_location):
@@ -132,7 +137,7 @@ class ObPlayer (object):
         return ctrl
 
     def try_run(self):
-        self.player_init()
+        #self.player_init()     # this was moved to the start_player method because with the new mediaclass thing, you can't add requests until the player is initialized
         self.request_update.set()
         while not self.thread.stopflag.wait(0.1):
             try:
@@ -236,7 +241,7 @@ class ObPlayer (object):
         if len(stop_list) > 0:
             self.repatch_outputs('/'.join(stop_list), None)
 
-        max_list = [ output for output in request_pipe.output_caps if output in output_limit ]
+        max_list = [ output for output in request_pipe.max_class if output in output_limit ]
         min_list = [ output for output in req['media_class'].split('/') if output in output_limit ]
 
         patch_list = [ output for output in max_list if output in min_list or self.requests[output] is None ]
@@ -381,7 +386,7 @@ class ObPlayer (object):
         return requests
 
     def get_audio_levels(self):
-        if self.audio_levels is None:
+        if self.audio_levels is None or time.time() - self.audio_levels_timestamp > 2:
             return [ -1000.0, -1000.0 ]
         return self.audio_levels
 

@@ -373,16 +373,40 @@ class ObAlertProcessor (object):
 
     def trigger_alert_cycle_start(self):
         for trigger in self.triggers:
-            trigger.alert_cycle_start()
+            try:
+                trigger.alert_cycle_start()
+            except:
+                obplayer.Log.log("error during alert cycle start trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def trigger_alert_cycle_stop(self):
         for trigger in self.triggers:
-            trigger.alert_cycle_stop()
+            try:
+                trigger.alert_cycle_stop()
+            except:
+                obplayer.Log.log("error during alert cycle stop trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
+
+    def trigger_alert_cycle_init(self):
+        for trigger in self.triggers:
+            try:
+                trigger.alert_cycle_init()
+            except:
+                obplayer.Log.log("error during alert cycle init trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
+
+    def trigger_alert_cycle_each(self, alert, alert_media, processor):
+        for trigger in self.triggers:
+            try:
+                trigger.alert_cycle_each(alert, alert_media, processor)
+            except:
+                obplayer.Log.log("error during alert cycle each trigger", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
 
     def run(self):
         self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
         self.next_expired_check = time.time() + 30
-        self.next_alert_check = 0
+        self.next_alert_check = time.time()
 
         while not self.thread.stopflag.wait(1):
             try:
@@ -425,47 +449,47 @@ class ObAlertProcessor (object):
                             os.remove(os.path.join(basedir, filename))
 
                 # play active alerts
-                if present_time > self.next_alert_check and len(self.alerts_active) > 0:
-                    obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
+                if present_time > self.next_alert_check:
+                    if len(self.alerts_active) > 0:
+                        obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 
-                    self.ctrl.hold_requests(True)
-                    self.ctrl.add_request(media_type='break', duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
+                        self.ctrl.hold_requests(True)
+                        self.ctrl.add_request(media_type='break', duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
 
-                    expired_list = [ ]
-                    with self.lock:
-                        for trigger in self.triggers:
-                            trigger.alert_cycle_init()
+                        expired_list = [ ]
+                        with self.lock:
+                            self.trigger_alert_cycle_init()
 
-                        for alert in self.alerts_active.values():
-                            alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
-                            if alert_media['primary']:
-                                alert.times_played += 1
+                            for alert in self.alerts_active.values():
+                                alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
+                                if alert_media['primary']:
+                                    alert.times_played += 1
 
-                                start_time = self.ctrl.get_requests_endtime()
-                                self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
-                                self.ctrl.add_request(**alert_media['primary']['audio'])
-                                if 'visual' in alert_media['primary']:
-                                    self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])
-
-                                if alert_media['secondary']:
                                     start_time = self.ctrl.get_requests_endtime()
-                                    self.ctrl.add_request(**alert_media['secondary']['audio'])
-                                    if 'visual' in alert_media['secondary']:
-                                        self.ctrl.add_request(start_time=start_time, **alert_media['secondary']['visual'])
+                                    self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
+                                    self.ctrl.add_request(**alert_media['primary']['audio'])
+                                    if 'visual' in alert_media['primary']:
+                                        self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])
 
-                                for trigger in self.triggers:
-                                    trigger.alert_cycle_each(alert, alert_media, self)
+                                    if alert_media['secondary']:
+                                        start_time = self.ctrl.get_requests_endtime()
+                                        self.ctrl.add_request(**alert_media['secondary']['audio'])
+                                        if 'visual' in alert_media['secondary']:
+                                            self.ctrl.add_request(start_time=start_time, **alert_media['secondary']['visual'])
 
-                                if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
-                                    expired_list.append(alert)
+                                    self.trigger_alert_cycle_each(alert, alert_media, self)
 
-                    for alert in expired_list:
-                        self.mark_expired(alert)
+                                    if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
+                                        expired_list.append(alert)
+
+                        self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
+                        self.ctrl.adjust_request_times(time.time())
+                        self.ctrl.hold_requests(False)
+
+                        for alert in expired_list:
+                            self.mark_expired(alert)
+
                     self.next_alert_check = self.ctrl.get_requests_endtime() + (self.repeat_interval * 60)
-
-                    self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
-                    self.ctrl.adjust_request_times(time.time())
-                    self.ctrl.hold_requests(False)
 
                     """
                     print("Starting")

@@ -31,7 +31,7 @@ gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
 
-class ObStreamer (object):
+class ObIcecastStreamer (object):
     def __init__(self):
         self.pipeline = Gst.Pipeline()
 
@@ -55,7 +55,7 @@ class ObStreamer (object):
 
         elif audio_input == 'pulse':
             self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
-            self.audiosrc.set_property('client-name', 'obplayer-streamer: to-icecast')
+            self.audiosrc.set_property('client-name', 'obplayer-streamer-to-icecast')
 
         elif audio_input == 'test':
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
@@ -79,6 +79,8 @@ class ObStreamer (object):
         self.pipeline.get_bus().connect('message::element', self.detect_silence)
         self.elements.append(self.selector)
         """
+
+        self.elements.append(Gst.ElementFactory.make("audioconvert"))
 
         self.encoder = Gst.ElementFactory.make("lamemp3enc", "lamemp3enc")
         self.elements.append(self.encoder)

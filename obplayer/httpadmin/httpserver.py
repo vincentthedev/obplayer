@@ -27,6 +27,7 @@ import sys
 import time
 import traceback
 
+import re
 import cgi
 import json
 import base64
@@ -37,20 +38,26 @@ import hashlib
 import OpenSSL
 
 if sys.version.startswith('3'):
-    from urllib.parse import parse_qs,urlparse
+    from urllib.parse import parse_qs,urlparse,quote,unquote
     import socketserver as SocketServer
     import http.server as BaseHTTPServer
     unicode = str
 else:
     from urlparse import parse_qs,urlparse
+    from urllib import quote,unquote
     import SocketServer
     import BaseHTTPServer
 
 from obplayer.httpadmin.pyhtml import PyHTML
 
 
+class HTTPError (Exception): errno = 500
+class HTTPNotFoundError (HTTPError): errno = 404
+
+
 class Request (object):
-    def __init__(self, path, access, args, headers):
+    def __init__(self, reqtype, path, args, access, headers):
+        self.reqtype = reqtype
         self.path = path
         self.access = access
         self.args = args
@@ -58,9 +65,10 @@ class Request (object):
 
 
 class Response (object):
-    def __init__(self):
-        self.status = 200
-        self.mimetype = None
+    def __init__(self, status=200, mimetype='text/plain', content=None):
+        self.status = status
+        self.mimetype = mimetype
+        self.content = content
         self.headers = [ ]
 
     def send_content(self, mimetype, content):
@@ -91,9 +99,24 @@ class ObHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
         if sslcert:
             self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+        self.routes = [ ]
 
     def shutdown(self):
         BaseHTTPServer.HTTPServer.shutdown(self)
+
+    def route(self, path, view, requires=None):
+        self.routes.append( (path, view, requires) )
+
+    def handle_post(self, request):
+        for (pathref, view, requires) in self.routes:
+            if pathref == request.path:
+                if requires == 'admin' and not request.access:
+                    return { 'status' : False, 'error' : "permissions-error-guest" }
+                if callable(view):
+                    return view(request)
+                else:
+                    raise HTTPError("view object is invalid type: " + str(view))
+        raise HTTPNotFoundError(str(path) + " not found")
 
 
 class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -154,37 +177,28 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlparse(self.path)
-        params = parse_qs(url.query, keep_blank_values=True)
+        getargs = parse_qs(url.query, keep_blank_values=True)
 
         if self.check_authorization() == False:
             self.send_content(401, 'text/plain', "Authorization Required", [ ('WWW-Authenticate', 'Basic realm="Secure Area"') ])
             return
 
         if 'upgrade' in self.headers and self.headers['upgrade'] == 'websocket':
-            self.handle_websocket(params)
+            self.handle_websocket(getargs)
             return
 
-        """
-        # handle commands sent via GET
-        if url.path.startswith('/command/'):
-            command = url.path[9:]
-
-            try:
-                command_func = getattr(self.server, 'command_' + url.path[9:])
-            except AttributeError:
-                self.send_404()
-                return
-
-            ret = command_func(self.admin_access, params)
-            self.send_content(200, 'application/json', json.dumps(ret))
-            return
-        """
+        #request = Request('GET', url.path, getargs, self.admin_access, self.headers)
+        headers = [ ]
 
         if not self.is_valid_path(url.path):
             self.send_404()
             return
 
-        filename = self.server.root + '/' + url.path[1:]
+        if url.path.startswith('/logs/') or url.path.startswith('/audiologs/'):
+            filename = obplayer.Config.get_datadir() + '/' + unquote(url.path[1:])
+            headers.append( ('Content-Disposition', 'attachment; filename=' + os.path.basename(unquote(url.path[1:]))) )
+        else:
+            filename = self.server.root + '/' + url.path[1:]
 
         # If the path resolves to a directory, then set the filename to the index.html file inside that directory
         if os.path.isdir(filename):
@@ -198,9 +212,9 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             with open(filename, 'rb') as f:
                 contents = f.read()
                 if self.extension == 'html':
-                    #contents = self.parse(contents.decode('utf-8'), params)
-                    contents = PyHTML(None, params, filename, contents.decode('utf-8')).get_output()
-                self.send_content(200, self.mimetype, contents)
+                    #contents = self.parse(contents.decode('utf-8'), getargs)
+                    contents = PyHTML(None, getargs, filename, contents.decode('utf-8')).get_output()
+                self.send_content(200, self.mimetype, contents, headers)
                 return
 
         # send error if nothing found
@@ -228,12 +242,21 @@ class ObHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             postvars = {}
 
-        ret = self.server.handle_post(self.path, postvars, self.admin_access)
+        request = Request('POST', self.path, postvars, self.admin_access, self.headers)
 
-        if type(ret) == Response:
-            self.send_content(ret.status, ret.mimetype, ret.content, headers=ret.headers)
+        try:
+            response = self.server.handle_post(request)
+        except:
+            obplayer.Log.log(traceback.format_exc(), 'error')
+            #if 'content-type' in self.headers and self.headers['content-type'] == 'application/json':
+            #    response = { 'status': False, 'error': "Internal Server Error: " + traceback.format_exc() }
+            #else:
+            response = Response(500, 'text/plain', traceback.format_exc())
+
+        if type(response) == Response:
+            self.send_content(response.status, response.mimetype, response.content, headers=response.headers)
         else:
-            self.send_content(200, 'application/json', json.dumps(ret))
+            self.send_content(200, 'application/json', json.dumps(response))
 
     @staticmethod
     def is_valid_path(path):

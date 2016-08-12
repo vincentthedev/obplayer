@@ -253,6 +253,7 @@ class ObShow (object):
 
     def playlist_seek(self, track_num, seek):
         self.playlist.set(track_num)
+        self.paused = False
         self.auto_advance = True
         if not self.playlist.is_finished():
             self.ctrl.stop_requests()
@@ -273,6 +274,7 @@ class ObShow (object):
         media = group[group_item_num]
         self.ctrl.stop_requests()
         self.play_media(media, media['duration'] * (seek / 100), time.time())
+        self.paused = False
         self.auto_advance = False
         return True
 
@@ -485,9 +487,9 @@ class ObScheduler:
             return False
 
         groups = self.present_show.get_groups()
-        for i in xrange(0, len(groups)):
+        for i in range(0, len(groups)):
             group_items = groups[i]['items']
-            for j in xrange(0, len(group_items)):
+            for j in range(0, len(group_items)):
                 if group_items[j]['id'] == group_id:
                     return (i, j)
         return (0, 0)

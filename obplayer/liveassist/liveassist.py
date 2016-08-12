@@ -48,65 +48,66 @@ class ObLiveAssist (httpserver.ObHTTPServer):
         obplayer.Log.log('serving live assist http on port ' + str(sa[1]), 'liveassist')
 
     def log(self, message):
-        obplayer.Log.log(message, 'debug')
+        if not "POST /info/levels" in message:
+            obplayer.Log.log(message, 'debug')
 
     def shutdown(self):
         for conn in self.websockets:
             conn.websocket_write_close(200, "Server Exiting")
         httpserver.ObHTTPServer.shutdown(self)
 
-    def handle_post(self, path, postvars, access):
-        #if not access:
+    def handle_post(self, request):
+        #if not request.access:
         #    return { 'status' : False, 'error' : "You don't have permission to do that.  You are current logged in as a guest" }
 
-        if path == '/info/levels':
+        if request.path == '/info/levels':
             return obplayer.Scheduler.get_audio_levels()
 
-        elif path == '/info/play_status':
+        elif request.path == '/info/play_status':
             return obplayer.Scheduler.get_now_playing()
 
-        elif path == '/info/current_time':
+        elif request.path == '/info/current_time':
             return { 'value' : str(time.time()) }
 
-        elif path == '/info/show_name':
+        elif request.path == '/info/show_name':
             return { 'value' : obplayer.Scheduler.get_show_name() }
 
-        elif path == '/info/show_end':
+        elif request.path == '/info/show_end':
             return { 'value' : str(obplayer.Scheduler.get_show_end()) }
 
-        elif path == '/info/playlist':
+        elif request.path == '/info/playlist':
             playlist = obplayer.Scheduler.get_current_playlist()
             return playlist
 
-        elif path == '/info/liveassist_groups':
+        elif request.path == '/info/liveassist_groups':
             groups = obplayer.Scheduler.get_current_groups()
             return groups
 
-        elif path == '/command/play':
+        elif request.path == '/command/play':
             if obplayer.Scheduler.unpause_show() == True:
                 return {'status' : True }
             return { 'status' : False }
 
-        elif path == '/command/pause':
+        elif request.path == '/command/pause':
             if obplayer.Scheduler.pause_show() == True:
                 return { 'status' : True }
             return { 'status' : False }
 
-        elif path == '/command/next':
+        elif request.path == '/command/next':
             if obplayer.Scheduler.next_track() == True:
                 return {'status' : True }
             return { 'status' : False }
 
-        elif path == '/command/prev':
+        elif request.path == '/command/prev':
             if obplayer.Scheduler.previous_track() == True:
                 return {'status' : True }
             return { 'status' : False }
 
-        elif path == '/command/play_group_item':
+        elif request.path == '/command/play_group_item':
             try:
-                group_num = int(postvars['group_num'][0])
-                group_item_num = int(postvars['group_item_num'][0])
-                position = float(postvars['position'][0])
+                group_num = int(request.args['group_num'][0])
+                group_item_num = int(request.args['group_item_num'][0])
+                position = float(request.args['position'][0])
             except AttributeError as e:
                 return { 'status' : False, 'error': "invalid request, missing " + e.args[0] + "." }
 
@@ -115,10 +116,11 @@ class ObLiveAssist (httpserver.ObHTTPServer):
             else:
                 return { 'status' : False }
 
-        elif path == '/command/playlist_seek':
+        elif request.path == '/command/playlist_seek':
+            print(request.args)
             try:
-                track_num = int(postvars['track_num'][0])
-                position = float(postvars['position'][0])
+                track_num = int(request.args['track_num'][0])
+                position = float(request.args['position'][0])
             except AttributeError as e:
                 return { 'status' : False, 'error': "invalid request, missing " + e.args[0] + "." }
 

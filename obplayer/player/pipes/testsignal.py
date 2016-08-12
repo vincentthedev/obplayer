@@ -33,7 +33,8 @@ from obplayer.player.pipes.base import ObGstPipeline
 
 
 class ObTestSignalPipeline (ObGstPipeline):
-    output_caps = [ 'audio', 'visual' ]
+    min_class = [ 'audio', 'visual' ]
+    max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player):
         ObGstPipeline.__init__(self, name)

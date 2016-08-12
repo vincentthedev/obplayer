@@ -32,7 +32,7 @@ class LiveAssistThread (obplayer.ObThread):
         obplayer.LiveAssist.serve_forever()
 
     def stop(self):
-        if obplayer.LiveAssist:
+        if hasattr(obplayer, 'LiveAssist') and obplayer.LiveAssist:
             obplayer.LiveAssist.shutdown()
 
 def init():

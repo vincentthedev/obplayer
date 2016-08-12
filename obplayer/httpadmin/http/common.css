@@ -228,3 +228,18 @@ label.advanced-settings::before {
   overflow:hidden;
 }
 
+#logs-download {
+  overflow: hidden;
+}
+
+#logs-download .column {
+  display: inline-block;
+  float: left;
+  margin-right: 4em;
+}
+
+#logs-download .filesize {
+  font-size: 0.75em;
+  text-align: right;
+}
+
