@@ -29,14 +29,15 @@ import datetime
 import dateutil.tz
 import dateutil.parser
 
-import traceback
-import time
-
-import socket
-import sys
 import os
 import os.path
+import sys
+import time
+import socket
 
+import traceback
+
+import cgi
 import requests
 import subprocess
 
@@ -246,7 +247,8 @@ class ObAlert (object):
         #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
         #cmd += u"\"" + message_text[0] + u"\""
         proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-        (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + b" <break time=\"2s\" /> " + message_text.encode('utf-8') + b" <break time=\"3s\" /> ")
+        message_text = cgi.escape(message_text).encode('utf-8')
+        (stdout, stderr) = proc.communicate(message_text + b" <break time=\"2s\" /> " + message_text + b" <break time=\"3s\" /> ")
         proc.wait()
 
         with open(path, 'wb') as f:
@@ -335,17 +337,17 @@ class ObAlertInfo (object):
         if not text:
             text = self.description if self.description else self.headline
 
+        if sys.version.startswith('3'):
+            import html
+            text = html.unescape(text)
+        else:
+            text = text.replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<').replace('&#xA;', '\n')
+
         if truncate:
             parts = text.split('\n\n', 1)
             text = parts[0]
 
         text = text.replace('\n', ' ').replace('\r', '')
-
-        if sys.version.startswith('3'):
-            import html
-            text = html.unescape(text)
-        else:
-            text = text.replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<')
         return text
 
 
