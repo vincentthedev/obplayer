@@ -10,4 +10,5 @@ Responses
   permissions-error-guest: You don't have permission to do that.  You are current logged in as a guest
   
   alerts-disabled-error: The emergency alerts module is currently disabled 
+  alerts-invalid-filename: The test alert specified is invalid or does not exist
 

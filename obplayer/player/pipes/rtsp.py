@@ -46,9 +46,9 @@ class ObRTSPInputPipeline (ObGstPipeline):
 
 
         self.rtspsrc = Gst.ElementFactory.make('rtspsrc')
-        #self.rtspsrc.set_property('location', "rtsp://172.16.0.15/by-id/2")
         self.pipeline.add(self.rtspsrc)
         self.rtspsrc.connect('on-sdp', self.rtspsrc_on_sdp)
+        #self.rtspsrc.connect('select-stream', self.rtspsrc_select_stream)
 
         def rtspsrc_pad_added(obj, pad):
             print("Pad added " + str(pad))
@@ -98,8 +98,11 @@ class ObRTSPInputPipeline (ObGstPipeline):
 
 
         self.audiosink = None
-        self.fakesink = Gst.ElementFactory.make('fakesink')
-        self.set_property('audio-src', self.fakesink)
+        self.fakesinks = { }
+        self.fakesinks['audio'] = Gst.ElementFactory.make('fakesink')
+        self.fakesinks['visual'] = Gst.ElementFactory.make('fakesink')
+        self.set_property('audio-sink', self.fakesinks['audio'])
+        self.set_property('video-sink', self.fakesinks['visual'])
 
         self.register_signals()
         #self.bus.connect("message", self.message_handler_rtp)
@@ -125,6 +128,8 @@ class ObRTSPInputPipeline (ObGstPipeline):
         self.wait_state(Gst.State.NULL)
         if 'audio' in mode:
             self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
+        if 'visual' in mode:
+            self.set_property('video-sink', self.player.outputs['visual'].get_bin())
         ObGstPipeline.patch(self, mode)
 
         #self.wait_state(Gst.State.PLAYING)
@@ -135,7 +140,9 @@ class ObRTSPInputPipeline (ObGstPipeline):
     def unpatch(self, mode):
         self.wait_state(Gst.State.NULL)
         if 'audio' in mode:
-            self.set_property('audio-sink', self.fakesink)
+            self.set_property('audio-sink', self.fakesinks['audio'])
+        if 'visual' in mode:
+            self.set_property('video-sink', self.fakesinks['visual'])
         ObGstPipeline.unpatch(self, mode)
         if len(self.mode) > 0:
             #self.wait_state(Gst.State.PLAYING)
@@ -171,4 +178,9 @@ class ObRTSPInputPipeline (ObGstPipeline):
     def rtspsrc_on_sdp(self, element, sdp):
         print(repr(sdp))
         print(sdp.as_text())
+
+    def rtspsrc_select_stream(self, element, num, caps):
+        #caps.set_value('media-type', 'application/x-rtp')
+        print("CONF", num, caps)
+        return True
 

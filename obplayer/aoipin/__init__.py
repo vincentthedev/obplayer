@@ -24,24 +24,21 @@ from __future__ import absolute_import
 
 import obplayer
 
-from .icecast import ObIcecastStreamer
-
 def init():
-    obplayer.Streamer = None
-    obplayer.RTSPStreamer = None
+    def aoip_in_request(self, present_time):
+        uri = obplayer.Config.setting('aoip_in_uri')
+        if uri.startswith('rtsp:'):
+            self.add_request(media_type='rtsp', filename=uri, duration=31536000)        # duration = 1 year (ie. indefinitely)
+        elif uri.startswith('rtspa:'):
+            self.add_request(media_type='rtspa', filename=uri.replace('rtspa', 'rtsp'), duration=31536000)        # duration = 1 year (ie. indefinitely)
+        elif uri.startswith('sdp:///'):
+            self.add_request(media_type='sdp', filename=uri[6:], duration=31536000)        # duration = 1 year (ie. indefinitely)
+        else:
+            obplayer.Log.log("invalid aoip uri: " + uri, 'error')
 
-    if obplayer.Config.setting('streamer_icecast_enable'):
-        obplayer.Streamer = ObIcecastStreamer()
-        if obplayer.Config.setting('streamer_play_on_startup'):
-            obplayer.Streamer.start()
-
-    obplayer.RTSPStreamer = None
-    if obplayer.Config.setting('streamer_rtsp_enable'):
-        from .rtsp import ObRTSPStreamer
-        obplayer.RTSPStreamer = ObRTSPStreamer()
+    ctrl = obplayer.Player.create_controller('aoipin', priority=20, allow_requeue=False)
+    ctrl.set_request_callback(aoip_in_request)
 
 def quit():
-    obplayer.Streamer.quit()
-    if obplayer.RTSPStreamer:
-        obplayer.RTSPStreamer.quit()
+    pass
 

@@ -22,14 +22,16 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import 
 
-from .base import ObGstPipeline
-from .breakbin import ObBreakPipeline
-from .decodebin import ObPlayBinPipeline, ObDecodeBinPipeline
-from .image import ObImagePipeline
-from .linein import ObLineInPipeline
-from .rtp import ObRTPInputPipeline
-from .rtsp import ObRTSPInputPipeline
-#from .rtspa import ObRTSPAInputPipeline
-from .sdp import ObSDPInputPipeline
-from .testsignal import ObTestSignalPipeline
+import obplayer
+
+def init():
+    def rtp_in_request(self, present_time):
+        #uri = obplayer.Config.setting('aoip_in_uri')
+        self.add_request(media_type='rtp', duration=31536000)        # duration = 1 year (ie. indefinitely)
+
+    ctrl = obplayer.Player.create_controller('rtpin', priority=15, allow_requeue=False)
+    ctrl.set_request_callback(rtp_in_request)
+
+def quit():
+    pass
 

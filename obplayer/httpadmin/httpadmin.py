@@ -27,6 +27,7 @@ import os
 import sys
 import time
 import signal
+import os.path
 import subprocess
 
 
@@ -123,6 +124,7 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
 
         self.load_strings('default', strings)
         self.load_strings(obplayer.Config.setting('http_admin_language'), strings)
+        #self.load_strings('fake', strings)
         return strings
 
     def req_restart(self, request):
@@ -229,10 +231,15 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         return { 'enabled': ctrl.enabled }
 
     def req_alert_inject(self, request):
-        if hasattr(obplayer, 'alerts'):
-            obplayer.alerts.Processor.inject_alert(request.args['alert'][0])
-            return { 'status' : True }
-        return { 'status' : False, 'error' : "alerts-disabled-error" }
+        if not hasattr(obplayer, 'alerts'):
+            return { 'status' : False, 'error' : "alerts-disabled-error" }
+
+        filename = request.args['alert'][0]
+        if '..' in filename or not os.path.exists(filename):
+            return { 'status' : False, 'error' : "alerts-invalid-filename" }
+
+        obplayer.alerts.Processor.inject_alert(filename)
+        return { 'status' : True }
 
     def req_alert_cancel(self, request):
         if hasattr(obplayer, 'alerts'):

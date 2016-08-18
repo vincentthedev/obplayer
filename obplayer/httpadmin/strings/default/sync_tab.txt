@@ -6,9 +6,6 @@ Sync Tab
   scheduler_enable: Enable Scheduler/Sync
   scheduler_enable_tooltip: If enabled, the Player will attempt to connect to an OpenBroadcaster Manager Server and download schedules and media for playback.
 
-  fallback_enable: Enable Fallback Media Player
-  fallback_enable_tooltip: If enabled, and the scheduler is unable to played scheduled content, then content from the fallback media directory will be played until scheduled content is available.
-
   sync_device_id: Device ID
   sync_device_id_invalid: The device ID is not valid.
 
@@ -48,9 +45,6 @@ Sync Tab
   local: local
 
   sync_copy_media_to_backup: Backup Downloaded Media
-
-  fallback_media: Fallback Media
-  fallback_media_invalid: The fallback media directory you have specified does not exist.
 
   local_media: Local Media
   local_media_invalid: The local media directory you have specified does not exist.

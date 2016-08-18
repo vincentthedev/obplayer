@@ -88,6 +88,7 @@ class ObPlayer (object):
         self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
         self.pipes['rtp'] = pipes.ObRTPInputPipeline('rtp-input', self)
         self.pipes['rtsp'] = pipes.ObRTSPInputPipeline('rtsp-input', self)
+        #self.pipes['rtspa'] = pipes.ObRTSPAInputPipeline('rtspa-input', self)
         self.pipes['sdp'] = pipes.ObSDPInputPipeline('sdp-input', self)
 
         def silence_request(self, present_time):

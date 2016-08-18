@@ -280,11 +280,6 @@ class ObConfigData (ObData):
         self.add_setting('audio_out_visualization', '1', 'bool')
         self.add_setting('gst_init_callback', '', 'text')
 
-        self.add_setting('audio_in_enable', '0', 'bool')
-        self.add_setting('audio_in_mode', 'auto', 'text')
-        self.add_setting('audio_in_alsa_device', 'default', 'text')
-        self.add_setting('audio_in_jack_name', '', 'text')
-
         self.add_setting('audiolog_enable', '0', 'bool')
         self.add_setting('audiolog_purge_files', '0', 'bool')
 
@@ -303,6 +298,7 @@ class ObConfigData (ObData):
         self.add_setting('streamer_audio_in_mode', 'auto', 'text')
         self.add_setting('streamer_audio_in_alsa_device', 'default', 'text')
         self.add_setting('streamer_audio_in_jack_name', '', 'text')
+        self.add_setting('streamer_icecast_enable', '1', 'bool')
         self.add_setting('streamer_icecast_ip', '127.0.0.1', 'text')
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')
@@ -312,8 +308,10 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_url', '', 'text')
         self.add_setting('streamer_icecast_public', '1', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
-        self.add_setting('streamer_enable_rtsp', '0', 'bool')
-        self.add_setting('streamer_allow_discovery', '0', 'bool')
+        self.add_setting('streamer_rtsp_enable', '0', 'bool')
+        self.add_setting('streamer_rtsp_port', '8554', 'int')
+        self.add_setting('streamer_rtsp_clock_rate', '48000', 'text')
+        self.add_setting('streamer_rtsp_allow_discovery', '0', 'bool')
 
         self.add_setting('scheduler_enable', '0', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
@@ -329,6 +327,26 @@ class ObConfigData (ObData):
         self.add_setting('sync_copy_media_to_backup', '0', 'bool')
         self.add_setting('remote_media', self.datadir + '/media', 'text')
         self.add_setting('local_media', '', 'text')
+
+        self.add_setting('fallback_enable', '1', 'bool')
+        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
+
+        self.add_setting('audio_in_enable', '0', 'bool')
+        self.add_setting('audio_in_mode', 'auto', 'text')
+        self.add_setting('audio_in_alsa_device', 'default', 'text')
+        self.add_setting('audio_in_jack_name', '', 'text')
+
+        self.add_setting('aoip_in_enable', '0', 'bool')
+        self.add_setting('aoip_in_uri', '', 'text')
+
+        self.add_setting('rtp_in_enable', '0', 'bool')
+        self.add_setting('rtp_in_port', '5004', 'int')
+        self.add_setting('rtp_in_address', '', 'text')
+        self.add_setting('rtp_in_encoding', 'OPUS', 'text')
+        self.add_setting('rtp_in_clock_rate', '48000', 'text')
+        self.add_setting('rtp_in_enable_rtcp', '1', 'bool')
+
+        self.add_setting('testsignal_enable', '1', 'bool')
 
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
@@ -378,11 +396,6 @@ class ObConfigData (ObData):
         self.add_setting('alerts_trigger_serial_file', '/dev/ttyS0', 'text')
         self.add_setting('alerts_trigger_streamer', '0', 'bool')
         self.add_setting('alerts_purge_files', '1', 'bool')
-
-        self.add_setting('fallback_enable', '1', 'bool')
-        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
-
-        self.add_setting('testsignal_enable', '1', 'bool')
 
         self.add_setting('location_enable', '1', 'bool')
         self.add_setting('location_longitude', '-134.18537', 'float')

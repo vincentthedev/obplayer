@@ -1,7 +1,7 @@
 
-AudioVisual Tab
+Outputs Tab
 
-  Audio/Visualization: Audio/Visualization
+  Outputs: Outputs
 
 
   Audio Output Settings: Audio Output Settings
@@ -19,32 +19,19 @@ AudioVisual Tab
   audiolog_purge_files: Purge Audio Logs After 90 days
   audiolog_purge_files_tooltip: Delete audio log files after 90 days.
 
-  Audio Input Settings: Audio Input Settings
-
-  audio_in_enable: Enable Audio In Source
-  audio_in_mode: Audio Input Mode
-  audio_in_alsa_device: ALSA Device Name
-  audio_in_jack_name: Jack Port Name
-
 
   Video Output Settings: Video Output Settings
 
   video_out_enable: Enable Video Output
   video_out_mode: Video Output Mode
   video_out_resolution: Video Output Resolution
+  default: default
 
 
   Video Overlay Settings: Video Overlay Settings
 
   overlay_enable: Enable Video Overlay
 
-
-  Image Output Settings: Image Output Settings
-
-  images_transitions_enable: Enable Image Transitions
-  images_width: Fixed Width
-  images_height: Fixed Height
-  images_framerate: Fixed Framerate
 
   LED Sign Settings: LED Sign Settings
 
@@ -55,9 +42,4 @@ AudioVisual Tab
   led_sign_timedisplay: Enable LED Time
   led_sign_init_message: LED Initialize Message
   led_sign_init_message_tooltip: The message to display during initialization of LED sign.
-
-  Test Signal Settings: Test Signal Settings
-
-  testsignal_enable: Enable Test Signal
-
 

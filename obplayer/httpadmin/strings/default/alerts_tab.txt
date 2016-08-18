@@ -74,6 +74,7 @@ Alerts Tab
   Simple Test: Simple Test
   Embedded Audio Test: Embedded Audio Test
   External Audio Test: External Audio Test
+  Embedded Audio and Image Test: Embedded Audio and Image Test
 
   Inject Alert: Inject Alert
 

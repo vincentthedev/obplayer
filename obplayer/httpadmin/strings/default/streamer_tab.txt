@@ -4,15 +4,18 @@ Streamer Tab
   Streaming: Streaming
 
   streamer_enable: Enable Streaming
-  streamer_enable_tooltip: If enabled, an audio recorder will send audio to an icecast server via http.
+  streamer_enable_tooltip: Enables the streaming module.
 
   streamer_audio_in_mode: Audio Input Mode
   streamer_audio_in_mode_tooltip: The type of audio input to use.  If using pulseaudio, make sure to select the "Monitor of ..." source for this input in the "Pulse Audio Volume Control" utility.
 
-  Icecast Streaming: Icecast Streaming
-
   streamer_audio_in_alsa_device: ALSA Device Name
   streamer_audio_in_jack_name: Jack Port Name
+
+  Icecast Streaming: Icecast Streaming
+
+  streamer_icecast_enable: Enable Icecast Streaming
+  streamer_icecast_enable_tooltip: If enabled, an audio recorder will send audio to an icecast server via http.
 
   streamer_icecast_ip: Icecast IP
   streamer_icecast_port: Icecast Port
@@ -28,9 +31,12 @@ Streamer Tab
 
   RTSP Server: RTSP Server
 
-  streamer_enable_rtsp: Enable RTSP Server
-  streamer_enable_rtsp_tooltip: Enable RTSP server which streams the audio output via RTSP/Multicast RTP.  Required for output to Livewire/Ravenna devices.
+  streamer_rtsp_enable: Enable RTSP Server
+  streamer_rtsp_enable_tooltip: Enable RTSP server which streams the audio output via RTSP/Multicast RTP.  Required for output to Livewire/Ravenna devices.
 
-  streamer_allow_discovery: Allow RTSP Service Discovery
-  streamer_allow_discovery_tooltip: Publish the RTSP Server via Avahi (mDNS-SD).  Required for automatic discovery by Livewire/Ravenna devices.
+  streamer_rtsp_port: RTSP Server Port
+  streamer_rtsp_clock_rate: Audio Output Clock Rate
+
+  streamer_rtsp_allow_discovery: Allow RTSP Service Discovery
+  streamer_rtsp_allow_discovery_tooltip: Publish the RTSP Server via Avahi (mDNS-SD).  Required for automatic discovery by Livewire/Ravenna devices.
 

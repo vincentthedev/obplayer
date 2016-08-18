@@ -159,9 +159,10 @@ class ObVideoOutputBin (ObOutputBin):
 
         #self.videobox = Gst.ElementFactory.make('videobox', "videobox")
         #self.videobox.set_property("top", -50)
-        #self.videobox.set_property("bottom", -50)
         #self.videobox.set_property("left", -50)
+        #self.videobox.set_property("bottom", -50)
         #self.videobox.set_property("right", -50)
+        # NOTE this autocrop seems to crash my computer
         #self.videobox.set_property("autocrop", True)
         #self.elements.append(self.videobox)
 
@@ -278,19 +279,38 @@ class ObVideoOverlayBin (ObOutputBin):
 
         self.elements = [ ]
 
-        ## create basic filter elements
-        #self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
-        #self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
-        #self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+        """
+        # TODO uncomment this block for video boxing
 
-        """
+        ## create basic filter elements
+        self.elements.append(Gst.ElementFactory.make("queue2", "pre_queue"))
+        self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+
+        self.videoscale = Gst.ElementFactory.make("videoscale", "pre_scale")
+        self.videoscale.set_property("add-borders", True)
+        self.elements.append(self.videoscale)
+
+        width = 854
+        height = 480
+
         self.videobox = Gst.ElementFactory.make('videobox', "videobox")
-        self.videobox.set_property("top", -50)
-        self.videobox.set_property("bottom", -50)
-        self.videobox.set_property("left", -50)
-        self.videobox.set_property("right", -50)
+        #self.videobox.set_property("top", -50)
+        #self.videobox.set_property("bottom", -50)
+        #self.videobox.set_property("left", -50)
+        #self.videobox.set_property("right", -50)
+        self.videobox.set_property("bottom", -72)
+        #self.videobox.set_property("bottom", -0.15 * height)
         self.elements.append(self.videobox)
+
+        self.caps = Gst.ElementFactory.make('capsfilter', "capsfilter")
+        #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height) + ",pixel-aspect-ratio=1/1"))
+        #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=854,height=480"))
+        #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=854,height=480,pixel-aspect-ratio=1/1"))
+        #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=854,height=480,pixel-aspect-ratio=1/1"))
+        self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width={0},height={1},pixel-aspect-ratio=1/1".format(width, height)))
+        self.elements.append(self.caps)
         """
+
 
         ## create overlay elements (if enabled)
         self.cairooverlay = Gst.ElementFactory.make('cairooverlay', "overlay")
@@ -298,23 +318,23 @@ class ObVideoOverlayBin (ObOutputBin):
         self.cairooverlay.connect("caps-changed", self.overlay_caps_changed)
         self.elements.append(self.cairooverlay)
 
+        """
+        # RSVG Overlay Test
+        self.svgoverlay = Gst.ElementFactory.make("rsvgoverlay", "rsvgoverlay")
+        #self.svgoverlay.set_property('fit-to-frame', True)
+        self.svgoverlay.set_property('width', width)
+        self.svgoverlay.set_property('height', height)
+        #self.svgoverlay.set_property('data', '<svg><text x="0" y="3" fill="blue">Hello World</text></svg>')
+        #self.svgoverlay.set_property('data', '<svg><circle cx="100" cy="100" r="50" fill="blue" /><text x="1" y="1" fill="red">Hello World</text></svg>')
+        self.svgoverlay.set_property('data', '<svg><rect x="{0}" y="{1}" width="{2}" height="{3}" style="fill:blue;" /></svg>'.format(0, 0.85 * height, width, 0.15 * height))
+        #self.svgoverlay.set_property('location', '/home/trans/Downloads/strawberry.svg')
+        self.elements.append(self.svgoverlay)
+        """
+
         #self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
         #self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
         self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
         #self.elements.append(Gst.ElementFactory.make("videorate", "post_rate"))
-
-        """
-        # RSVG Overlay Test
-        self.svgoverlay = Gst.ElementFactory.make("rsvgoverlay", "rsvgoverlay")
-        self.add(self.svgoverlay)
-
-        #self.svgoverlay.set_property('fit-to-frame', True)
-        #self.svgoverlay.set_property('width', 1920)
-        #self.svgoverlay.set_property('height', 1080)
-        #self.svgoverlay.set_property('data', '<svg><text x="0" y="3" fill="blue">Hello World</text></svg>')
-        self.svgoverlay.set_property('data', '<svg><circle cx="100" cy="100" r="50" fill="blue" /><text x="1" y="1" fill="red">Hello World</text></svg>')
-        #self.svgoverlay.set_property('location', '/home/trans/Downloads/strawberry.svg')
-        """
 
         self.build_pipeline(self.elements)
 
@@ -326,7 +346,7 @@ class ObVideoOverlayBin (ObOutputBin):
     def overlay_caps_changed(self, overlay, caps):
         self.overlay_caps = GstVideo.VideoInfo()
         self.overlay_caps.from_caps(caps)
-        #print str(self.overlay_caps.width) + " x " + str(self.overlay_caps.height)
+        #print("Overlay: " + str(self.overlay_caps.width) + " x " + str(self.overlay_caps.height))
 
     def overlay_draw(self, overlay, context, arg1, arg2):
         self.overlay.draw_overlay(context, self.overlay_caps.width, self.overlay_caps.height)

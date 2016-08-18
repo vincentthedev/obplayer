@@ -83,6 +83,10 @@ class ObMainApp:
                 self.load_module('alerts')
             if obplayer.Config.setting('fallback_enable'):
                     self.load_module('fallback')
+            if obplayer.Config.setting('aoip_in_enable'):
+                    self.load_module('aoipin')
+            if obplayer.Config.setting('rtp_in_enable'):
+                    self.load_module('rtpin')
             if obplayer.Config.setting('audio_in_enable'):
                     self.load_module('linein')
             if obplayer.Config.setting('scheduler_enable'):
@@ -102,7 +106,7 @@ class ObMainApp:
             #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
             #obplayer.alerts.Processor.dispatch(alert)
 
-            ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
+            #ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
             #ctrl.add_request(media_type='break', duration=40)
             #ctrl.add_request(media_type='testsignal', duration=40)
             #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
@@ -116,6 +120,8 @@ class ObMainApp:
             #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/home/obsuser", filename="xnode-rtsp.sdp", duration=3600)
             #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/media/work/OpenBroadcaster/Player/tools", filename="local_streamer.sdp", duration=3600)
             #ctrl.add_request(media_type='rtp', start_time=time.time() + 2, duration=3600)
+            #ctrl.add_request(media_type='rtsp', start_time=time.time() + 2, file_location="", filename="rtsp://localhost:8554/by-id/1", duration=153)
+            #ctrl.add_request(media_type='rtspa', start_time=time.time() + 2, file_location="", filename="rtsp://localhost:8554/by-id/1", duration=153)
 
             #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
             #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)

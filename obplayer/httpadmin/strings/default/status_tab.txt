@@ -27,6 +27,7 @@ Status Tab
   Log Level: Log Level
   Normal: Normal
   Debug: Debug
+  Downloads: Downloads
 
 Status Media Type
 
