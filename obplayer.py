@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 """
     Copyright 2012-2015 OpenBroadcaster, Inc.
 
@@ -16,9 +19,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import obplayer
 

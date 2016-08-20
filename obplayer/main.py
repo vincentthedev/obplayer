@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -65,7 +65,6 @@ class ObMainApp:
         obplayer.Main = self
 
     def start(self):
-
         signal.signal(signal.SIGINT, self.sigint_handler)
 
         try:
