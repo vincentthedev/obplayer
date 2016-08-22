@@ -850,7 +850,7 @@
             <tr>
               <td data-t>Enable/Disable Scheduler</td>
               <td><button id="toggle-scheduler" type="button" data-t>Toggle</button></td>
-              <td id="toggle-scheduler-status"><%= 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled' if hasattr(obplayer, 'Scheduler') else '(refresh dashboard)' %></td>
+              <td id="toggle-scheduler-status"><%= '(refresh dashboard)' if not hasattr(obplayer, 'Scheduler') else 'Enabled' if obplayer.Scheduler.ctrl.enabled else 'Disabled'  %></td>
             </tr>
           </tbody>
         </table>
