@@ -63,8 +63,9 @@ class ObAlertFetcher (obplayer.ObThread):
                     self.socket.shutdown(socket.SHUT_RDWR)
                     self.socket.close()
                 except:
-                    obplayer.Log.log("exception in " + self.name + " thread", 'error')
-                    obplayer.Log.log(traceback.format_exc(), 'error')
+                    #obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                    #obplayer.Log.log(traceback.format_exc(), 'error')
+                    obplayer.Log.log('error while closing socket', 'error')
                 self.socket = None
                 self.last_received = 0
 

@@ -415,7 +415,8 @@ class ObAlertResource (object):
                     self.data = r.content
                 else:
                     obplayer.Log.log("error fetching alert resource %s: returned status code %s" % (self.uri, r.status_code), 'alerts')
-            except requests.exceptions.RequestException:
+            #except requests.exceptions.RequestException:
+            except:
                 obplayer.Log.log("connection error while fetching alert resource %s" % (self.uri,), 'alerts')
 
     def write_file(self, filename):

@@ -284,7 +284,7 @@ class ObVideoOverlayBin (ObOutputBin):
 
         ## create basic filter elements
         self.elements.append(Gst.ElementFactory.make("queue2", "pre_queue"))
-        self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+        #self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
 
         self.videoscale = Gst.ElementFactory.make("videoscale", "pre_scale")
         self.videoscale.set_property("add-borders", True)
