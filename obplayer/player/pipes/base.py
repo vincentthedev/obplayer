@@ -35,6 +35,7 @@ from gi.repository import GObject, Gst, GstVideo, GstController
 
 class ObGstPipeline (object):
     def __init__(self, name):
+        #Gst.Bin.__init__(self)
         self.mode = set()
         self.name = name
 
@@ -110,11 +111,11 @@ class ObGstPipeline (object):
     """
 
     def register_signals(self):
-        self.bus = self.pipeline.get_bus()
-        self.bus.add_signal_watch()
-        self.bus.enable_sync_message_emission()
-        self.bus.connect("sync-message::element", self.sync_handler)
-        self.bus.connect("message", self.message_handler)
+        bus = self.pipeline.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect("sync-message::element", self.sync_handler)
+        bus.connect("message", self.message_handler)
 
     def wait_state(self, target_state):
         self.pipeline.set_state(target_state)

@@ -57,10 +57,6 @@ class ObPlayer (object):
         self.audio_levels_timestamp = 0
         self.audio_silence = 0
 
-        if not obplayer.Config.headless:
-            from . import xrandr
-            xrandr.init()
-
         self.player_init()
 
     def player_init(self):

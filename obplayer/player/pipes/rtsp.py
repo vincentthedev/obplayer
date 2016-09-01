@@ -151,7 +151,6 @@ class ObRTSPInputPipeline (ObGstPipeline):
                 os.system(obplayer.Config.setting('gst_init_callback'))
 
     def set_request(self, req):
-        self.start_time = req['start_time']
         #self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
         #print(req['file_location'])
         #self.rtspsrc.set_property('location', req['file_location'])

@@ -129,7 +129,8 @@ class ObRTPInputPipeline (ObGstPipeline):
         self.set_property('audio-src', self.fakesink)
 
         self.register_signals()
-        self.bus.connect("message", self.message_handler_rtp)
+        bus = self.pipeline.get_bus()
+        bus.connect("message", self.message_handler_rtp)
         #self.bus.add_signal_watch()
 
     def start(self):

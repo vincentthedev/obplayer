@@ -40,7 +40,7 @@ class ObPlayBinPipeline (ObGstPipeline):
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
         self.player = player
-        self.start_time = 0
+        self.play_start_time = 0
         self.pipeline = Gst.ElementFactory.make('playbin')
         # TODO this is false for testing
         #self.pipeline.set_property('force-aspect-ratio', False)
@@ -94,7 +94,7 @@ class ObPlayBinPipeline (ObGstPipeline):
             self.wait_state(Gst.State.PLAYING)
 
     def set_request(self, req):
-        self.start_time = req['start_time']
+        self.play_start_time = req['start_time']
         self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
         self.seek_pause()
 
@@ -105,10 +105,10 @@ class ObPlayBinPipeline (ObGstPipeline):
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
-        if self.start_time <= 0:
-            self.start_time = time.time()
+        if self.play_start_time <= 0:
+            self.play_start_time = time.time()
 
-        offset = time.time() - self.start_time
+        offset = time.time() - self.play_start_time
         if offset != 0:
         #if offset > 0.25:
             if self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, offset * Gst.SECOND) == False:
@@ -123,7 +123,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
         self.player = player
-        self.start_time = 0
+        self.play_start_time = 0
         self.audiosink = None
         self.videosink = None
 
@@ -211,7 +211,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
             self.wait_state(Gst.State.PLAYING)
 
     def set_request(self, req):
-        self.start_time = req['start_time']
+        self.play_start_time = req['start_time']
         self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
         self.seek_pause()
 
@@ -222,10 +222,10 @@ class ObDecodeBinPipeline (ObGstPipeline):
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
-        if self.start_time <= 0:
-            self.start_time = time.time()
+        if self.play_start_time <= 0:
+            self.play_start_time = time.time()
 
-        offset = time.time() - self.start_time
+        offset = time.time() - self.play_start_time
         if offset != 0:
         #if offset > 0.25:
             if self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, offset * Gst.SECOND) == False:

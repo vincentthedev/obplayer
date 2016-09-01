@@ -20,6 +20,8 @@ You should have received a copy of the GNU Affero General Public License
 along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from __future__ import absolute_import 
+
 import obplayer
 
 import os
@@ -38,8 +40,12 @@ xrandrcmd = '/usr/bin/xrandr'
 def init():
     load_modes()
     mode = obplayer.Config.setting('video_out_resolution')
-    if not obplayer.Config.headless:
-        set_mode(mode)
+    #if not obplayer.Config.headless:
+    #    set_mode(mode)
+
+def quit():
+    # TODO can you save the resolution and restore it here?
+    pass
 
 def load_modes():
     global modes, output

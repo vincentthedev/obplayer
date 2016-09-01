@@ -75,6 +75,7 @@ class ObBreakPipeline (ObGstPipeline):
         self.fakesinks = { }
         for output in [ 'audio', 'visual' ]:
             self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
+            #self.add_pad(Gst.GhostPad.new('src_' + output, self.audiotestsrc.get_static_pad('src')))
 
         self.set_property('audio-sink', self.fakesinks['audio'])
         self.set_property('video-sink', self.fakesinks['visual'])

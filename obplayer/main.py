@@ -76,18 +76,20 @@ class ObMainApp:
             self.load_module('player')
             self.load_module('httpadmin')
 
+            if not obplayer.Config.headless:
+                self.load_module('xrandr')
             if obplayer.Config.setting('testsignal_enable'):
-                    self.load_module('testsignal')
+                self.load_module('testsignal')
             if obplayer.Config.setting('alerts_enable'):
                 self.load_module('alerts')
             if obplayer.Config.setting('fallback_enable'):
-                    self.load_module('fallback')
+                self.load_module('fallback')
             if obplayer.Config.setting('aoip_in_enable'):
-                    self.load_module('aoipin')
+                self.load_module('aoipin')
             if obplayer.Config.setting('rtp_in_enable'):
-                    self.load_module('rtpin')
+                self.load_module('rtpin')
             if obplayer.Config.setting('audio_in_enable'):
-                    self.load_module('linein')
+                self.load_module('linein')
             if obplayer.Config.setting('scheduler_enable'):
                 self.load_module('scheduler')
             if obplayer.Config.setting('live_assist_enable'):
@@ -96,6 +98,7 @@ class ObMainApp:
                 self.load_module('audiolog')
             if obplayer.Config.setting('streamer_enable'):
                 self.load_module('streamer')
+
 
             #### TEST CODE ####
 
