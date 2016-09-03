@@ -446,7 +446,7 @@ class ObConfigData (ObData):
     def list_settings(self, hidepasswords=False):
         result = { }
         for (name, value) in self.settings_cache.items():
-            if not hidepasswords or name not in [ 'streamer_icecast_password', 'sync_device_password', 'http_admin_password', 'http_readonly_password' ]:
+            if not hidepasswords or not name.endswith('_password'):
                 result[name] = value
         return result
 
