@@ -53,6 +53,7 @@ Site.save = function(section)
   $('#content-'+section+' .settings input').add('#content-'+section+' .settings select').each(function(index,element)
   {
     if($(element).attr('name')=='save') return; // ignore 'save' button.
+    if($(element).hasClass('nosave')) return; // ignore fields marked as nosave
 
     if($(element).attr('type')=='checkbox') var value = ($(element).is(':checked') ? 1 : 0);
     else var value = $(element).val();
@@ -500,8 +501,8 @@ $(document).ready(function()
 
   $('#sync_media_mode').change(function()
   {
-    $('.sync_display_adjust').hide();
-    $('.sync_display_adjust.sync_'+$('#sync_media_mode').val()).show();
+    $('.sync_display_adjust').hide().find('input').addClass('nosave');
+    $('.sync_display_adjust.sync_'+$('#sync_media_mode').val()).show().find('input').removeClass('nosave');
   });
   $('#sync_media_mode').change();
 
