@@ -443,11 +443,14 @@ class ObAlertProcessor (object):
                     then = datetime.datetime.now() - datetime.timedelta(days=90)
 
                     for filename in os.listdir(basedir):
-                        (year, month, day) = filename[:10].split('_')
-                        filedate = datetime.datetime(int(year), int(month), int(day))
-                        if filedate < then:
-                            obplayer.Log.log("deleting alert file " + filename, 'debug')
-                            os.remove(os.path.join(basedir, filename))
+                        try:
+                            (year, month, day) = filename[:10].split('_')
+                            filedate = datetime.datetime(int(year), int(month), int(day))
+                            if filedate < then:
+                                obplayer.Log.log("deleting alert file " + filename, 'debug')
+                                os.remove(os.path.join(basedir, filename))
+                        except:
+                            pass
 
                 # play active alerts
                 if present_time > self.next_alert_check:

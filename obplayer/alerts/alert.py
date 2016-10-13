@@ -235,7 +235,7 @@ class ObAlert (object):
             self.generate_audio(primary_language, primary_voice)
         if secondary_language and secondary_language not in self.media_info:
             self.generate_audio(secondary_language, secondary_voice)
-        if self.media_info[primary_language] is None:
+        if primary_language not in self.media_info or self.media_info[primary_language] is None:
             return { 'primary' : self.media_info[secondary_language], 'secondary' : None }
         return { 'primary': self.media_info[primary_language], 'secondary' : self.media_info[secondary_language] if secondary_language else None }
 
