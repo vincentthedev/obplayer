@@ -64,4 +64,8 @@ Include if sharing multiple OpenBroadcaster players with a local media library:
 - cifs-utils
 - smbfs
 
+Include if using PulseAudio:
+
+- pip3 install pulsectl         (Note: pkg not included in apt-get; must be installed using pip3)
+
 

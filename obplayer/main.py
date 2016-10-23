@@ -76,6 +76,8 @@ class ObMainApp:
             self.load_module('player')
             self.load_module('httpadmin')
 
+            if obplayer.Config.setting('audio_out_mode') == 'pulse' or obplayer.Config.setting('audio_in_mode') == 'pulse':
+                self.load_module('pulse')
             if not obplayer.Config.headless:
                 self.load_module('xrandr')
             if obplayer.Config.setting('testsignal_enable'):

@@ -649,4 +649,15 @@ $(document).ready(function()
   });
   $('#live_assist_monitor_mode_select').change();
 
+
+  $('.pulse-volume').change(function () {
+    $.post('/pulse/volume', { n: $(this).prop('name'), v: $(this).val() }, function (response) {
+    }, 'json');
+  });
+
+  $('.pulse-select').change(function () {
+    $.post('/pulse/select', { n: $(this).prop('name'), s: $(this).val() }, function (response) {
+    }, 'json');
+  });
+
 });

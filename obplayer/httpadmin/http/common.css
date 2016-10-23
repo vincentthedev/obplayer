@@ -209,6 +209,23 @@ label.advanced-settings::before {
   display: inline-block;
 }
 
+.pulse-mixer {
+  margin-left: 10px;
+}
+
+.pulse-mixer h5 {
+  margin-bottom: 4px;
+}
+
+input[type="range"] {
+  background: aliceblue;
+}
+
+.pulse-select {
+  width: 20em;
+  font-size: 0.7em;
+}
+
 #map-container {
   height:400px;
   width:400px;
@@ -242,4 +259,5 @@ label.advanced-settings::before {
   font-size: 0.75em;
   text-align: right;
 }
+
 

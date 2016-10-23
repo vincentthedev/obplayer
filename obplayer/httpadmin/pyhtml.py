@@ -121,7 +121,7 @@ class PyHTML (object):
         self.inline(code)
 
     def _read_contents(self, filename):
-        with open(nerve.files.find_source(filename), 'r') as f:
+        with open(filename, 'r') as f:
             contents = f.read()
         return contents
 
