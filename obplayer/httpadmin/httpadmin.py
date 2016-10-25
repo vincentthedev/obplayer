@@ -96,6 +96,7 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         self.route('/alerts/inject_test', self.req_alert_inject, 'admin')
         self.route('/alerts/cancel', self.req_alert_cancel, 'admin')
         self.route('/pulse/volume', self.req_pulse_volume, 'admin')
+        self.route('/pulse/mute', self.req_pulse_mute, 'admin')
         self.route('/pulse/select', self.req_pulse_select, 'admin')
 
     def req_status_info(self, request):
@@ -255,6 +256,12 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
             return { 'status' : False, 'error' : "pulse-control-disabled" }
         newvol = obplayer.pulse.change_volume(request.args['n'][0], request.args['v'][0])
         return { 'status' : True, 'v': newvol }
+
+    def req_pulse_mute(self, request):
+        if not hasattr(obplayer, 'pulse'):
+            return { 'status' : False, 'error' : "pulse-control-disabled" }
+        mute = obplayer.pulse.mute(request.args['n'][0])
+        return { 'status' : True, 'm': mute }
 
     def req_pulse_select(self, request):
         if not hasattr(obplayer, 'pulse'):

@@ -655,6 +655,14 @@ $(document).ready(function()
     }, 'json');
   });
 
+  $('.pulse-mute').click(function () {
+    var $button = $(this);
+    $.post('/pulse/mute', { n: $button.prop('name') }, function (response) {
+        if (response.m) $button.addClass('mute');
+        else $button.removeClass('mute');
+    }, 'json');
+  });
+
   $('.pulse-select').change(function () {
     $.post('/pulse/select', { n: $(this).prop('name'), s: $(this).val() }, function (response) {
     }, 'json');

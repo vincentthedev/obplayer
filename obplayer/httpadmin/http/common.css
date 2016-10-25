@@ -217,6 +217,15 @@ label.advanced-settings::before {
   margin-bottom: 4px;
 }
 
+.pulse-mute {
+  padding: 0px;
+  font-size: 0.7em;
+}
+
+.pulse-mute.mute {
+    text-decoration: line-through;
+}
+
 input[type="range"] {
   background: aliceblue;
 }

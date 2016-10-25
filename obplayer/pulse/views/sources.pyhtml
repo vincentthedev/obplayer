@@ -10,6 +10,7 @@
       <tr>
         <td><%= source.proplist['application.name'] + " (" + source.name + ")" %></td>
         <td><input type="range" class="pulse-volume" name="pulse_source_<%= source.proplist['application.name'] %>" value="<%= source.volume.values[0] * 100 %>" min="0" max="100"></td>
+        <td><input type="button" class="pulse-mute <%= ' mute' if source.mute else '' %> " name="pulse_source_<%= source.proplist['application.name'] %>" value="Mute" /></td>
         <td><select class="pulse-select" name="pulse_source_select_<%= source.proplist['application.name'] %>">
           <% for output in obplayer.pulse.source_list(): %>
             <option value="<%= output.index %>" <%= ' selected' if output.index == source.source else '' %>><%= output.description %></option>

@@ -66,11 +66,27 @@ def change_volume(name, volume):
                 pulse.volume_set_all_chans(sink, float(volume) / 100.0)
                 return sink.volume.values[0] * 100
     elif name.startswith('pulse_source_'):
-        appname = name[11:]
+        appname = name[13:]
         for source in pulse.source_output_list():
             if source.proplist['application.name'] == appname:
                 pulse.volume_set_all_chans(source, float(volume) / 100.0)
                 return source.volume.values[0] * 100
+
+def mute(name):
+    if name.startswith('pulse_sink_'):
+        appname = name[11:]
+        for sink in pulse.sink_input_list():
+            if sink.proplist['application.name'] == appname:
+                mute = not sink.mute
+                pulse.sink_input_mute(sink.index, mute)
+                return mute
+    elif name.startswith('pulse_source_'):
+        appname = name[13:]
+        for source in pulse.source_output_list():
+            if source.proplist['application.name'] == appname:
+                mute = not source.mute
+                pulse.source_output_mute(source.index, mute)
+                return mute
 
 def select_output(name, s_index):
     if name.startswith('pulse_sink_select_'):
