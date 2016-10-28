@@ -39,6 +39,11 @@ def init():
 def quit():
     pass
 
+def is_loaded():
+    if pulse != None:
+        return True
+    return False
+
 
 def sink_info(index):
     return pulse.sink_info(index)

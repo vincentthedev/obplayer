@@ -960,7 +960,7 @@
           </tbody>
         </table>
 
-        <% if obplayer.Config.setting('audio_in_mode') == 'pulse': %>
+        <% if hasattr(obplayer, 'pulse') and obplayer.pulse.is_loaded() and obplayer.Config.setting('audio_in_mode') == 'pulse': %>
           <% py.include("obplayer/pulse/views/sources.pyhtml") %>
         <% end %>
 
@@ -1080,7 +1080,7 @@
           </tbody>
         </table>
 
-        <% if obplayer.Config.setting('audio_out_mode') == 'pulse': %>
+        <% if hasattr(obplayer, 'pulse') and obplayer.pulse.is_loaded() and obplayer.Config.setting('audio_out_mode') == 'pulse': %>
           <% py.include("obplayer/pulse/views/sinks.pyhtml") %>
         <% end %>
 
