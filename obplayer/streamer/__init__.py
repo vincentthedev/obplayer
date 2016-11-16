@@ -24,6 +24,9 @@ from __future__ import absolute_import
 
 import obplayer
 
+import gi
+from gi.repository import GObject
+
 from .icecast import ObIcecastStreamer
 
 def init():
@@ -31,9 +34,11 @@ def init():
     obplayer.RTSPStreamer = None
 
     if obplayer.Config.setting('streamer_icecast_enable'):
-        obplayer.Streamer = ObIcecastStreamer()
-        if obplayer.Config.setting('streamer_play_on_startup'):
-            obplayer.Streamer.start()
+        def delaystart():
+            obplayer.Streamer = ObIcecastStreamer()
+            if obplayer.Config.setting('streamer_play_on_startup'):
+                obplayer.Streamer.start()
+        GObject.timeout_add(1000, delaystart)
 
     obplayer.RTSPStreamer = None
     if obplayer.Config.setting('streamer_rtsp_enable'):
@@ -41,7 +46,8 @@ def init():
         obplayer.RTSPStreamer = ObRTSPStreamer()
 
 def quit():
-    obplayer.Streamer.quit()
+    if obplayer.Streamer:
+        obplayer.Streamer.quit()
     if obplayer.RTSPStreamer:
         obplayer.RTSPStreamer.quit()
 

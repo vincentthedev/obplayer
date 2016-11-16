@@ -29,7 +29,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstController
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 """

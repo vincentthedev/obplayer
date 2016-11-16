@@ -30,7 +30,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstController
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObPlayBinPipeline (ObGstPipeline):
@@ -87,6 +87,9 @@ class ObPlayBinPipeline (ObGstPipeline):
             if output in self.mode:
                 #print self.name + " -- Disconnecting " + output
                 self.pipeline.set_property('audio-sink' if output == 'audio' else 'video-sink', self.fakesinks[output])
+                #parent = self.player.outputs[output].get_bin().get_parent()
+                #if parent:
+                #    parent.remove(self.player.outputs[output].get_bin())
                 self.mode.discard(output)
 
         if len(self.mode) > 0 and state == Gst.State.PLAYING:
@@ -95,7 +98,8 @@ class ObPlayBinPipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.play_start_time = req['start_time']
-        self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        #self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.pipeline.set_property('uri', Gst.filename_to_uri(req['file_location'] + '/' + req['filename']))
         self.seek_pause()
 
     def seek_pause(self):
@@ -118,7 +122,8 @@ class ObPlayBinPipeline (ObGstPipeline):
 
 
 class ObDecodeBinPipeline (ObGstPipeline):
-    output_caps = [ 'audio', 'visual' ]
+    min_class = [ 'audio' ]
+    max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
@@ -139,7 +144,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
         #    self.pipeline.set_property('vis-plugin', self.audiovis)
 
         self.fakesinks = { }
-        for output in self.player.outputs.keys() + [ 'audio', 'visual' ]:
+        for output in list(self.player.outputs.keys()) + [ 'audio', 'visual' ]:
             self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
         self.set_property('audio-sink', self.fakesinks['audio'])

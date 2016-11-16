@@ -416,6 +416,10 @@
 	    <td><%= obplayer.Config.setting('streamer_icecast_enable') %></td>
 	  </tr>
 	  <tr>
+	    <td data-t>streamer_icecast_mode</td>
+	    <td><%= obplayer.Config.setting('streamer_icecast_mode') %></td>
+	  </tr>
+	  <tr>
 	    <td data-t>streamer_icecast_ip</td>
 	    <td><%= obplayer.Config.setting('streamer_icecast_ip') %></td>
 	  </tr>
@@ -1033,7 +1037,8 @@
                   <option value="jack"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','jack') %> data-t>JACK</option>
                   <option value="oss"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','oss') %> data-t>OSS</option>
                   <option value="pulse"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','pulse') %> data-t>Pulse Audio</option>
-                  <option value="shout2send"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','shout2send') %> data-t>Shoutcast</option>
+                  <!-- <option value="shout2send"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','shout2send') %> data-t>Shoutcast</option> -->
+                  <!-- <option value="intersink"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','intersink') %> data-t>Direct Streaming</option> -->
                   <option value="test"<%= obplayer.HTTPAdmin.form_item_selected('audio_out_mode','test') %> data-t>No Output</option>
                 </select></td>
             </tr>
@@ -1102,6 +1107,8 @@
                   <option value="egl"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','egl') %> data-t>EGL/GLES</option>
                   <option value="wayland"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','wayland') %> data-t>Wayland</option>
                   <option value="ascii"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','ascii') %> data-t>Coloured ASCII</option>
+                  <!-- <option value="intersink"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','intersink') %> data-t>Direct Streaming</option> -->
+                  <option value="test"<%= obplayer.HTTPAdmin.form_item_selected('video_out_mode','test') %> data-t>No Output</option>
                 </select></td>
             </tr>
             <tr>
@@ -1200,6 +1207,13 @@
             <tr>
               <td data-t>streamer_icecast_enable</td>
               <td><input type="checkbox" name="streamer_icecast_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_icecast_enable') %> title="streamer_icecast_enable_tooltip" data-t></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_icecast_mode</td>
+              <td><select name="streamer_icecast_mode">
+                  <option value="audio"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_mode','audio') %>>Audio Only</option>
+                  <option value="video320x200"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_mode','video320x200') %>>Video - 320x200</option>
+                </select></td>
             </tr>
             <tr>
               <td data-t>streamer_icecast_ip</td>

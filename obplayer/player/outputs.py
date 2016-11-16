@@ -35,8 +35,8 @@ Overlay = None
 
 
 class ObOutputBin (object):
-    def __init__(self):
-        self.bin = Gst.ElementFactory.make('bin')
+    def __init__(self, name):
+        self.bin = Gst.ElementFactory.make('bin', name)
 
     def get_bin(self):
         return self.bin
@@ -51,14 +51,17 @@ class ObOutputBin (object):
 
 class ObFakeOutputBin (ObOutputBin):
     def __init__(self):
-        self.bin = Gst.ElementFactory.make('fakesink')
+        self.bin = Gst.ElementFactory.make('fakesink', 'fake-output-bin')
 
 
 class ObAudioOutputBin (ObOutputBin):
     def __init__(self):
-        ObOutputBin.__init__(self)
+        ObOutputBin.__init__(self, 'audio-output-bin')
 
         self.elements = [ ]
+
+        #self.elements.append(Gst.ElementFactory.make("audioconvert"))
+        #self.elements.append(Gst.ElementFactory.make("audioresample"))
 
         ## create caps filter element to set the output audio parameters
         caps = Gst.ElementFactory.make('capsfilter', "audiocapsfilter")
@@ -71,10 +74,9 @@ class ObAudioOutputBin (ObOutputBin):
         level.set_property('interval', int(0.5 * Gst.SECOND))
         self.elements.append(level)
 
-        """
-        tee = Gst.ElementFactory.make("tee", "tee")
-        self.elements.append(tee)
-        """
+        self.tee = Gst.ElementFactory.make("tee")
+        self.elements.append(self.tee)
+        self.elements.append(Gst.ElementFactory.make("queue2"))
 
         ## create audio sink element
         audio_output = obplayer.Config.setting('audio_out_mode')
@@ -99,18 +101,25 @@ class ObAudioOutputBin (ObOutputBin):
         elif audio_output == 'pulse':
             self.audiosink = Gst.ElementFactory.make('pulsesink', 'audiosink')
 
-        elif audio_output == 'test':
-            self.audiosink = Gst.ElementFactory.make('fakesink', 'audiosink')
-
         elif audio_output == 'shout2send':
             self.elements.append(Gst.ElementFactory.make("queue2", "encoder_queue"))
-            #self.elements.append(Gst.ElementFactory.make("audioconvert", "audioconvert"))
             self.elements.append(Gst.ElementFactory.make("lamemp3enc", "encoder"))
             self.audiosink = Gst.ElementFactory.make("shout2send", "audiosink")
-            self.audiosink.set_property('ip', obplayer.Config.setting('audio_out_shout2send_ip'))
-            self.audiosink.set_property('port', obplayer.Config.setting('audio_out_shout2send_port'))
-            self.audiosink.set_property('mount', obplayer.Config.setting('audio_out_shout2send_mount'))
-            self.audiosink.set_property('password', obplayer.Config.setting('audio_out_shout2send_password'))
+            self.audiosink.set_property('ip', obplayer.Config.setting('streamer_shout2send_ip'))
+            self.audiosink.set_property('port', obplayer.Config.setting('streamer_shout2send_port'))
+            self.audiosink.set_property('mount', obplayer.Config.setting('streamer_shout2send_mount'))
+            self.audiosink.set_property('password', obplayer.Config.setting('streamer_shout2send_password'))
+
+        elif audio_output == 'intersink':
+            self.elements.append(Gst.ElementFactory.make("queue2"))
+            self.audiosink = Gst.ElementFactory.make("interaudiosink")
+            self.audiosink.set_property('channel', 'audio')
+            #self.audiosink.set_property('sync', False)
+            #self.audiosink.set_property('async', False)
+            self.audiosink.set_property('enable-last-sample', False)
+
+        elif audio_output == 'test':
+            self.audiosink = Gst.ElementFactory.make('fakesink', 'audiosink')
 
         else:
             self.audiosink = Gst.ElementFactory.make('autoaudiosink', 'audiosink')
@@ -118,6 +127,17 @@ class ObAudioOutputBin (ObOutputBin):
         self.elements.append(self.audiosink)
 
         self.build_pipeline(self.elements)
+
+        if obplayer.Config.setting('streamer_icecast_mode').startswith('video'):
+            interpipe = [ ]
+            interpipe.append(Gst.ElementFactory.make("queue2"))
+            interpipe.append(Gst.ElementFactory.make("interaudiosink"))
+            interpipe[-1].set_property('channel', 'audio')
+            #interpipe[-1].set_property('sync', False)
+            #interpipe[-1].set_property('async', False)
+            interpipe[-1].set_property('enable-last-sample', False)
+            self.build_pipeline(interpipe)
+            self.tee.link(interpipe[0])
 
         """
         appsink = Gst.ElementFactory.make("appsink", "appsink")
@@ -135,7 +155,7 @@ class ObAudioOutputBin (ObOutputBin):
 
 class ObVideoOutputBin (ObOutputBin):
     def __init__(self):
-        ObOutputBin.__init__(self)
+        ObOutputBin.__init__(self, 'video-output-bin')
 
         #self.video_width = obplayer.Config.setting('video_out_width')
         #self.video_height = obplayer.Config.setting('video_out_height')
@@ -208,6 +228,12 @@ class ObVideoOutputBin (ObOutputBin):
         self.elements.append(caps_filter)
         """
 
+        self.tee = Gst.ElementFactory.make("tee")
+        self.elements.append(self.tee)
+        self.elements.append(Gst.ElementFactory.make("queue2"))
+
+        #self.elements.append(Gst.ElementFactory.make("fpsdisplaysink"))
+
         ## create video sink element
         video_out_mode = obplayer.Config.setting('video_out_mode')
         if video_out_mode == 'x11':
@@ -228,12 +254,64 @@ class ObVideoOutputBin (ObOutputBin):
         elif video_out_mode == 'ascii':
             self.videosink = Gst.ElementFactory.make("cacasink", "videosink")
 
+        elif video_out_mode == 'rtp':
+            #self.elements.append(Gst.ElementFactory.make("theoraenc"))
+            #self.elements.append(Gst.ElementFactory.make("rtptheorapay"))
+            self.elements.append(Gst.ElementFactory.make("vp9enc"))
+            self.elements.append(Gst.ElementFactory.make("rtpvp9pay"))
+            self.elements.append(Gst.ElementFactory.make("queue2"))
+            self.videosink = Gst.ElementFactory.make("udpsink", "videosink")
+            self.videosink.set_property('host', '127.0.0.1')
+            self.videosink.set_property('port', 5500)
+
+        elif video_out_mode == 'shout2send':
+            caps = Gst.ElementFactory.make('capsfilter', "videocapsfilter")
+            #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
+            #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=100,height=75,framerate=15/1"))
+            caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
+            self.elements.append(caps)
+            #self.elements.append(Gst.ElementFactory.make("theoraenc"))
+            #self.elements.append(Gst.ElementFactory.make("oggmux"))
+            self.elements.append(Gst.ElementFactory.make("vp9enc"))
+            self.elements.append(Gst.ElementFactory.make("queue2"))
+            self.videomux = Gst.ElementFactory.make("webmmux")
+            self.elements.append(self.videomux)
+            self.elements[-1].set_property('streamable', True)
+            self.videosink = Gst.ElementFactory.make("shout2send", "videosink")
+            self.videosink.set_property('ip', obplayer.Config.setting('streamer_icecast_ip'))
+            self.videosink.set_property('port', obplayer.Config.setting('streamer_icecast_port'))
+            self.videosink.set_property('mount', obplayer.Config.setting('streamer_icecast_mount'))
+            self.videosink.set_property('password', obplayer.Config.setting('streamer_icecast_password'))
+
+        elif video_out_mode == 'intersink':
+            self.elements.append(Gst.ElementFactory.make("queue2"))
+            self.videosink = Gst.ElementFactory.make("intervideosink")
+            self.videosink.set_property('channel', 'video')
+            #self.videosink.set_property('sync', False)
+            #self.videosink.set_property('async', False)
+            #self.videosink.set_property('max-bitrate', 20000000)
+            self.videosink.set_property('enable-last-sample', False)
+
+        elif video_out_mode == 'test':
+            self.videosink = Gst.ElementFactory.make("fakesink", "videosink")
+
         else:
             self.videosink = Gst.ElementFactory.make("autovideosink", "videosink")
 
         self.elements.append(self.videosink)
 
         self.build_pipeline(self.elements)
+
+        if obplayer.Config.setting('streamer_icecast_mode').startswith('video'):
+            interpipe = [ ]
+            interpipe.append(Gst.ElementFactory.make("queue2"))
+            interpipe.append(Gst.ElementFactory.make("intervideosink"))
+            interpipe[-1].set_property('channel', 'video')
+            #interpipe[-1].set_property('sync', False)
+            #interpipe[-1].set_property('async', False)
+            interpipe[-1].set_property('enable-last-sample', False)
+            self.build_pipeline(interpipe)
+            self.tee.link(interpipe[0])
 
 
         """
@@ -267,11 +345,30 @@ class ObVideoOutputBin (ObOutputBin):
         self.bin.add_pad(self.sinkpad)
 
 
+    def _cb_new_sample(self, userdata):
+        gbuffer = self.appsink.get_property('last-sample').get_buffer()
+        #data = gbuffer.extract_dup(0, gbuffer.get_size())
+        #if self.encoder:
+        #    data = self.encoder.encode_buffer(data)
+        ##print("Encoded: " + str(len(data)) + " " + repr(data[:20]))
+        #self.monitor_queue += data
+
+        #while len(self.monitor_queue) >= self.blocksize:
+        #    data = self.monitor_queue[:self.blocksize]
+        #    self.monitor_queue = self.monitor_queue[self.blocksize:]
+        #    #obplayer.Log.log("websocket send: " + str(len(data)) + " " + repr(data[:20]) + "...", 'debug')
+        #    if self.conn:
+        #        self.conn.websocket_write_message(obplayer.httpadmin.httpserver.WS_OP_BIN, data)
+        if obplayer.Streamer:
+            obplayer.Streamer.queue_data(gbuffer)
+        return Gst.FlowReturn.OK
+
+
 class ObVideoOverlayBin (ObOutputBin):
     def __init__(self):
-        ObOutputBin.__init__(self)
+        ObOutputBin.__init__(self, 'overlay-output-bin')
 
-        from obplayer.player.overlay import ObOverlay
+        from .overlay import ObOverlay
         self.overlay = ObOverlay()
         global Overlay
         Overlay = self.overlay

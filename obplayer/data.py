@@ -299,6 +299,7 @@ class ObConfigData (ObData):
         self.add_setting('streamer_audio_in_alsa_device', 'default', 'text')
         self.add_setting('streamer_audio_in_jack_name', '', 'text')
         self.add_setting('streamer_icecast_enable', '1', 'bool')
+        self.add_setting('streamer_icecast_mode', 'audio', 'text')
         self.add_setting('streamer_icecast_ip', '127.0.0.1', 'text')
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')

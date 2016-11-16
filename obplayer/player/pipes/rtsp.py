@@ -30,7 +30,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstSdp', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstSdp
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObRTSPInputPipeline (ObGstPipeline):
