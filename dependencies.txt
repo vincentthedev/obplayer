@@ -62,7 +62,6 @@ Include if using RS-232 option in the alerts module:
 Include if sharing multiple OpenBroadcaster players with a local media library:
 
 - cifs-utils
-- smbfs
 
 Include if using PulseAudio:
 
