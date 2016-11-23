@@ -12,10 +12,10 @@ do
         if [ $? -eq 37 ]
         then
             echo "deleting data.db and restarting with -r"
-            rm ~/.openbroadcaster/data.db
+            #rm ~/.openbroadcaster/data.db
             RESET="-r"
         else
             RESET=""
         fi
-	sleep 5
+	sleep 4
 done

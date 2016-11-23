@@ -482,10 +482,11 @@ class ObPlayerController (object):
     def requeue_request(self, req):
         if self.allow_requeue is True:
             with self.lock:
-                for queued in self.queue:
+                for (i, queued) in enumerate(self.queue):
                     if queued == req:
                         print("We totally didn't requeue!")
                         return
+                        #self.queue.pop(i)
             #print("Requeuing request from [" + self.name + "] for (Duration: " + str(req['duration']) + ") [" + req['media_type'] + "] " + req['filename'])
             self.insert_request(req)
         else:

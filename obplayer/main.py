@@ -111,7 +111,7 @@ class ObMainApp:
             #alert = obplayer.alerts.parse_alert_file("/media/work/Projects/OpenBroadcaster/Information/2014-08 Pelmorex Tie-In/CAP Examples/4example_CAPCP_with_External_Large_Audio_File(2).xml")
             #obplayer.alerts.Processor.dispatch(alert)
 
-            ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
+            #ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
             #ctrl.add_request(media_type='break', duration=40)
             #ctrl.add_request(media_type='testsignal', duration=40)
             #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)

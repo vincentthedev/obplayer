@@ -136,6 +136,8 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         if 'extra' in request.args:
             if request.args['extra'][0] == 'defaults':
                 os.remove(obplayer.ObData.get_datadir() + '/settings.db')
+            if request.args['extra'][0] == 'hard':
+                os.remove(obplayer.ObData.get_datadir() + '/data.db')
             if request.args['extra'][0] == 'hard' or request.args['extra'][0] == 'defaults':
                 obplayer.Main.exit_code = 37
         os.kill(os.getpid(), signal.SIGINT)

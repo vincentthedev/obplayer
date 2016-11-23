@@ -28,7 +28,7 @@ Site.restart = function(extra)
   },'json');
 }
 
-Site.restartCountdownCount = 10;
+Site.restartCountdownCount = 6;
 Site.restartCountdown = function()
 {
   Site.restartCountdownCount--;
