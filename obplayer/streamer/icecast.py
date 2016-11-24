@@ -236,8 +236,18 @@ class ObIcecastStreamer (object):
 
     def message_handler(self, bus, message):
         if message.type == Gst.MessageType.ERROR:
+            err, debug = message.parse_error()
+            obplayer.Log.log("gstreamer error: %s, %s, %s" % (err, debug, err.code), 'error')
             obplayer.Log.log("attempting to restart icecast pipeline", 'info')
-            GObject.timeout_add(1000, self.restart_pipeline)
+            GObject.timeout_add(5000, self.restart_pipeline)
+
+        elif message.type == Gst.MessageType.WARNING:
+            err, debug = message.parse_warning()
+            obplayer.Log.log("gstreamer warning: %s, %s, %s" % (err, debug, err.code), 'warning')
+
+        elif message.type == Gst.MessageType.INFO:
+            err, debug = message.parse_info()
+            obplayer.Log.log("gstreamer info: %s, %s, %s" % (err, debug, err.code), 'info')
 
     def restart_pipeline(self):
         self.wait_state(Gst.State.NULL)
