@@ -283,11 +283,11 @@ class ObConfigData (ObData):
         self.add_setting('audiolog_enable', '0', 'bool')
         self.add_setting('audiolog_purge_files', '0', 'bool')
 
-        self.add_setting('video_out_enable', '1', 'bool')
+        self.add_setting('video_out_enable', '0', 'bool')
         self.add_setting('video_out_mode', 'auto', 'text')
         self.add_setting('video_out_resolution', 'default', 'text')
 
-        self.add_setting('images_transitions_enable', '1', 'bool')
+        self.add_setting('images_transitions_enable', '0', 'bool')
         self.add_setting('images_width', '640', 'int')
         self.add_setting('images_height', '480', 'int')
         self.add_setting('images_framerate', '15', 'int')
@@ -307,7 +307,7 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_streamname', '', 'text')
         self.add_setting('streamer_icecast_description', '', 'text')
         self.add_setting('streamer_icecast_url', '', 'text')
-        self.add_setting('streamer_icecast_public', '1', 'bool')
+        self.add_setting('streamer_icecast_public', '0', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
         self.add_setting('streamer_rtsp_enable', '0', 'bool')
         self.add_setting('streamer_rtsp_port', '8554', 'int')
@@ -345,9 +345,9 @@ class ObConfigData (ObData):
         self.add_setting('rtp_in_address', '', 'text')
         self.add_setting('rtp_in_encoding', 'OPUS', 'text')
         self.add_setting('rtp_in_clock_rate', '48000', 'text')
-        self.add_setting('rtp_in_enable_rtcp', '1', 'bool')
+        self.add_setting('rtp_in_enable_rtcp', '0', 'bool')
 
-        self.add_setting('testsignal_enable', '1', 'bool')
+        self.add_setting('testsignal_enable', '0', 'bool')
 
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
@@ -360,11 +360,11 @@ class ObConfigData (ObData):
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
         self.add_setting('http_admin_language', 'en', 'text')
 
-        self.add_setting('http_show_sync', '0', 'bool')
-        self.add_setting('http_show_streaming', '0', 'bool')
+        self.add_setting('http_show_sync', '1', 'bool')
+        self.add_setting('http_show_streaming', '1', 'bool')
         self.add_setting('http_show_alerts', '1', 'bool')
         self.add_setting('http_show_location', '1', 'bool')
-        self.add_setting('http_show_liveassist', '0', 'bool')
+        self.add_setting('http_show_liveassist', '1', 'bool')
 
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')
@@ -404,7 +404,7 @@ class ObConfigData (ObData):
 
         self.add_setting('led_sign_enable', '0', 'bool')
         self.add_setting('led_sign_serial_file', '/dev/ttyS1', 'text')
-        self.add_setting('led_sign_timedisplay', '1', 'bool')
+        self.add_setting('led_sign_timedisplay', '0', 'bool')
         self.add_setting('led_sign_init_message', '', 'text')
 
     def add_setting(self, name, value, datatype=None):
