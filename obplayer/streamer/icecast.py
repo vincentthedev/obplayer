@@ -76,6 +76,8 @@ class ObIcecastStreamer (object):
 
         self.audiopipe.append(self.audiosrc)
 
+        self.audiopipe.append(Gst.ElementFactory.make("queue2"))
+
         """
         self.level = Gst.ElementFactory.make("level", "level")
         self.level.set_property('message', True)
