@@ -63,45 +63,50 @@ def source_list():
 def source_output_list():
     return pulse.source_output_list()
 
+def _find_item(appname, ilist):
+    for item in ilist:
+        if 'application.name' in item.proplist:
+            if item.proplist['application.name'] == appname:
+                return item
+        else:
+            if item.name == appname:
+                return item
+    return None
+
 def change_volume(name, volume):
     if name.startswith('pulse_sink_'):
-        appname = name[11:]
-        for sink in pulse.sink_input_list():
-            if sink.proplist['application.name'] == appname:
-                pulse.volume_set_all_chans(sink, float(volume) / 100.0)
-                return sink.volume.values[0] * 100
+        sink = _find_item(name[11:], pulse.sink_input_list())
+        if sink:
+            pulse.volume_set_all_chans(sink, float(volume) / 100.0)
+            return sink.volume.values[0] * 100
     elif name.startswith('pulse_source_'):
-        appname = name[13:]
-        for source in pulse.source_output_list():
-            if source.proplist['application.name'] == appname:
+        source = _find_item(name[13:], pulse.source_output_list())
+        if source:
                 pulse.volume_set_all_chans(source, float(volume) / 100.0)
                 return source.volume.values[0] * 100
 
 def mute(name):
     if name.startswith('pulse_sink_'):
-        appname = name[11:]
-        for sink in pulse.sink_input_list():
-            if sink.proplist['application.name'] == appname:
-                mute = not sink.mute
-                pulse.sink_input_mute(sink.index, mute)
-                return mute
+        sink = _find_item(name[11:], pulse.sink_input_list())
+        if sink:
+            mute = not sink.mute
+            pulse.sink_input_mute(sink.index, mute)
+            return mute
+
     elif name.startswith('pulse_source_'):
-        appname = name[13:]
-        for source in pulse.source_output_list():
-            if source.proplist['application.name'] == appname:
-                mute = not source.mute
-                pulse.source_output_mute(source.index, mute)
-                return mute
+        source = _find_item(name[13:], pulse.source_output_list())
+        if source:
+            mute = not source.mute
+            pulse.source_output_mute(source.index, mute)
+            return mute
 
 def select_output(name, s_index):
     if name.startswith('pulse_sink_select_'):
-        appname = name[18:]
-        for sink in pulse.sink_input_list():
-            if sink.proplist['application.name'] == appname:
-                pulse.sink_input_move(sink.index, int(s_index))
+        sink = _find_item(name[18:], pulse.sink_input_list())
+        if sink:
+            pulse.sink_input_move(sink.index, int(s_index))
     elif name.startswith('pulse_source_select_'):
-        appname = name[20:]
-        for source in pulse.source_output_list():
-            if source.proplist['application.name'] == appname:
-                pulse.source_output_move(source.index, int(s_index))
+        source = _find_item(name[20:], pulse.source_output_list())
+        if source:
+            pulse.source_output_move(source.index, int(s_index))
 
