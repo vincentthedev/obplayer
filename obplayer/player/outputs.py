@@ -128,7 +128,7 @@ class ObAudioOutputBin (ObOutputBin):
 
         self.build_pipeline(self.elements)
 
-        if obplayer.Config.setting('streamer_icecast_mode').startswith('video'):
+        if obplayer.Config.setting('streamer_icecast_mode').startswith('video') or obplayer.Config.setting('streamer_audio_in_mode') == 'intersink':
             interpipe = [ ]
             interpipe.append(Gst.ElementFactory.make("queue2"))
             interpipe.append(Gst.ElementFactory.make("interaudiosink"))

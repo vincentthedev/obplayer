@@ -71,6 +71,12 @@ class ObIcecastStreamer (object):
         elif audio_input == 'test':
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
 
+        elif audio_input == 'intersink':
+            self.audiosrc = Gst.ElementFactory.make('interaudiosrc')
+            self.audiosrc.set_property('channel', 'audio')
+            #self.audiosrc.set_property('buffer-time', 8000000000)
+            #self.audiosrc.set_property('latency-time', 8000000000)
+
         else:
             self.audiosrc = Gst.ElementFactory.make('autoaudiosrc', 'audiosrc')
 

@@ -6,11 +6,12 @@
     <tbody>
     <% for sink in obplayer.pulse.sink_input_list(): %>
       <% link = obplayer.pulse.sink_info(sink.sink) %>
+      <% appname = sink.proplist['application.name'] if 'application.name' in sink.proplist else sink.name %>
       <tr>
-        <td><%= sink.proplist['application.name'] + " (" + sink.name + ")" %></td>
-        <td><input type="range" class="pulse-volume" name="pulse_sink_<%= sink.proplist['application.name'] %>" value="<%= sink.volume.values[0] * 100 %>" min="0" max="100"></td>
-        <td><input type="button" class="pulse-mute <%= ' mute' if sink.mute else '' %> " name="pulse_sink_<%= sink.proplist['application.name'] %>" value="Mute" /></td>
-        <td><select class="pulse-select" name="pulse_sink_select_<%= sink.proplist['application.name'] %>">
+        <td><%= appname + " (" + sink.name + ")" %></td>
+        <td><input type="range" class="pulse-volume" name="pulse_sink_<%= appname %>" value="<%= sink.volume.values[0] * 100 %>" min="0" max="100"></td>
+        <td><input type="button" class="pulse-mute <%= ' mute' if sink.mute else '' %> " name="pulse_sink_<%= appname %>" value="Mute" /></td>
+        <td><select class="pulse-select" name="pulse_sink_select_<%= appname %>">
           <% for output in obplayer.pulse.sink_list(): %>
             <option value="<%= output.index %>" <%= ' selected' if output.index == sink.sink else '' %>><%= output.description %></option>
           <% end %>
