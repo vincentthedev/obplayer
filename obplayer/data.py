@@ -356,7 +356,10 @@ class ObConfigData (ObData):
         self.add_setting('http_readonly_password', 'user', 'text')
         self.add_setting('http_readonly_allow_restart', '1', 'bool')
         self.add_setting('http_admin_secure', '0', 'bool')
+        self.add_setting('http_admin_sslreq', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
+        self.add_setting('http_admin_sslkey', '', 'text')
+        self.add_setting('http_admin_sslca', '', 'text')
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
         self.add_setting('http_admin_language', 'en', 'text')
 

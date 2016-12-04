@@ -558,8 +558,8 @@ $(document).ready(function()
 
   $('#http_admin_secure').change(function()
   {
-    if($(this).is(':checked')) $('#http_admin_sslcert_row').show();
-    else $('#http_admin_sslcert_row').hide();
+    if($(this).is(':checked')) $('.http_admin_sslcert_row').show();
+    else $('.http_admin_sslcert_row').hide();
   });
   $('#http_admin_secure').change();
 

@@ -574,8 +574,20 @@
 	    <td id="https_setting"><%= obplayer.Config.setting('http_admin_secure') %></td>
 	  </tr>
 	  <tr class="ssl_certificate">
+	    <td data-t>http_admin_sslreq</td>
+	    <td><%= obplayer.Config.setting('http_admin_sslreq') %></td>
+	  </tr>
+	  <tr class="ssl_certificate">
+	    <td data-t>http_admin_sslkey</td>
+	    <td><%= obplayer.Config.setting('http_admin_sslkey') %></td>
+	  </tr>
+	  <tr class="ssl_certificate">
 	    <td data-t>http_admin_sslcert</td>
 	    <td><%= obplayer.Config.setting('http_admin_sslcert') %></td>
+	  </tr>
+	  <tr class="ssl_certificate">
+	    <td data-t>http_admin_sslca</td>
+	    <td><%= obplayer.Config.setting('http_admin_sslca') %></td>
 	  </tr>
 	  <tr>
 	    <td data-t>http_admin_port</td>
@@ -1534,13 +1546,25 @@
               <td data-t>http_admin_secure</td>
               <td><input id="http_admin_secure" type="checkbox" name="http_admin_secure" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_admin_secure') %>></td>
             </tr>
+            <tr class="http_admin_sslcert_row">
+              <td data-t>http_admin_sslreq</td>
+              <td><input type="checkbox" name="http_admin_sslreq" value="1"<%= obplayer.HTTPAdmin.form_item_checked('http_admin_sslreq') %>></td>
+            </tr>
+            <tr class="http_admin_sslcert_row">
+              <td data-t>http_admin_sslkey</td>
+              <td><input type="text" name="http_admin_sslkey" value="<%= obplayer.Config.setting('http_admin_sslkey',True) %>"></td>
+            </tr>
+            <tr class="http_admin_sslcert_row">
+              <td data-t>http_admin_sslcert</td>
+              <td><input type="text" name="http_admin_sslcert" value="<%= obplayer.Config.setting('http_admin_sslcert',True) %>"></td>
+            </tr>
+            <tr class="http_admin_sslcert_row">
+              <td data-t>http_admin_sslca</td>
+              <td><input type="text" name="http_admin_sslca" value="<%= obplayer.Config.setting('http_admin_sslca',True) %>"></td>
+            </tr>
             <tr>
               <td data-t>http_admin_port</td>
               <td><input type="text" name="http_admin_port" value="<%= obplayer.Config.setting('http_admin_port',True) %>"></td>
-            </tr>
-            <tr id="http_admin_sslcert_row">
-              <td data-t>http_admin_sslcert</td>
-              <td><input type="text" name="http_admin_sslcert" value="<%= obplayer.Config.setting('http_admin_sslcert',True) %>"></td>
             </tr>
             <tr>
               <td data-t>http_admin_username</td>

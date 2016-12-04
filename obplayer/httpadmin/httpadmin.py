@@ -28,6 +28,7 @@ import sys
 import time
 import signal
 import os.path
+import traceback
 import subprocess
 
 
@@ -46,11 +47,17 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         self.title = obplayer.Config.setting('http_admin_title')
 
         sslenable = obplayer.Config.setting('http_admin_secure')
+        sslreq = obplayer.Config.setting('http_admin_sslreq')
+        sslkey = obplayer.Config.setting('http_admin_sslkey')
         sslcert = obplayer.Config.setting('http_admin_sslcert')
+        sslca = obplayer.Config.setting('http_admin_sslca')
 
         server_address = ('', obplayer.Config.setting('http_admin_port'))  # (address, port)
 
-        httpserver.ObHTTPServer.__init__(self, server_address, sslcert if sslenable else None)
+        if sslenable:
+            httpserver.ObHTTPServer.__init__(self, server_address, sslenable, sslreq, sslkey, sslcert, sslca if sslca else None)
+        else:
+            httpserver.ObHTTPServer.__init__(self, server_address)
 
         self.register_routes()
         sa = self.socket.getsockname()
