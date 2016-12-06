@@ -40,7 +40,7 @@ class ObLineInPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         audio_input = obplayer.Config.setting('audio_in_mode')
         if audio_input == 'alsa':

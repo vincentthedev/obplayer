@@ -82,6 +82,10 @@ class ObIcecastStreamer (object):
 
         self.audiopipe.append(self.audiosrc)
 
+        caps = Gst.ElementFactory.make('capsfilter')
+        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,channel-mask=(bitmask)=0x3"))
+        self.audiopipe.append(caps)
+
         self.audiopipe.append(Gst.ElementFactory.make("queue2"))
 
         """
@@ -125,6 +129,10 @@ class ObIcecastStreamer (object):
         #self.interaudiosrc.set_property('buffer-time', 8000000000)
         #self.interaudiosrc.set_property('latency-time', 8000000000)
         self.audiopipe.append(self.interaudiosrc)
+
+        caps = Gst.ElementFactory.make('capsfilter')
+        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,channel-mask=(bitmask)=0x3"))
+        self.audiopipe.append(caps)
 
         self.audiopipe.append(Gst.ElementFactory.make("queue2"))
 

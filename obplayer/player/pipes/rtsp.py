@@ -41,7 +41,7 @@ class ObRTSPInputPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
         self.elements = [ ]
 
 

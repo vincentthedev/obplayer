@@ -48,7 +48,7 @@ class ObImagePipeline (ObGstPipeline):
         self.images_height = obplayer.Config.setting('images_height')
         self.images_framerate = obplayer.Config.setting('images_framerate')
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         #self.imagebin = Gst.parse_launch('uridecodebin uri="file:///home/trans/Downloads/kitty.jpg" ! imagefreeze ! videoconvert ! videoscale ! video/x-raw, height=1920, width=1080 ! autovideosink')
 

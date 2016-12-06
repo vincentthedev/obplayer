@@ -40,7 +40,7 @@ class ObTestSignalPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
         self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc')
         self.pipeline.add(self.audiotestsrc)
         self.videotestsrc = Gst.ElementFactory.make('videotestsrc')

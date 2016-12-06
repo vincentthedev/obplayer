@@ -60,7 +60,7 @@ class ObBreakPipeline (ObGstPipeline):
         self.audiosink = None
         self.videosink = None
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc')
         self.audiotestsrc.set_property('wave', 4)       # silence

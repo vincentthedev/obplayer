@@ -41,7 +41,7 @@ class ObPlayBinPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
         self.play_start_time = 0
-        self.pipeline = Gst.ElementFactory.make('playbin')
+        self.pipeline = Gst.ElementFactory.make('playbin', name)
         # TODO this is false for testing
         #self.pipeline.set_property('force-aspect-ratio', False)
         self.pipeline.set_property('force-aspect-ratio', True)
@@ -132,7 +132,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
         self.audiosink = None
         self.videosink = None
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         self.decodebin = Gst.ElementFactory.make('uridecodebin')
         self.pipeline.add(self.decodebin)

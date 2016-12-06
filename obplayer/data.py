@@ -223,8 +223,8 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
             return 'alerts_naad_archive2_invalid'
 
-        if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
-            return 'alerts_trigger_serial_file_invalid'
+        #if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
+        #    return 'alerts_trigger_serial_file_invalid'
 
         geocode_regex = re.compile(r'^\s*(|\d+(|\s*,\s*\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
@@ -245,7 +245,7 @@ class ObConfigData (ObData):
         if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
             return 'http_admin_port_invalid'
 
-        if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
+        if setting_name == 'http_admin_secure' and int(setting_value) and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'http_admin_sslcert_invalid'
 
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
