@@ -1284,11 +1284,35 @@
               <td><select name="streamer_rtsp_clock_rate">
                   <option value="48000"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtsp_clock_rate','48000') %>>48000 Hz</option>
                   <option value="44100"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtsp_clock_rate','44100') %>>44100 Hz</option>
-                </select></td>
+              </select></td>
             </tr>
             <tr>
               <td data-t>streamer_rtsp_allow_discovery</td>
               <td><input type="checkbox" name="streamer_rtsp_allow_discovery" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_rtsp_allow_discovery') %> title="streamer_rtsp_allow_discovery_tooltip" data-t></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 data-t>YouTube Streaming</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td data-t>streamer_youtube_enable</td>
+              <td><input type="checkbox" name="streamer_youtube_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_youtube_enable') %> title="streamer_youtube_enable_tooltip" data-t></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_youtube_key</td>
+              <td><input type="text" name="streamer_youtube_key" value="<%= obplayer.Config.setting('streamer_youtube_key',True) %>"></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_youtube_mode</td>
+              <td><select name="streamer_youtube_mode">
+                  <option value="240p"<%= obplayer.HTTPAdmin.form_item_selected('streamer_youtube_mode','240p') %>>240p</option>
+                  <option value="360p"<%= obplayer.HTTPAdmin.form_item_selected('streamer_youtube_mode','360p') %>>360p</option>
+                  <option value="480p"<%= obplayer.HTTPAdmin.form_item_selected('streamer_youtube_mode','480p') %>>480p</option>
+                  <option value="720p"<%= obplayer.HTTPAdmin.form_item_selected('streamer_youtube_mode','720p') %>>720p</option>
+              </select></td>
             </tr>
           </tbody>
         </table>

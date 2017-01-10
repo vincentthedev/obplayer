@@ -30,7 +30,7 @@ import traceback
 
 
 class ObData (object):
-    datadir = None
+    datadir = os.path.expanduser('~/.openbroadcaster')
 
     @classmethod
     def set_datadir(cls, name):
@@ -313,6 +313,9 @@ class ObConfigData (ObData):
         self.add_setting('streamer_rtsp_port', '8554', 'int')
         self.add_setting('streamer_rtsp_clock_rate', '48000', 'text')
         self.add_setting('streamer_rtsp_allow_discovery', '0', 'bool')
+        self.add_setting('streamer_youtube_enable', '0', 'bool')
+        self.add_setting('streamer_youtube_key', '', 'text')
+        self.add_setting('streamer_youtube_mode', '240p', 'text')
 
         self.add_setting('scheduler_enable', '0', 'bool')
         self.add_setting('sync_device_id', '1', 'int')

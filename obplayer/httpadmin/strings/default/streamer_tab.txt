@@ -41,3 +41,12 @@ Streamer Tab
   streamer_rtsp_allow_discovery: Allow RTSP Service Discovery
   streamer_rtsp_allow_discovery_tooltip: Publish the RTSP Server via Avahi (mDNS-SD).  Required for automatic discovery by Livewire/Ravenna devices.
 
+  YouTube Streaming: YouTube Streaming
+
+  streamer_youtube_enable: Enable YouTube Live Streamer
+  streamer_youtube_enable_tooltip: Enable YouTube Live Streamer.  The audio/video output of the player will be sent to YouTube to be streamed lived.
+
+  streamer_youtube_key: YouTube Streaming Key
+
+  streamer_youtube_mode: YouTube Output Mode
+

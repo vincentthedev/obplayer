@@ -27,13 +27,14 @@ import obplayer
 import gi
 from gi.repository import GObject
 
-from .icecast import ObIcecastStreamer
 
 def init():
     obplayer.Streamer = None
     obplayer.RTSPStreamer = None
+    obplayer.YoutubeStreamer = None
 
     if obplayer.Config.setting('streamer_icecast_enable'):
+        from .icecast import ObIcecastStreamer
         def delaystart():
             obplayer.Streamer = ObIcecastStreamer()
             if obplayer.Config.setting('streamer_play_on_startup'):
@@ -45,9 +46,16 @@ def init():
         from .rtsp import ObRTSPStreamer
         obplayer.RTSPStreamer = ObRTSPStreamer()
 
+    if obplayer.Config.setting('streamer_youtube_enable'):
+        from .youtube import ObYoutubeStreamer
+        obplayer.YoutubeStreamer = ObYoutubeStreamer()
+        obplayer.YoutubeStreamer.start()
+
 def quit():
     if obplayer.Streamer:
         obplayer.Streamer.quit()
     if obplayer.RTSPStreamer:
         obplayer.RTSPStreamer.quit()
+    if obplayer.YoutubeStreamer:
+        obplayer.YoutubeStreamer.quit()
 

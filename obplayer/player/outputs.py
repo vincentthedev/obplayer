@@ -128,6 +128,7 @@ class ObAudioOutputBin (ObOutputBin):
 
         self.build_pipeline(self.elements)
 
+        """
         if obplayer.Config.setting('streamer_icecast_mode').startswith('video') or obplayer.Config.setting('streamer_audio_in_mode') == 'intersink':
             interpipe = [ ]
             interpipe.append(Gst.ElementFactory.make("queue2"))
@@ -138,19 +139,21 @@ class ObAudioOutputBin (ObOutputBin):
             interpipe[-1].set_property('enable-last-sample', False)
             self.build_pipeline(interpipe)
             self.tee.link(interpipe[0])
-
-        """
-        appsink = Gst.ElementFactory.make("appsink", "appsink")
-        appsink.set_property('emit-signals', True)
-        appsink.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
-        appsink.connect("new-preroll", obplayer.Player.microphone.cb_new_preroll)
-        appsink.connect("new-sample", obplayer.Player.microphone.cb_new_sample)
-        self.bin.add(appsink)
-        tee.link(appsink)
         """
 
         self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
         self.bin.add_pad(self.sinkpad)
+
+    def add_inter_tap(self, name):
+        interpipe = [ ]
+        interpipe.append(Gst.ElementFactory.make("queue2"))
+        interpipe.append(Gst.ElementFactory.make("interaudiosink"))
+        interpipe[-1].set_property('channel', name)
+        #interpipe[-1].set_property('sync', False)
+        #interpipe[-1].set_property('async', False)
+        interpipe[-1].set_property('enable-last-sample', False)
+        self.build_pipeline(interpipe)
+        self.tee.link(interpipe[0])
 
 
 class ObVideoOutputBin (ObOutputBin):
@@ -302,6 +305,7 @@ class ObVideoOutputBin (ObOutputBin):
 
         self.build_pipeline(self.elements)
 
+        """
         if obplayer.Config.setting('streamer_icecast_mode').startswith('video'):
             interpipe = [ ]
             interpipe.append(Gst.ElementFactory.make("queue2"))
@@ -312,6 +316,7 @@ class ObVideoOutputBin (ObOutputBin):
             interpipe[-1].set_property('enable-last-sample', False)
             self.build_pipeline(interpipe)
             self.tee.link(interpipe[0])
+        """
 
 
         """
@@ -340,28 +345,19 @@ class ObVideoOutputBin (ObOutputBin):
         self.queue.link(self.mixer)
         """
 
-
         self.sinkpad = Gst.GhostPad.new('sink', self.elements[0].get_static_pad('sink'))
         self.bin.add_pad(self.sinkpad)
 
-
-    def _cb_new_sample(self, userdata):
-        gbuffer = self.appsink.get_property('last-sample').get_buffer()
-        #data = gbuffer.extract_dup(0, gbuffer.get_size())
-        #if self.encoder:
-        #    data = self.encoder.encode_buffer(data)
-        ##print("Encoded: " + str(len(data)) + " " + repr(data[:20]))
-        #self.monitor_queue += data
-
-        #while len(self.monitor_queue) >= self.blocksize:
-        #    data = self.monitor_queue[:self.blocksize]
-        #    self.monitor_queue = self.monitor_queue[self.blocksize:]
-        #    #obplayer.Log.log("websocket send: " + str(len(data)) + " " + repr(data[:20]) + "...", 'debug')
-        #    if self.conn:
-        #        self.conn.websocket_write_message(obplayer.httpadmin.httpserver.WS_OP_BIN, data)
-        if obplayer.Streamer:
-            obplayer.Streamer.queue_data(gbuffer)
-        return Gst.FlowReturn.OK
+    def add_inter_tap(self, name):
+        interpipe = [ ]
+        interpipe.append(Gst.ElementFactory.make("queue2"))
+        interpipe.append(Gst.ElementFactory.make("intervideosink"))
+        interpipe[-1].set_property('channel', name)
+        #interpipe[-1].set_property('sync', False)
+        #interpipe[-1].set_property('async', False)
+        interpipe[-1].set_property('enable-last-sample', False)
+        self.build_pipeline(interpipe)
+        self.tee.link(interpipe[0])
 
 
 class ObVideoOverlayBin (ObOutputBin):

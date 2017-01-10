@@ -122,10 +122,12 @@ class ObIcecastStreamer (object):
         self.build_pipeline(self.audiopipe)
 
     def make_video_pipe(self):
+        obplayer.Player.add_inter_tap('icecast')
+
         self.audiopipe = [ ]
 
         self.interaudiosrc = Gst.ElementFactory.make('interaudiosrc')
-        self.interaudiosrc.set_property('channel', 'audio')
+        self.interaudiosrc.set_property('channel', 'icecast:audio')
         #self.interaudiosrc.set_property('buffer-time', 8000000000)
         #self.interaudiosrc.set_property('latency-time', 8000000000)
         self.audiopipe.append(self.interaudiosrc)
@@ -189,7 +191,7 @@ class ObIcecastStreamer (object):
         """
 
         self.intervideosrc = Gst.ElementFactory.make('intervideosrc')
-        self.intervideosrc.set_property('channel', 'video')
+        self.intervideosrc.set_property('channel', 'icecast:video')
         self.videopipe.append(self.intervideosrc)
 
         self.videopipe.append(Gst.ElementFactory.make("queue2"))

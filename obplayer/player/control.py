@@ -359,6 +359,23 @@ class ObPlayer (object):
                     if outputs.Overlay:
                         outputs.Overlay.set_message(self.requests[output]['overlay_text'])
 
+    def add_inter_tap(self, name):
+        with self.lock:
+            if self.patches['audio']:
+                audio_state = self.pipes[self.patches['audio']].is_playing()
+                self.pipes[self.patches['audio']].stop()
+
+            if self.patches['visual']:
+                visual_state = self.pipes[self.patches['visual']].is_playing()
+                self.pipes[self.patches['visual']].stop()
+
+            obplayer.Player.outputs['audio'].add_inter_tap(name + ':audio')
+            obplayer.Player.outputs['visual'].add_inter_tap(name + ':video')
+            if self.patches['audio'] and audio_state:
+                self.pipes[self.patches['audio']].start()
+            if self.patches['visual'] and visual_state and self.patches['audio'] != self.patches['visual']:
+                self.pipes[self.patches['visual']].start()
+
     def get_controller_requests(self, ctrl):
         return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
 
