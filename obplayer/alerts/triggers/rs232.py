@@ -37,9 +37,9 @@ class SerialTrigger (object):
         try:
             obplayer.Log.log("initializing serial trigger on port " + self.trigger_serial_file, 'alerts')
 
-            serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
-            serial_fd.setDTR(False)
-            serial_fd.close()
+            #serial_fd = serial.Serial(self.trigger_serial_file, baudrate=9600)
+            #serial_fd.setDTR(False)
+            #serial_fd.close()
         except:
             obplayer.Log.log("failed to initalize serial trigger", 'alerts')
             obplayer.Log.log(traceback.format_exc(), 'error')
