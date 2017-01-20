@@ -76,7 +76,7 @@ class ObPlayer (object):
             self.requests[request] = None
 
         self.pipes = { }
-        self.pipes['audio'] = pipes.ObPlayBinPipeline('audio-playbin', self, obplayer.Config.setting('audio_out_visualization'))
+        self.pipes['audio'] = pipes.ObAudioPlayBinPipeline('audio-playbin', self, obplayer.Config.setting('audio_out_visualization'))
         self.pipes['video'] = pipes.ObPlayBinPipeline('video-playbin', self)
         self.pipes['testsignal'] = pipes.ObTestSignalPipeline('test-signal', self)
         self.pipes['image'] = pipes.ObImagePipeline('image-pipeline', self)

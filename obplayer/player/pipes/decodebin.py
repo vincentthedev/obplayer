@@ -34,7 +34,7 @@ from .base import ObGstPipeline
 
 
 class ObPlayBinPipeline (ObGstPipeline):
-    min_class = [ 'audio' ]
+    min_class = [ 'audio', 'visual' ]
     max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
@@ -119,6 +119,10 @@ class ObPlayBinPipeline (ObGstPipeline):
                 obplayer.Log.log('unable to seek on this track', 'error')
             obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
 
+
+class ObAudioPlayBinPipeline (ObPlayBinPipeline):
+    min_class = [ 'audio' ]
+    max_class = [ 'audio', 'visual' ]
 
 
 class ObDecodeBinPipeline (ObGstPipeline):
