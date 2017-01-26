@@ -20,6 +20,10 @@
 
     <h1><img src="/oblogo.svg" width="150" /><%= obplayer.HTTPAdmin.title %></h1>
 
+    <% if obplayer.Config.setting('http_admin_password',True) == 'admin': %>
+        <div class="error">The admin password is set to the default.  Please go to the HTTP(S) Admin tab and change it.</div>
+    <% end %>
+
     <div id="tabs">
       <div class="tab selected" data-content="status" data-tns="Status Tab" data-t>Status</div>
       <div class="tab" data-content="summary" data-tns="Summary Tab" data-t>Summary</div>
@@ -1596,7 +1600,11 @@
             </tr>
             <tr>
               <td data-t>http_admin_password</td>
-              <td><input type="password" name="http_admin_password" value="<%= obplayer.Config.setting('http_admin_password',True) %>"></td>
+              <td><input type="password" name="http_admin_password" value=""></td>
+            </tr>
+            <tr>
+              <td data-t>http_admin_password_retype</td>
+              <td><input type="password" name="http_admin_password_retype" value=""></td>
             </tr>
             <tr>
               <td data-t>http_readonly_username</td>

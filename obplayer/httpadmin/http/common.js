@@ -63,20 +63,14 @@ Site.save = function(section)
 
   $.post('/save',postfields,function(response)
   {
-    //Site.saveSuccess,'json');
-    var namespace = undefined; // $('#content-'+section).attr('data-tns');
     if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
-    else $('#error').text(Site.t(namespace ? namespace : 'Responses', response.error)).show();
+    else {
+      var errormsg = Site.t($('#content-'+section).attr('data-tns'), response.error);
+      if(errormsg==response.error) Site.t('Responses', response.error);
+      $('#error').text(errormsg).show();
+    }
   });
-
 }
-
-Site.saveSuccess = function(response)
-{
-  if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
-  else $('#error').text(Site.t('Responses', response.error)).show();
-}
-
 
 Site.injectAlert = function()
 {

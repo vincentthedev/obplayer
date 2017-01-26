@@ -17,6 +17,7 @@ HTTP Tab
 
   http_admin_username: Admin Username
   http_admin_password: Admin Password
+  http_admin_password_retype: Retype Admin Password
   http_readonly_username: Read-Only Username
   http_readonly_password: Read-Only Password
   http_readonly_allow_restart: Allow Fullscreen/Restart for Read-Only User
