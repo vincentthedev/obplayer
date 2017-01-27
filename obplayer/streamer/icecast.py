@@ -72,8 +72,9 @@ class ObIcecastStreamer (object):
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
 
         elif audio_input == 'intersink':
+            obplayer.Player.add_inter_tap('icecast')
             self.audiosrc = Gst.ElementFactory.make('interaudiosrc')
-            self.audiosrc.set_property('channel', 'audio')
+            self.audiosrc.set_property('channel', 'icecast:audio')
             #self.audiosrc.set_property('buffer-time', 8000000000)
             #self.audiosrc.set_property('latency-time', 8000000000)
 
