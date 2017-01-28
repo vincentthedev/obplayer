@@ -53,6 +53,9 @@ class ObFakeOutputBin (ObOutputBin):
     def __init__(self):
         self.bin = Gst.ElementFactory.make('fakesink', 'fake-output-bin')
 
+    def add_inter_tap(self, name):
+        pass
+
 
 class ObAudioOutputBin (ObOutputBin):
     def __init__(self):
