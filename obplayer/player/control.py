@@ -328,7 +328,8 @@ class ObPlayer (object):
                             #print("*** Requeued request " + repr(self.requests[unpatch_list[0]]))
                         else:
                             # TODO requeue any request for which we stop the pipe
-                            print("*** We didn't requeue " + repr(unpatch_list[0]))
+                            #print("*** We didn't requeue " + repr(unpatch_list[0]))
+                            pass
 
                     self.pipes[pipe].unpatch('/'.join(unpatch_list))
 
@@ -501,7 +502,7 @@ class ObPlayerController (object):
             with self.lock:
                 for (i, queued) in enumerate(self.queue):
                     if queued == req:
-                        print("We totally didn't requeue!")
+                        #print("We totally didn't requeue!")
                         return
                         #self.queue.pop(i)
             #print("Requeuing request from [" + self.name + "] for (Duration: " + str(req['duration']) + ") [" + req['media_type'] + "] " + req['filename'])
@@ -509,7 +510,7 @@ class ObPlayerController (object):
         else:
             # if requeues are not allowed and we are requeuing, then the player wont be playing the currently queued requests,
             # and we should get rid of them all, so that the player always calls the controllers to get new requests
-            print("Clearing queue for source " + self.name + " (" + str(len(self.queue)) + " items)")
+            obplayer.Log.log("Clearing queue for source " + self.name + " (" + str(len(self.queue)) + " items)", 'debug')
             self.clear_queue()
 
     def clear_queue(self):

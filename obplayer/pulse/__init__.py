@@ -32,9 +32,15 @@ def init():
     try:
         import pulsectl
     except ImportError:
-        obplayer.Log.log("Missing python package: pulsectl. PulseAudio controls will be disabled.")
+        obplayer.Log.log("missing python package: pulsectl. PulseAudio controls will be disabled.", 'error')
         return
-    pulse = pulsectl.Pulse('obplayer-pulsectl')
+
+    try:
+        pulse = pulsectl.Pulse('obplayer-pulsectl')
+    except:
+        pulse = None
+        obplayer.Log.log("failed to connect to PulseAudio server.  PulseAudio controls will be disabled.", 'error')
+        return
 
 def quit():
     pass
