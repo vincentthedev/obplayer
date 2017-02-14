@@ -84,7 +84,7 @@ class ObIcecastStreamer (object):
         self.audiopipe.append(self.audiosrc)
 
         caps = Gst.ElementFactory.make('capsfilter')
-        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,channel-mask=(bitmask)=0x3"))
+        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,channel-mask=(bitmask)0x3"))
         self.audiopipe.append(caps)
 
         self.audiopipe.append(Gst.ElementFactory.make("queue2"))
