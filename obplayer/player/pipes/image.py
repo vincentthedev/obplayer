@@ -154,7 +154,7 @@ class ObImagePipeline (ObGstPipeline):
 
         self.control_source.unset_all()
         end_time = req['end_time'] - time.time()
-        if end_time > 0:
+        if end_time >= 1:
             self.control_source.set(0, 0.0)
             self.control_source.set(1 * Gst.SECOND, 1.0)
             self.control_source.set((end_time - 1) * Gst.SECOND, 1.0)
