@@ -303,7 +303,7 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_ip', '127.0.0.1', 'text')
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')
-        self.add_setting('streamer_icecast_password', 'hackme', 'text')
+        self.add_setting('streamer_icecast_password', '1c3c4stS0uRc3', 'text')
         self.add_setting('streamer_icecast_streamname', '', 'text')
         self.add_setting('streamer_icecast_description', '', 'text')
         self.add_setting('streamer_icecast_url', '', 'text')
@@ -350,7 +350,7 @@ class ObConfigData (ObData):
         self.add_setting('rtp_in_clock_rate', '48000', 'text')
         self.add_setting('rtp_in_enable_rtcp', '0', 'bool')
 
-        self.add_setting('testsignal_enable', '0', 'bool')
+        self.add_setting('testsignal_enable', '1', 'bool')
 
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
