@@ -25,6 +25,7 @@ import obplayer
 import os
 import sys
 import time
+import os.path
 import threading
 import traceback
 
@@ -116,13 +117,12 @@ class ObPlayer (object):
         return '/'.join(self.pipes[media_type].min_class)
 
     @staticmethod
-    def get_media_location(file_location):
-        if '/' not in file_location:
-            # file location specified as 2-character directory code.
-            file_location = obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1]
-        elif file_location[0] != '/':
-            file_location = os.getcwd() + '/' + file_location
-        return file_location
+    def file_uri(file_location, filename=None):
+        if filename:
+            file_location = os.path.join(file_location, filename)
+        if not file_location.startswith('/'):
+            file_location = os.path.join(os.getcwd(), file_location)
+        return 'file://' + file_location
 
     def create_controller(self, name, priority, default_play_mode=None, allow_overlay=False, allow_requeue=True):
         ctrl = ObPlayerController(self, name, priority, default_play_mode, allow_overlay, allow_requeue)
@@ -259,7 +259,7 @@ class ObPlayer (object):
             unicode(req['artist']).encode('ascii', 'replace').decode('ascii'),
             unicode(req['title']).encode('ascii', 'replace').decode('ascii'),
             req['media_id'],
-            unicode(req['filename']).encode('ascii', 'replace').decode('ascii'),
+            unicode(os.path.basename(req['uri'])).encode('ascii', 'replace').decode('ascii'),
             str(req['duration']),
             req['media_type'],
             req['controller'].name
@@ -442,16 +442,13 @@ class ObPlayerController (object):
 
     # media_type can be: audio, video, image, linein, break, testsignal
     # play_mode can be:  exclusive, overlap
-    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
+    def add_request(self, media_type, start_time=None, end_time=None, uri='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
         if not self.enabled:
             return
 
-        # expand file location if necessary and check that media file exists
-        if file_location:
-            file_location = ObPlayer.get_media_location(file_location)
-            if filename and os.path.exists(file_location + '/' + filename) == False:
-                obplayer.Log.log('ObPlayer: File ' + file_location + '/' + filename + ' does not exist. Skipping playback', 'error')
-                return None
+        # if uri was explicitly set to None, then don't add this request (media might be missing)
+        if uri is None:
+            return None
 
         # calculate start time and end time based on given info
         if start_time is None:
@@ -472,8 +469,7 @@ class ObPlayerController (object):
             'media_type' : media_type,
             'start_time' : start_time,
             'end_time' : end_time,
-            'file_location' : file_location,
-            'filename' : filename,
+            'uri' : uri,
             'duration' : duration,
             'offset' : offset,
             'media_id' : media_id,

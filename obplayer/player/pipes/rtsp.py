@@ -151,18 +151,15 @@ class ObRTSPInputPipeline (ObGstPipeline):
                 os.system(obplayer.Config.setting('gst_init_callback'))
 
     def set_request(self, req):
-        #self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
-        #print(req['file_location'])
-        #self.rtspsrc.set_property('location', req['file_location'])
         #self.rtspsrc.set_property('location', "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov")
         #self.rtspsrc.set_property('location', "rtsp://localhost:8000/GoaTrance.mp3")
         #self.rtspsrc.set_property('location', "rtsp://localhost:8554/by-id/1")
         #self.rtspsrc.set_property('location', "rtsp://172.16.0.15/by-id/2")
         #self.rtspsrc.set_property('location', "rtsp://localhost:5544/")
-        if req['file_location'] or not req['filename'].startswith('rtsp'):
-            obplayer.Log.log("invalid RTSP uri: " + req['file_location'] + " " + req['filename'], 'info')
+        if not req['uri'].startswith('rtsp'):
+            obplayer.Log.log("invalid RTSP uri: " + req['uri'], 'info')
             return
-        self.rtspsrc.set_property('location', req['filename'])
+        self.rtspsrc.set_property('location', req['uri'])
         #self.seek_pause()
 
     def message_handler_rtp(self, bus, message):

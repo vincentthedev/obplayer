@@ -98,8 +98,8 @@ class ObPlayBinPipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.play_start_time = req['start_time']
-        #self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
-        self.pipeline.set_property('uri', Gst.filename_to_uri(req['file_location'] + '/' + req['filename']))
+        #self.pipeline.set_property('uri', Gst.filename_to_uri(req['file_location'] + '/' + req['filename']))
+        self.pipeline.set_property('uri', req['uri'])
         self.seek_pause()
 
     def seek_pause(self):
@@ -221,7 +221,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.play_start_time = req['start_time']
-        self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.decodebin.set_property('uri', req['uri'])
         self.seek_pause()
 
     def seek_pause(self):

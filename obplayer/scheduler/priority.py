@@ -49,8 +49,7 @@ class ObPriorityBroadcaster:
 
                         self.ctrl.add_request(
                             media_type = broadcast['media_type'],
-                            file_location = broadcast['file_location'],
-                            filename = broadcast['filename'],
+                            uri = obplayer.Sync.media_uri(broadcast['file_location'], broadcast['filename']),
                             media_id = broadcast['media_id'],
                             artist = broadcast['artist'],
                             title = broadcast['title'],

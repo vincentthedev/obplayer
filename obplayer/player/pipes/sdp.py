@@ -131,7 +131,7 @@ class ObSDPInputPipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.start_time = req['start_time']
-        self.filesrc.set_property('location', req['file_location'] + '/' + req['filename'])
+        self.filesrc.set_property('location', req['uri'][7:] if req['uri'].startswith('file://') else req['uri'])
 
     def message_handler_rtp(self, bus, message):
         if message.type == Gst.MessageType.ERROR:

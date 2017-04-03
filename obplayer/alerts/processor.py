@@ -470,7 +470,7 @@ class ObAlertProcessor (object):
                                     alert.times_played += 1
 
                                     start_time = self.ctrl.get_requests_endtime()
-                                    self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
+                                    self.ctrl.add_request(media_type='audio', uri=obplayer.Player.file_uri("obplayer/alerts/data", "canadian-attention-signal.mp3"), duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
                                     self.ctrl.add_request(**alert_media['primary']['audio'])
                                     if 'visual' in alert_media['primary']:
                                         self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])

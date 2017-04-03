@@ -150,7 +150,7 @@ class ObImagePipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.request = req
-        self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.decodebin.set_property('uri', req['uri'])
 
         self.control_source.unset_all()
         end_time = req['end_time'] - time.time()

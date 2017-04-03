@@ -240,8 +240,7 @@ class ObShow (object):
             self.ctrl.add_request(
                 start_time = self.media_start_time,
                 media_type = media['media_type'],
-                file_location = media['file_location'],
-                filename = media['filename'],
+                uri = obplayer.Sync.media_uri(media['file_location'], media['filename']),
                 media_id = media['media_id'],
                 order_num = media['order_num'],
                 artist = media['artist'],

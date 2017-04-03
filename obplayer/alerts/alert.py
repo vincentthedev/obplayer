@@ -182,6 +182,7 @@ class ObAlert (object):
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
         filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
+        uri = obplayer.Player.file_uri(location, filename)
 
         resources = info.get_resources('audio')
         if resources:
@@ -195,7 +196,7 @@ class ObAlert (object):
             return False
 
         d = GstPbutils.Discoverer()
-        mediainfo = d.discover_uri("file:///%s/%s" % (location, filename))
+        mediainfo = d.discover_uri(uri)
 
         self.media_info[language] = { }
         self.media_info[language]['audio'] = {
@@ -203,8 +204,7 @@ class ObAlert (object):
             'artist' : 'Emergency Alert',
             'title' : str(self.identifier),
             'overlay_text' : message_text,
-            'file_location' : location,
-            'filename' : filename,
+            'uri' : uri,
             'duration' : (mediainfo.get_duration() / float(Gst.SECOND))
         }
 
@@ -222,8 +222,7 @@ class ObAlert (object):
                 'artist' : 'Emergency Alert',
                 'title' : str(self.identifier),
                 #'overlay_text' : message_text,
-                'file_location' : location,
-                'filename' : filename,
+                'uri' : uri,
                 'duration' : self.media_info[language]['audio']['duration']
             }
             self.media_info[language]['audio']['overlay_text'] = None
