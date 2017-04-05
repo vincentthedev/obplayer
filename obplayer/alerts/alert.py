@@ -85,7 +85,9 @@ class ObAlert (object):
         self.active = False
         self.max_plays = 0
         self.times_played = 0
+        self.previously_important = False
         self.media_info = { }
+        self.received_at = time.time()
 
         if xmlcode is not None:
             self.parse_cap_xml(xmlcode)
@@ -162,11 +164,20 @@ class ObAlert (object):
         return True
 
     def broadcast_immediately(self):
+        if self.previously_important:
+            return True
         for info in self.info:
-            val = info.get_parameter("layer:SOREM:1.0:Broadcast_Immediately");
+            val = info.get_parameter("layer:SOREM:1.0:Broadcast_Immediately")
             if val.lower() == "yes":
                 return True
         return False
+
+    def minor_change(self):
+        for info in self.info:
+            val = info.get_parameter("profile:CAP-CP:0.4:MinorChange")
+            if val:
+                return val
+        return None
 
     def generate_audio(self, language, voice=None):
         info = self.get_first_info(language, bestmatch=False)
@@ -241,6 +252,7 @@ class ObAlert (object):
     def write_tts_file(self, path, message_text, voice=None):
         if not voice:
             voice = 'en'
+        message_text = message_text.rstrip('*')
         #os.system("echo \"%s\" | text2wave > %s/%s" % (message_text[0], location, filename))
         #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
         #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
@@ -325,16 +337,24 @@ class ObAlertInfo (object):
     def get_parameter(self, name):
         for param in self.parameters:
             if param[0] == name:
-                return param[1];
+                return param[1]
         return None
 
     def get_resources(self, typename=None):
         return [ resource for resource in self.resources if not typename or typename in resource.mimetype ]
 
     def get_message_text(self, truncate=False):
-        text = self.get_parameter("layer:SOREM:1.0:Broadcast_Text");
+        text = self.get_parameter("layer:SOREM:1.0:Broadcast_Text")
         if not text:
-            text = self.description if self.description else self.headline
+            #text = self.description if self.description else self.headline
+            # CLF Guide 1.2: Appendix D, Section 2.2
+            sender = ' - ' + self.sender if self.sender else ''
+            areadesc = ' - ' + ', '.join([ area.description for area in self.areas ])
+            instruction = ' - ' + self.instruction if self.instruction else ''
+            if self.language == 'fr-CA':
+                text = 'Alerte' + sender + ' - ' + 'Alerte ' + self.event + areadesc + instruction
+            else:
+                text = 'Alert' + sender + ' - ' + self.event + ' Alert' + areadesc + instruction
 
         if sys.version.startswith('3'):
             import html
@@ -344,7 +364,7 @@ class ObAlertInfo (object):
 
         if truncate:
             parts = text.split('\n\n', 1)
-            text = parts[0]
+            text = parts[0] + ('***' if len(parts) > 1 else '')
 
         text = text.replace('\n', ' ').replace('\r', '')
         return text

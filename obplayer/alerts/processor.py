@@ -278,8 +278,7 @@ class ObAlertProcessor (object):
         alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat, 'next_play' : self.next_alert_check }
         with self.lock:
             for (name, alert_list) in [ ('active', self.alerts_active), ('expired', self.alerts_expired) ]:
-                for id in alert_list.keys():
-                    alert = alert_list[id]
+                for alert in self.sort_by_importance(alert_list.values()):
                     info = alert.get_first_info(self.language_primary)
                     alerts[name].append({
                         'identifier' : alert.identifier,
@@ -310,23 +309,23 @@ class ObAlertProcessor (object):
 
     def handle_dispatch(self, alert):
         self.mark_seen(alert)
+        self.fetch_references(alert.references)
 
         # deactivate any previous alerts that are cancelled or superceeded by this alert
         if alert.msgtype in ('update', 'cancel'):
             for (_, identifier, _) in alert.references:
                 if identifier in self.alerts_active:
+                    alert.previously_important = self.alerts_active[identifier].broadcast_immediately()     # message updates might not have the BI flag set
                     self.mark_expired(self.alerts_active[identifier])
 
         if alert.status == 'system':
             self.last_heartbeat = time.time()
-            self.fetch_references(alert.references)        # only fetch alerts referenced in system heartbeats
 
         elif alert.msgtype in ('alert', 'update'):
             if self.match_alert_conditions(alert):
                 self.mark_active(alert)
-                #print "Active Alert:"
-                #alert.print_data()
-                self.next_alert_check = time.time() + 20
+                if not alert.minor_change():
+                    self.next_alert_check = time.time() + 20
 
     def match_alert_conditions(self, alert):
         if not alert.has_geocode(self.target_geocodes):
@@ -404,6 +403,9 @@ class ObAlertProcessor (object):
                 obplayer.Log.log("error during alert cycle each trigger", 'error')
                 obplayer.Log.log(traceback.format_exc(), 'error')
 
+    def sort_by_importance(self, alerts):
+        return sorted(alerts, key=lambda alert: alert.received_at * (10000 if alert.broadcast_immediately() else 1), reverse=True)
+
     def run(self):
         self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
         self.next_expired_check = time.time() + 30
@@ -464,13 +466,14 @@ class ObAlertProcessor (object):
                         with self.lock:
                             self.trigger_alert_cycle_init()
 
-                            for alert in self.alerts_active.values():
+                            for alert in self.sort_by_importance(self.alerts_active.values()):
                                 alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
                                 if alert_media['primary']:
                                     alert.times_played += 1
 
                                     start_time = self.ctrl.get_requests_endtime()
-                                    self.ctrl.add_request(media_type='audio', uri=obplayer.Player.file_uri("obplayer/alerts/data", "canadian-attention-signal.mp3"), duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
+                                    if alert.times_played <= 1:
+                                        self.ctrl.add_request(media_type='audio', uri=obplayer.Player.file_uri("obplayer/alerts/data", "canadian-attention-signal.mp3"), duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
                                     self.ctrl.add_request(**alert_media['primary']['audio'])
                                     if 'visual' in alert_media['primary']:
                                         self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])
