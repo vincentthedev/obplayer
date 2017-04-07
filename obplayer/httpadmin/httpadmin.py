@@ -220,16 +220,16 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
 
     def req_update(self, request):
         srcpath = os.path.dirname(os.path.dirname(obplayer.__file__))
-        proc = subprocess.Popen('cd "' + srcpath + '" && git pull', stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen('cd "' + srcpath + '" && git branch && git pull', stdout=subprocess.PIPE, shell=True)
         (output, _) = proc.communicate()
         return { 'output': output.decode('utf-8') }
 
     def req_update_check(self, request):
         srcpath = os.path.dirname(os.path.dirname(obplayer.__file__))
         branch = subprocess.Popen('cd "{0}" && git branch'.format(srcpath), stdout=subprocess.PIPE, shell=True)
-        (output, _) = branch.communicate()
+        (branchoutput, _) = branch.communicate()
         branchname = 'master'
-        for name in output.decode('utf-8').split('\n'):
+        for name in branchoutput.decode('utf-8').split('\n'):
             if name.startswith('*'):
                 branchname = name.strip('* ')
                 break
@@ -239,7 +239,11 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
 
         version = subprocess.Popen('cd "{0}" && git show origin/{1}:VERSION'.format(srcpath, branchname), stdout=subprocess.PIPE, shell=True)
         (output, _) = version.communicate()
-        return { 'available': False if diff.returncode == 0 else True, 'version': output.decode('utf-8') }
+        return {
+            'available': False if diff.returncode == 0 else True,
+            'version': "{0} on {1} branch".format(output.decode('utf-8'), branchname),
+            'branches': [ name.strip(' *') for name in branchoutput.decode('utf-8').split('\n') ]
+        }
 
     def req_scheduler_toggle(self, request):
         ctrl = obplayer.Scheduler.ctrl
