@@ -21,8 +21,8 @@ then
             echo ""
 
             python2 obplayer.py $@
-            exit;
         fi
+        exit;
 fi
 
 python3 obplayer.py $@
