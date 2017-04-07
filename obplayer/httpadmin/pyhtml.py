@@ -78,6 +78,7 @@ class PyHTML (object):
         self._globals['print'] = self.write
         self._globals['t'] = self.translate
 
+        self._globals['sys'] = sys
         self._globals['json'] = json
         self._globals['re'] = re
         self._globals['time'] = time

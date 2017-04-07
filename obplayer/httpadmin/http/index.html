@@ -24,6 +24,10 @@
         <div class="error">The admin password is set to the default.  Please go to the HTTP(S) Admin tab and change it.</div>
     <% end %>
 
+    <% if sys.version_info.major == 2: %>
+        <div class="error">This version of the player is running on python2, which is no longer supported.  Please upgrade your system dependencies and restart.</div>
+    <% end %>
+
     <div id="tabs">
       <div class="tab selected" data-content="status" data-tns="Status Tab" data-t>Status</div>
       <div class="tab" data-content="summary" data-tns="Summary Tab" data-t>Summary</div>
