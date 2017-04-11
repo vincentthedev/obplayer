@@ -4,7 +4,7 @@
 
   <table>
     <tbody>
-      <% sources = [ source for source in obplayer.pulse.source_output_list() if source.resample_method == 'copy' ] %>
+      <% sources = [ source for source in obplayer.pulse.source_output_list() if 'application.id' not in source.proplist or not source.proplist['application.id'].startswith("org.PulseAudio.") ] %>
       <% if len(sources) > 0: %>
         <% for source in sources: %>
           <% link = obplayer.pulse.source_info(source.source) %>
