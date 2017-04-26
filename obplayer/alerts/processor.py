@@ -308,8 +308,13 @@ class ObAlertProcessor (object):
                 self.alerts_expired[alert.identifier] = alert
 
     def handle_dispatch(self, alert):
+        # mark the alert as seen
+        seen = True if alert.identifier in self.alerts_seen else False
         self.mark_seen(alert)
-        self.fetch_references(alert.references)
+
+        # if first time seen, then fetch alerts
+        if not seen and alert.status == 'system':# or alert.msgtype == 'update':
+            self.fetch_references(alert.references, required=True if alert.status == 'system' else False)
 
         # deactivate any previous alerts that are cancelled or superceeded by this alert
         if alert.msgtype in ('update', 'cancel'):
@@ -348,28 +353,32 @@ class ObAlertProcessor (object):
 
         return False
 
-    def fetch_references(self, references):
+    def fetch_references(self, references, required=False):
         for (sender, identifier, timestamp) in references:
             if not identifier in self.alerts_seen:
-                (urldate, _, _) = timestamp.partition('T')
-                filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
+                self.fetch_reference(sender, identifier, timestamp, required)
 
-                for host in self.archive_hosts:
-                    url = "%s/%s/%s.xml" % (host, urldate, filename)
-                    try:
-                        obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
-                        r = requests.get(url)
+    def fetch_reference(self, sender, identifier, timestamp, required=False):
+        (urldate, _, _) = timestamp.partition('T')
+        filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
-                        if r.status_code == 200:
-                            #r.encoding = 'utf-8'
-                            with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
-                                f.write(r.content)
+        for host in self.archive_hosts:
+            url = "%s/%s/%s.xml" % (host, urldate, filename)
+            try:
+                obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
+                r = requests.get(url)
 
-                            alert = obplayer.alerts.ObAlert(r.content)
-                            self.handle_dispatch(alert)
-                            break
-                    except requests.ConnectionError:
-                        obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
+                if r.status_code == 200:
+                    #r.encoding = 'utf-8'
+                    with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
+                        f.write(r.content)
+
+                    alert = obplayer.alerts.ObAlert(r.content)
+                    self.handle_dispatch(alert)
+                    return
+            except requests.ConnectionError:
+                pass
+        obplayer.Log.log("error fetching alert %s" % (identifier,), 'error' if required else 'debug')
 
     def trigger_alert_cycle_start(self):
         for trigger in self.triggers:

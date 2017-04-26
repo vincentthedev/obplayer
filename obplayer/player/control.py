@@ -113,7 +113,7 @@ class ObPlayer (object):
             return 'visual'
         """
         if media_type not in self.pipes:
-           raise Exception("unknown media type request")
+           raise Exception("unknown media type request: " + str(media_type))
         return '/'.join(self.pipes[media_type].min_class)
 
     @staticmethod
@@ -208,16 +208,8 @@ class ObPlayer (object):
                 if ctrl.priority <= priority:
                     break
 
-                req = ctrl.get_request(present_time, allow_query=allow_query)
+                req = ctrl.get_request(present_time, '/'.join(output_list), allow_query=allow_query)
                 if req is not None:
-                    if output_list:
-                        # the request must play on at least one of the outputs in output list or there's no point in trying to play it (it would be masked by a higher priority req)
-                        class_list = req['media_class'].split('/')
-                        for output in output_list:
-                            if output in class_list:
-                                return req
-                        ctrl.requeue_request(req)
-                        return None
                     return req
 
                 if ctrl.allow_overlay is False and ctrl.has_requests():
@@ -525,13 +517,13 @@ class ObPlayerController (object):
         self.clear_queue()
         self.player.stop_controller_requests(self)
 
-    def get_request(self, present_time, allow_query=False):
+    def get_request(self, present_time, media_class, allow_query=False):
         if self.hold_requests_flag is True:
             return None
-        index = self.find_current_request(present_time)
+        index = self.find_current_request(present_time, media_class)
         if index is None and allow_query is True:
             self.call_player_request(present_time)
-            index = self.find_current_request(present_time + 1)                # the plus one is because the new request's start time will be slight after present_time
+            index = self.find_current_request(present_time + 1, media_class)                # the plus one is because the new request's start time will be slight after present_time
 
         if index is None:
             return None
@@ -541,11 +533,15 @@ class ObPlayerController (object):
             self.queue = self.queue[index+1:]
         return req
 
-    def find_current_request(self, present_time):
+    def find_current_request(self, present_time, media_class):
+        output_list = media_class.split('/')
         with self.lock:
             for (i, req) in enumerate(self.queue):
                 if present_time >= req['start_time'] and present_time < req['end_time']:
-                    return i
+                    class_list = req['media_class'].split('/')
+                    for output in output_list:
+                        if output in class_list:
+                            return i
         return None
 
     def get_requests_endtime(self):
