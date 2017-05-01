@@ -890,6 +890,8 @@ class ObSync:
     #
     @staticmethod
     def media_uri(file_location, filename):
+        if not file_location:
+            return ''
         file_location = obplayer.Sync.media_location(file_location)
         if filename and os.path.exists(file_location + '/' + filename) == False:
             obplayer.Log.log('ObPlayer: File ' + file_location + '/' + filename + ' does not exist. Skipping playback', 'error')
