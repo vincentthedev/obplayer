@@ -162,7 +162,10 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
 
     def req_save(self, request):
         if 'http_admin_password' in request.args:
-            if 'http_admin_password_retype' not in request.args or request.args['http_admin_password'][0] != request.args['http_admin_password_retype'][0]:
+            if request.args['http_admin_password'][0] == '':
+                del request.args['http_admin_password']
+                del request.args['http_admin_password_retype']
+            elif 'http_admin_password_retype' not in request.args or request.args['http_admin_password'][0] != request.args['http_admin_password_retype'][0]:
                 return { 'status' : False, 'error' : 'passwords-dont-match' }
             else:
                 del request.args['http_admin_password_retype']

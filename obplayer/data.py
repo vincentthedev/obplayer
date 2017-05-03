@@ -248,6 +248,12 @@ class ObConfigData (ObData):
         if setting_name == 'http_admin_secure' and int(setting_value) and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'http_admin_sslcert_invalid'
 
+        if setting_name == 'http_admin_password' and not setting_value:
+            return 'http_password_blank'
+
+        if setting_name == 'http_readonly_password' and not setting_value:
+            return 'http_password_blank'
+
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
             return 'live_assist_port_invalid'
 
