@@ -18,6 +18,7 @@ Streamer Tab
   streamer_icecast_enable_tooltip: If enabled, an audio recorder will send audio to an icecast server via http.
 
   streamer_icecast_mode: Icecast Output Mode
+  streamer_icecast_bitrate: Icecast Output Bitrate
   streamer_icecast_ip: Icecast IP
   streamer_icecast_port: Icecast Port
   streamer_icecast_mount: Icecast Mountpoint

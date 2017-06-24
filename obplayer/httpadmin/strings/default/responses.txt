@@ -11,6 +11,8 @@ Responses
 
   updater-disabled-error: Updating is disabled
 
+  streamer_icecast_bitrate_invalid: The icecast bitrate is invalid
+
   alerts-disabled-error: The emergency alerts module is currently disabled 
   alerts-invalid-filename: The test alert specified is invalid or does not exist
   alerts-inject-success: Test alert injected successfully.

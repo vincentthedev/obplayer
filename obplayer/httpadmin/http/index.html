@@ -428,6 +428,10 @@
 	    <td><%= obplayer.Config.setting('streamer_icecast_mode') %></td>
 	  </tr>
 	  <tr>
+	    <td data-t>streamer_icecast_bitrate</td>
+	    <td><%= obplayer.Config.setting('streamer_icecast_bitrate') %></td>
+	  </tr>
+	  <tr>
 	    <td data-t>streamer_icecast_ip</td>
 	    <td><%= obplayer.Config.setting('streamer_icecast_ip') %></td>
 	  </tr>
@@ -1234,6 +1238,29 @@
               <td><select name="streamer_icecast_mode">
                   <option value="audio"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_mode','audio') %>>Audio Only</option>
                   <option value="video320x200"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_mode','video320x200') %>>Video - 320x200</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_icecast_bitrate</td>
+              <td><select name="streamer_icecast_bitrate">
+                  <option value="0"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','0') %>>Variable</option>
+                  <option value="8"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','8') %>>8 kbps</option>
+                  <option value="16"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','16') %>>16 kbps</option>
+                  <option value="24"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','24') %>>24 kbps</option>
+                  <option value="32"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','32') %>>32 kbps</option>
+                  <option value="40"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','40') %>>40 kbps</option>
+                  <option value="48"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','48') %>>48 kbps</option>
+                  <option value="56"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','56') %>>56 kbps</option>
+                  <option value="64"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','64') %>>64 kbps</option>
+                  <option value="80"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','80') %>>80 kbps</option>
+                  <option value="96"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','96') %>>96 kbps</option>
+                  <option value="112"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','112') %>>112 kbps</option>
+                  <option value="128"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','128') %>>128 kbps</option>
+                  <option value="160"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','160') %>>160 kbps</option>
+                  <option value="192"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','192') %>>192 kbps</option>
+                  <option value="224"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','224') %>>224 kbps</option>
+                  <option value="256"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','256') %>>256 kbps</option>
+                  <option value="320"<%= obplayer.HTTPAdmin.form_item_selected('streamer_icecast_bitrate','320') %>>320 kbps</option>
                 </select></td>
             </tr>
             <tr>

@@ -105,7 +105,14 @@ class ObIcecastStreamer (object):
 
         self.audiopipe.append(Gst.ElementFactory.make("audioconvert"))
 
-        self.audiopipe.append(Gst.ElementFactory.make("lamemp3enc"))
+        self.encoder = Gst.ElementFactory.make("lamemp3enc")
+        if obplayer.Config.setting('streamer_icecast_bitrate') != 0:
+            self.encoder.set_property('target', 1)
+            self.encoder.set_property('bitrate', obplayer.Config.setting('streamer_icecast_bitrate'))
+            self.encoder.set_property('cbr', True)
+        self.audiopipe.append(self.encoder)
+
+        self.audiopipe.append(Gst.ElementFactory.make("queue2"))
 
         self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
         self.shout2send.set_property('ip', obplayer.Config.setting('streamer_icecast_ip'))
