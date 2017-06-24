@@ -32,7 +32,7 @@ class ObPriorityBroadcaster:
         #self.ctrl.set_update_callback(self.do_player_update)
         #self.ctrl.set_next_update(0)
 
-    def do_player_update(self, ctrl, present_time):
+    def do_player_update(self, ctrl, present_time, media_class):
         pass
 
     def check_update(self):

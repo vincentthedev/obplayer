@@ -3,14 +3,19 @@ Responses
 
   settings-saved-success: Settings saved.
   settings-imported-success: Settings imported successfully.  Please restart the player for the settings to take effect.
-  alerts-inject-success: Test alert injected successfully.
-  alerts-cancel-success: Alert(s) cancelled successfully.
 
   player-connection-lost: connection to player lost
   permissions-error-guest: You don't have permission to do that.  You are current logged in as a guest
   
+  passwords-dont-match: The passwords supplied to do match
+
+  updater-disabled-error: Updating is disabled
+
   alerts-disabled-error: The emergency alerts module is currently disabled 
   alerts-invalid-filename: The test alert specified is invalid or does not exist
+  alerts-inject-success: Test alert injected successfully.
+  alerts-cancel-success: Alert(s) cancelled successfully.
 
-  passwords-dont-match: The passwords supplied to do match
+  pulse-control-disabled: PulseAudio controls are disabled
+
 

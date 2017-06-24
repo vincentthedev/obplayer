@@ -522,7 +522,7 @@ class ObPlayerController (object):
             return None
         index = self.find_current_request(present_time, media_class)
         if index is None and allow_query is True:
-            self.call_player_request(present_time)
+            self.call_player_request(present_time, media_class)
             index = self.find_current_request(present_time + 1, media_class)                # the plus one is because the new request's start time will be slight after present_time
 
         if index is None:
@@ -583,9 +583,9 @@ class ObPlayerController (object):
     def get_next_update(self):
         return self.next_update
 
-    def call_player_request(self, present_time):
+    def call_player_request(self, present_time, media_class):
         try:
-            return self.do_player_request(self, present_time)
+            return self.do_player_request(self, present_time, media_class)
         except:
             obplayer.Log.log("exception while calling do_player_request() on " + self.name, 'error')
             obplayer.Log.log(traceback.format_exc(), 'error')
@@ -599,7 +599,7 @@ class ObPlayerController (object):
 
     # called by the player to ask the controller what it wants to happen
     @staticmethod
-    def do_player_request(ctrl, present_time):
+    def do_player_request(ctrl, present_time, media_class):
         pass
 
     @staticmethod

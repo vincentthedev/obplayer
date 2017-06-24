@@ -106,7 +106,7 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         self.ctrl.set_request_callback(self.do_player_request)
 
     # the player is asking us what to play next
-    def do_player_request(self, ctrl, present_time):
+    def do_player_request(self, ctrl, present_time, media_class):
         if len(self.media) == 0:
             return False
 
