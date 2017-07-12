@@ -86,7 +86,7 @@
 	</tr>
 	<tr class="padding">
 	  <td><span data-t>Instruction</span>:</td>
-	  <td><%= alert_info.instruction.encode('utf-8') if alert_info.instruction else '(none)' %></td>
+	  <td><%= unicode(alert_info.instruction) if alert_info.instruction else '(none)' %></td>
 	</tr>
 	<tr>
 	  <td><span data-t>Parameters</span>:</td>
