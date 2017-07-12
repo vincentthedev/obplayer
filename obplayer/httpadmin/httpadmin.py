@@ -142,9 +142,15 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
             return { 'status' : False, 'error' : "permissions-error-guest" }
         if 'extra' in request.args:
             if request.args['extra'][0] == 'defaults':
-                os.remove(obplayer.ObData.get_datadir() + '/settings.db')
+                try:
+                    os.remove(obplayer.ObData.get_datadir() + '/settings.db')
+                except:
+                    obplayer.Log.log(traceback.format_exc(), 'error')
             if request.args['extra'][0] == 'hard':
-                os.remove(obplayer.ObData.get_datadir() + '/data.db')
+                try:
+                    os.remove(obplayer.ObData.get_datadir() + '/data.db')
+                except:
+                    obplayer.Log.log(traceback.format_exc(), 'error')
             if request.args['extra'][0] == 'hard' or request.args['extra'][0] == 'defaults':
                 obplayer.Main.exit_code = 37
         os.kill(os.getpid(), signal.SIGINT)
