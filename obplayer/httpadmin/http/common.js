@@ -181,10 +181,10 @@ Site.updateStatusInfo = function()
   if($('#tabs .tab[data-content="status"]').hasClass('selected')){
     $.post('/status_info',{},function(response,status)
     {
+      $('#show-summary-time').html(Site.friendlyTime(response.time));
+      $('#show-summary-uptime').html(response.uptime);
 
       if(response.show){
-	$('#show-summary-time').html(Site.friendlyTime(response.time));
-	$('#show-summary-uptime').html(response.uptime);
 	$('#show-summary-type').html(Site.t('Status Show Type', response.show.type));
 	$('#show-summary-id').html(response.show.id);
 	$('#show-summary-name').html(response.show.name);
