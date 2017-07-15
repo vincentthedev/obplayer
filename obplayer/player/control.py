@@ -88,7 +88,7 @@ class ObPlayer (object):
         #self.pipes['rtspa'] = pipes.ObRTSPAInputPipeline('rtspa-input', self)
         self.pipes['sdp'] = pipes.ObSDPInputPipeline('sdp-input', self)
 
-        def silence_request(self, present_time):
+        def silence_request(self, present_time, media_class):
             obplayer.Log.log("player has no requests to play; outputting silence", 'player')
             self.add_request(media_type='break', duration=3600)
 

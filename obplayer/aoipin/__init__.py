@@ -25,7 +25,7 @@ from __future__ import absolute_import
 import obplayer
 
 def init():
-    def aoip_in_request(self, present_time):
+    def aoip_in_request(self, present_time, media_class):
         uri = obplayer.Config.setting('aoip_in_uri')
         if uri.startswith('rtsp:'):
             self.add_request(media_type='rtsp', filename=uri, duration=31536000)        # duration = 1 year (ie. indefinitely)
