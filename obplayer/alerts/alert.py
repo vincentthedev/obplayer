@@ -233,7 +233,7 @@ class ObAlert (object):
                 'artist' : 'Emergency Alert',
                 'title' : str(self.identifier),
                 #'overlay_text' : message_text,
-                'uri' : uri,
+                'uri' : obplayer.Player.file_uri(location, filename),
                 'duration' : self.media_info[language]['audio']['duration']
             }
             self.media_info[language]['audio']['overlay_text'] = None
