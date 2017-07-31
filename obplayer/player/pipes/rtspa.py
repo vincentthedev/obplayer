@@ -55,7 +55,7 @@ class ObRTSPAInputPipeline (ObGstPipeline):
         self.pipeline = Gst.Pipeline(name)
         self.elements = [ ]
 
-        self.filesrc = Gst.ElementFactory.make('filesrc')
+        self.filesrc = Gst.ElementFactory.make('filesrc', name + '-filesrc')
         self.pipeline.add(self.filesrc)
 
         """
@@ -65,7 +65,7 @@ class ObRTSPAInputPipeline (ObGstPipeline):
         self.pipeline.add(self.appsrc)
         """
 
-        self.sdpdemux = Gst.ElementFactory.make('sdpdemux')
+        self.sdpdemux = Gst.ElementFactory.make('sdpdemux', name + '-sdpdemux')
         #self.sdpdemux.set_property('debug', True)
         self.pipeline.add(self.sdpdemux)
         self.filesrc.link(self.sdpdemux)
@@ -76,7 +76,7 @@ class ObRTSPAInputPipeline (ObGstPipeline):
             pad.link(self.decodebin.get_static_pad('sink'))
         self.sdpdemux.connect('pad-added', sdpdemux_pad_added)
 
-        self.decodebin = Gst.ElementFactory.make('decodebin')
+        self.decodebin = Gst.ElementFactory.make('decodebin', name + '-decodebin')
         self.pipeline.add(self.decodebin)
 
         def decodebin_pad_added(obj, pad):
@@ -95,10 +95,10 @@ class ObRTSPAInputPipeline (ObGstPipeline):
             #    print("Pad: ", p, p.is_linked())
         self.decodebin.connect('pad-added', decodebin_pad_added)
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.pipeline.add(self.audioconvert)
 
-        self.queue = Gst.ElementFactory.make('queue2')
+        self.queue = Gst.ElementFactory.make('queue2', name + '-queue')
         self.pipeline.add(self.queue)
         self.audioconvert.link(self.queue)
 

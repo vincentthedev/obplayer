@@ -28,11 +28,11 @@ def init():
     def aoip_in_request(self, present_time, media_class):
         uri = obplayer.Config.setting('aoip_in_uri')
         if uri.startswith('rtsp:'):
-            self.add_request(media_type='rtsp', filename=uri, duration=31536000)        # duration = 1 year (ie. indefinitely)
+            self.add_request(media_type='rtsp', uri=uri, duration=31536000)        # duration = 1 year (ie. indefinitely)
         elif uri.startswith('rtspa:'):
-            self.add_request(media_type='rtspa', filename=uri.replace('rtspa', 'rtsp'), duration=31536000)        # duration = 1 year (ie. indefinitely)
+            self.add_request(media_type='rtspa', uri=uri.replace('rtspa', 'rtsp'), duration=31536000)        # duration = 1 year (ie. indefinitely)
         elif uri.startswith('sdp:///'):
-            self.add_request(media_type='sdp', filename=uri[6:], duration=31536000)        # duration = 1 year (ie. indefinitely)
+            self.add_request(media_type='sdp', uri=uri[6:], duration=31536000)        # duration = 1 year (ie. indefinitely)
         else:
             obplayer.Log.log("invalid aoip uri: " + uri, 'error')
 

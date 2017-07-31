@@ -43,8 +43,9 @@ class ObGstPipeline (object):
         #print(self.name + ": starting")
         self.wait_state(Gst.State.PLAYING)
 
-    def stop(self):
+    def stop(self, debug):
         #print(self.name + ": stopping")
+        obplayer.Log.log(self.name + ": stopped " + debug, 'debug')
         self.wait_state(Gst.State.NULL)
 
     def quit(self):

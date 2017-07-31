@@ -62,12 +62,12 @@ class ObBreakPipeline (ObGstPipeline):
 
         self.pipeline = Gst.Pipeline(name)
 
-        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc')
+        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc', name + '-audiotestsrc')
         self.audiotestsrc.set_property('wave', 4)       # silence
         self.audiotestsrc.set_property('is-live', True)
         self.pipeline.add(self.audiotestsrc)
 
-        self.videotestsrc = Gst.ElementFactory.make('videotestsrc')
+        self.videotestsrc = Gst.ElementFactory.make('videotestsrc', name + '-videotestsrc')
         self.videotestsrc.set_property('pattern', 2)       # black screen
         self.videotestsrc.set_property('is-live', True)
         self.pipeline.add(self.videotestsrc)

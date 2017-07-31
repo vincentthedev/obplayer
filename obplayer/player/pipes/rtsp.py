@@ -45,7 +45,7 @@ class ObRTSPInputPipeline (ObGstPipeline):
         self.elements = [ ]
 
 
-        self.rtspsrc = Gst.ElementFactory.make('rtspsrc')
+        self.rtspsrc = Gst.ElementFactory.make('rtspsrc', name + '-rtspsrc')
         self.pipeline.add(self.rtspsrc)
         self.rtspsrc.connect('on-sdp', self.rtspsrc_on_sdp)
         #self.rtspsrc.connect('select-stream', self.rtspsrc_select_stream)
@@ -62,14 +62,14 @@ class ObRTSPInputPipeline (ObGstPipeline):
                 pad.link(Gst.ElementFactory.make('fakesink').get_static_pad('sink'))
         self.rtspsrc.connect('pad-added', rtspsrc_pad_added)
 
-        self.decodebin = Gst.ElementFactory.make('decodebin')
+        self.decodebin = Gst.ElementFactory.make('decodebin', name + '-decodebin')
         self.pipeline.add(self.decodebin)
         #self.rtspsrc.link(self.decodebin)
 
-        self.queue = Gst.ElementFactory.make('queue2')
+        self.queue = Gst.ElementFactory.make('queue2', name + '-queue')
         self.pipeline.add(self.queue)
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.pipeline.add(self.audioconvert)
         self.queue.link(self.audioconvert)
 

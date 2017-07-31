@@ -41,10 +41,16 @@ class ObTestSignalPipeline (ObGstPipeline):
         self.player = player
 
         self.pipeline = Gst.Pipeline(name)
-        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc')
+
+        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc', name + '-audiotestsrc')
+        self.audiotestsrc.set_property('volume', 0.2)
+        self.audiotestsrc.set_property('is-live', True)
         self.pipeline.add(self.audiotestsrc)
-        self.videotestsrc = Gst.ElementFactory.make('videotestsrc')
+
+        self.videotestsrc = Gst.ElementFactory.make('videotestsrc', name + '-videotestsrc')
+        self.videotestsrc.set_property('is-live', True)
         self.pipeline.add(self.videotestsrc)
+
         self.audiosink = None
         self.videosink = None
 
@@ -55,9 +61,6 @@ class ObTestSignalPipeline (ObGstPipeline):
         self.set_property('audio-sink', self.fakesinks['audio'])
         self.set_property('video-sink', self.fakesinks['visual'])
 
-        self.audiotestsrc.set_property('volume', 0.2)
-        self.audiotestsrc.set_property('is-live', True)
-        self.videotestsrc.set_property('is-live', True)
         self.register_signals()
 
     def set_property(self, property, value):

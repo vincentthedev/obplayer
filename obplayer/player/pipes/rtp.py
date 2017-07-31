@@ -43,51 +43,51 @@ class ObRTPInputPipeline (ObGstPipeline):
         self.pipeline = Gst.Pipeline(name)
         self.elements = [ ]
 
-        self.prequeue = Gst.ElementFactory.make('queue2')
+        self.prequeue = Gst.ElementFactory.make('queue2', name  + '-pre-queue')
         self.elements.append(self.prequeue)
 
         encoding = obplayer.Config.setting('rtp_in_encoding')
         if encoding == 'OPUS':
-            self.rtpdepay = Gst.ElementFactory.make('rtpopusdepay')
+            self.rtpdepay = Gst.ElementFactory.make('rtpopusdepay', name  + '-depay')
             self.elements.append(self.rtpdepay)
 
-            self.decoder = Gst.ElementFactory.make('opusdec')
+            self.decoder = Gst.ElementFactory.make('opusdec', name  + '-decode')
             self.decoder.set_property('plc', True)  # Packet loss concealment
             self.decoder.set_property('use-inband-fec', True)  # FEC
             self.elements.append(self.decoder)
 
         elif encoding == 'MPA':
-            self.rtpdepay = Gst.ElementFactory.make('rtpmpadepay')
+            self.rtpdepay = Gst.ElementFactory.make('rtpmpadepay', name  + '-depay')
             self.elements.append(self.rtpdepay)
 
-            self.decoder = Gst.ElementFactory.make('avdec_mp3')
+            self.decoder = Gst.ElementFactory.make('avdec_mp3', name  + '-decode')
             #self.decoder.set_property('plc', True)  # Packet loss concealment
             self.elements.append(self.decoder)
 
         elif encoding == 'L16':
-            self.rtpdepay = Gst.ElementFactory.make('rtpL16depay')
+            self.rtpdepay = Gst.ElementFactory.make('rtpL16depay', name  + '-depay')
             self.elements.append(self.rtpdepay)
 
         elif encoding == 'L24':
-            self.rtpdepay = Gst.ElementFactory.make('rtpL24depay')
+            self.rtpdepay = Gst.ElementFactory.make('rtpL24depay', name  + '-depay')
             self.elements.append(self.rtpdepay)
 
         else:
             obplayer.Log.log("invalid encoding format " + str(encoding) + " for RTP input", 'error')
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.elements.append(self.audioconvert)
-        self.audioresample = Gst.ElementFactory.make('audioresample')
+        self.audioresample = Gst.ElementFactory.make('audioresample', name + '-resample')
         self.audioresample.set_property('quality', 6)
         self.elements.append(self.audioresample)
 
-        self.postqueue = Gst.ElementFactory.make('queue2')
+        self.postqueue = Gst.ElementFactory.make('queue2', name  + '-post-queue')
         self.elements.append(self.postqueue)
 
         self.build_pipeline(self.elements)
 
         ## Hook up RTPBin
-        self.rtpbin = Gst.ElementFactory.make('rtpbin')
+        self.rtpbin = Gst.ElementFactory.make('rtpbin', name  + '-rtpbin')
         #self.rtpbin.set_property('latency', 2000)
         #self.rtpbin.set_property('autoremove', True)
         #self.rtpbin.set_property('do-lost', True)
@@ -104,7 +104,7 @@ class ObRTPInputPipeline (ObGstPipeline):
         ## Hook up RTP socket
         port = int(obplayer.Config.setting('rtp_in_port'))
         address = obplayer.Config.setting('rtp_in_address')
-        self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc')
+        self.udpsrc_rtp = Gst.ElementFactory.make('udpsrc', name + '-udp-rtp')
         self.udpsrc_rtp.set_property('port', port)
         if address:
             self.udpsrc_rtp.set_property('address', address)
@@ -118,7 +118,7 @@ class ObRTPInputPipeline (ObGstPipeline):
 
         ## Hook up RTCP socket
         if obplayer.Config.setting('rtp_in_enable_rtcp'):
-            self.udpsrc_rtcp = Gst.ElementFactory.make('udpsrc')
+            self.udpsrc_rtcp = Gst.ElementFactory.make('udpsrc', name + '-udp-rtcp')
             self.udpsrc_rtcp.set_property('port', port + 1)
             self.pipeline.add(self.udpsrc_rtcp)
             self.udpsrc_rtcp.link_pads('src', self.rtpbin, 'recv_rtcp_sink_0')

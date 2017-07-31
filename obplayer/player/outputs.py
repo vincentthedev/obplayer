@@ -63,59 +63,59 @@ class ObAudioOutputBin (ObOutputBin):
 
         self.elements = [ ]
 
-        #self.elements.append(Gst.ElementFactory.make("audioconvert"))
-        #self.elements.append(Gst.ElementFactory.make("audioresample"))
+        #self.elements.append(Gst.ElementFactory.make('audioconvert', 'audio-out-pre-convert'))
+        #self.elements.append(Gst.ElementFactory.make('audioresample', 'audio-out-pre-resample'))
 
         ## create caps filter element to set the output audio parameters
-        caps = Gst.ElementFactory.make('capsfilter', "audiocapsfilter")
+        caps = Gst.ElementFactory.make('capsfilter', 'audio-out-capsfilter')
         #caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
         caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2"))
         self.elements.append(caps)
 
         # create filter elements
-        level = Gst.ElementFactory.make("level", "level")
+        level = Gst.ElementFactory.make('level', 'audio-out-level')
         level.set_property('interval', int(0.5 * Gst.SECOND))
         self.elements.append(level)
 
-        self.tee = Gst.ElementFactory.make("tee")
+        self.tee = Gst.ElementFactory.make('tee', 'audio-out-interlink-tee')
         self.elements.append(self.tee)
-        self.elements.append(Gst.ElementFactory.make("queue2"))
+        self.elements.append(Gst.ElementFactory.make('queue2', 'audio-out-post-tee-queue'))
 
         ## create audio sink element
         audio_output = obplayer.Config.setting('audio_out_mode')
         if audio_output == 'alsa':
-            self.audiosink = Gst.ElementFactory.make('alsasink', 'audiosink')
+            self.audiosink = Gst.ElementFactory.make('alsasink', 'audio-out-sink')
             alsa_device = obplayer.Config.setting('audio_out_alsa_device')
             if alsa_device != '':
                 self.audiosink.set_property('device', alsa_device)
 
         elif audio_output == 'esd':
-            self.audiosink = Gst.ElementFactory.make('esdsink', 'audiosink')
+            self.audiosink = Gst.ElementFactory.make('esdsink', 'audio-out-sink')
 
         elif audio_output == 'jack':
-            self.audiosink = Gst.ElementFactory.make('jackaudiosink', 'audiosink')
+            self.audiosink = Gst.ElementFactory.make('jackaudiosink', 'audio-out-sink')
             self.audiosink.set_property('connect', 0)  # don't autoconnect ports.
             name = obplayer.Config.setting('audio_out_jack_name')
             self.audiosink.set_property('client-name', name if name else 'obplayer')
 
         elif audio_output == 'oss':
-            self.audiosink = Gst.ElementFactory.make('osssink', 'audiosink')
+            self.audiosink = Gst.ElementFactory.make('osssink', 'audio-out-sink')
 
         elif audio_output == 'pulse':
-            self.audiosink = Gst.ElementFactory.make('pulsesink', 'audiosink')
+            self.audiosink = Gst.ElementFactory.make('pulsesink', 'audio-out-sink')
 
         elif audio_output == 'shout2send':
-            self.elements.append(Gst.ElementFactory.make("queue2", "encoder_queue"))
-            self.elements.append(Gst.ElementFactory.make("lamemp3enc", "encoder"))
-            self.audiosink = Gst.ElementFactory.make("shout2send", "audiosink")
+            self.elements.append(Gst.ElementFactory.make('queue2', 'audio-out-shoutcast-queue'))
+            self.elements.append(Gst.ElementFactory.make('lamemp3enc', 'audio-out-shoutcast-encoder'))
+            self.audiosink = Gst.ElementFactory.make('shout2send', 'audio-out-sink')
             self.audiosink.set_property('ip', obplayer.Config.setting('streamer_shout2send_ip'))
             self.audiosink.set_property('port', obplayer.Config.setting('streamer_shout2send_port'))
             self.audiosink.set_property('mount', obplayer.Config.setting('streamer_shout2send_mount'))
             self.audiosink.set_property('password', obplayer.Config.setting('streamer_shout2send_password'))
 
         elif audio_output == 'intersink':
-            self.elements.append(Gst.ElementFactory.make("queue2"))
-            self.audiosink = Gst.ElementFactory.make("interaudiosink")
+            self.elements.append(Gst.ElementFactory.make('queue2', 'audio-out-intersink-queue'))
+            self.audiosink = Gst.ElementFactory.make('interaudiosink', 'audio-out-intersink')
             self.audiosink.set_property('channel', 'audio')
             #self.audiosink.set_property('sync', False)
             #self.audiosink.set_property('async', False)
@@ -134,8 +134,8 @@ class ObAudioOutputBin (ObOutputBin):
         """
         if obplayer.Config.setting('streamer_icecast_mode').startswith('video') or obplayer.Config.setting('streamer_audio_in_mode') == 'intersink':
             interpipe = [ ]
-            interpipe.append(Gst.ElementFactory.make("queue2"))
-            interpipe.append(Gst.ElementFactory.make("interaudiosink"))
+            interpipe.append(Gst.ElementFactory.make('queue2'))
+            interpipe.append(Gst.ElementFactory.make('interaudiosink'))
             interpipe[-1].set_property('channel', 'audio')
             #interpipe[-1].set_property('sync', False)
             #interpipe[-1].set_property('async', False)
@@ -149,8 +149,8 @@ class ObAudioOutputBin (ObOutputBin):
 
     def add_inter_tap(self, name):
         interpipe = [ ]
-        interpipe.append(Gst.ElementFactory.make("queue2"))
-        interpipe.append(Gst.ElementFactory.make("interaudiosink"))
+        interpipe.append(Gst.ElementFactory.make('queue2'))
+        interpipe.append(Gst.ElementFactory.make('interaudiosink'))
         interpipe[-1].set_property('channel', name)
         #interpipe[-1].set_property('sync', False)
         #interpipe[-1].set_property('async', False)
@@ -169,21 +169,21 @@ class ObVideoOutputBin (ObOutputBin):
         self.elements = [ ]
 
         ## create basic filter elements
-        #self.elements.append(Gst.ElementFactory.make("queue", "pre_queue"))
-        #self.elements.append(Gst.ElementFactory.make("videoscale", "pre_scale"))
+        #self.elements.append(Gst.ElementFactory.make('queue', 'video-out-pre-queue'))
+        #self.elements.append(Gst.ElementFactory.make('videoscale', 'video-out-pre-scale'))
         #self.elements[-1].set_property('add-borders', True)
-        self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
-        #self.elements.append(Gst.ElementFactory.make("videorate", "pre_rate"))
+        self.elements.append(Gst.ElementFactory.make('videoconvert', 'video-out-pre-convert'))
+        #self.elements.append(Gst.ElementFactory.make('videorate', 'video-out-pre-rate'))
 
         """
         ## create caps filter element to set the output video parameters
-        caps = Gst.ElementFactory.make('capsfilter', "pre_capsfilter")
+        caps = Gst.ElementFactory.make('capsfilter', 'video-out-pre-capsfilter')
         #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
         caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=640,height=480"))
         self.elements.append(caps)
         """
 
-        #self.videobox = Gst.ElementFactory.make('videobox', "videobox")
+        #self.videobox = Gst.ElementFactory.make('videobox', 'video-out-videobox')
         #self.videobox.set_property("top", -50)
         #self.videobox.set_property("left", -50)
         #self.videobox.set_property("bottom", -50)
@@ -192,31 +192,31 @@ class ObVideoOutputBin (ObOutputBin):
         #self.videobox.set_property("autocrop", True)
         #self.elements.append(self.videobox)
 
-        #self.crop = Gst.ElementFactory.make('aspectratiocrop', "effect")
+        #self.crop = Gst.ElementFactory.make('aspectratiocrop', 'video-out-crop')
         #ratio = GObject.Value(Gst.Fraction)
         #Gst.value_set_fraction(ratio, 4, 3)
         #self.crop.set_property('aspect-ratio', ratio)
         #self.elements.append(self.crop)
 
-        #self.effect = Gst.ElementFactory.make('glfilterglass', "effect")
+        #self.effect = Gst.ElementFactory.make('glfilterglass', 'video-out-effect')
         #self.elements.append(self.effect)
 
         """
         ## create caps filter element to set the output video parameters
-        caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter1")
+        caps_filter = Gst.ElementFactory.make('capsfilter', 'video-out-pre-overlay-capsfilter')
         caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
         #caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(1280) + ",height=" + str(300)))
         self.elements.append(caps_filter)
 
-        self.mixer = Gst.ElementFactory.make("videomixer", "mixer")
+        self.mixer = Gst.ElementFactory.make('videomixer', 'video-out-mixer')
         self.mixer.set_property('background', 3)
         self.elements.append(self.mixer)
 
-        self.elements.append(Gst.ElementFactory.make("queue2", "queue"))
-        self.elements.append(Gst.ElementFactory.make("videoscale", "scale"))
+        self.elements.append(Gst.ElementFactory.make('queue2', 'video-out-queue'))
+        self.elements.append(Gst.ElementFactory.make('videoscale', 'video-out-scale'))
         #self.elements[-1].set_property('add-borders', True)
-        self.elements.append(Gst.ElementFactory.make("videoconvert", "convert"))
-        self.elements.append(Gst.ElementFactory.make("videorate", "rate"))
+        self.elements.append(Gst.ElementFactory.make('videoconvert', 'video-out-convert'))
+        self.elements.append(Gst.ElementFactory.make('videorate', 'video-out-rate'))
         """
 
         ## create overlay elements (if enabled)
@@ -226,7 +226,7 @@ class ObVideoOutputBin (ObOutputBin):
 
         """
         ## create caps filter element to set the output video parameters
-        caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter")
+        caps_filter = Gst.ElementFactory.make('capsfilter', 'video-out-post-overlay-capsfilter')
         #caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw"))
         caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
         #caps_filter.set_property('caps', Gst.Caps.from_string("width=" + str(self.video_width) + ",height=" + str(self.video_height)))
@@ -234,64 +234,64 @@ class ObVideoOutputBin (ObOutputBin):
         self.elements.append(caps_filter)
         """
 
-        self.tee = Gst.ElementFactory.make("tee")
+        self.tee = Gst.ElementFactory.make('tee', 'video-out-intersink-tee')
         self.elements.append(self.tee)
-        self.elements.append(Gst.ElementFactory.make("queue2"))
+        self.elements.append(Gst.ElementFactory.make('queue2', 'video-out-post-tee-queue'))
 
-        #self.elements.append(Gst.ElementFactory.make("fpsdisplaysink"))
+        #self.elements.append(Gst.ElementFactory.make('fpsdisplaysink'))
 
         ## create video sink element
         video_out_mode = obplayer.Config.setting('video_out_mode')
         if video_out_mode == 'x11':
-            self.videosink = Gst.ElementFactory.make("ximagesink", "videosink")
+            self.videosink = Gst.ElementFactory.make('ximagesink', 'video-out-sink')
 
         elif video_out_mode == 'xvideo':
-            self.videosink = Gst.ElementFactory.make("xvimagesink", "videosink")
+            self.videosink = Gst.ElementFactory.make('xvimagesink', 'video-out-sink')
 
         elif video_out_mode == 'opengl':
-            self.videosink = Gst.ElementFactory.make("glimagesink", "videosink")
+            self.videosink = Gst.ElementFactory.make('glimagesink', 'video-out-sink')
 
         elif video_out_mode == 'egl':
-            self.videosink = Gst.ElementFactory.make("eglglessink", "videosink")
+            self.videosink = Gst.ElementFactory.make('eglglessink', 'video-out-sink')
 
         elif video_out_mode == 'wayland':
-            self.videosink = Gst.ElementFactory.make("waylandsink", "videosink")
+            self.videosink = Gst.ElementFactory.make('waylandsink', 'video-out-sink')
 
         elif video_out_mode == 'ascii':
-            self.videosink = Gst.ElementFactory.make("cacasink", "videosink")
+            self.videosink = Gst.ElementFactory.make('cacasink', 'video-out-sink')
 
         elif video_out_mode == 'rtp':
-            #self.elements.append(Gst.ElementFactory.make("theoraenc"))
-            #self.elements.append(Gst.ElementFactory.make("rtptheorapay"))
-            self.elements.append(Gst.ElementFactory.make("vp9enc"))
-            self.elements.append(Gst.ElementFactory.make("rtpvp9pay"))
-            self.elements.append(Gst.ElementFactory.make("queue2"))
-            self.videosink = Gst.ElementFactory.make("udpsink", "videosink")
+            #self.elements.append(Gst.ElementFactory.make('theoraenc'))
+            #self.elements.append(Gst.ElementFactory.make('rtptheorapay'))
+            self.elements.append(Gst.ElementFactory.make('vp9enc'))
+            self.elements.append(Gst.ElementFactory.make('rtpvp9pay'))
+            self.elements.append(Gst.ElementFactory.make('queue2'))
+            self.videosink = Gst.ElementFactory.make('udpsink', 'video-out-sink')
             self.videosink.set_property('host', '127.0.0.1')
             self.videosink.set_property('port', 5500)
 
         elif video_out_mode == 'shout2send':
-            caps = Gst.ElementFactory.make('capsfilter', "videocapsfilter")
+            caps = Gst.ElementFactory.make('capsfilter', 'video-out-shoutcast-capsfilter')
             #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
             #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=100,height=75,framerate=15/1"))
             caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
             self.elements.append(caps)
-            #self.elements.append(Gst.ElementFactory.make("theoraenc"))
-            #self.elements.append(Gst.ElementFactory.make("oggmux"))
-            self.elements.append(Gst.ElementFactory.make("vp9enc"))
-            self.elements.append(Gst.ElementFactory.make("queue2"))
-            self.videomux = Gst.ElementFactory.make("webmmux")
+            #self.elements.append(Gst.ElementFactory.make('theoraenc', 'video-out-shoutcast-encoder'))
+            #self.elements.append(Gst.ElementFactory.make('oggmux', 'video-out-shoutcast-mux'))
+            self.elements.append(Gst.ElementFactory.make('vp9enc', 'video-out-shoutcast-encoder'))
+            self.elements.append(Gst.ElementFactory.make('queue2', 'video-out-shoutcast-queue'))
+            self.videomux = Gst.ElementFactory.make('webmmux', 'video-out-shoutcast-mux')
             self.elements.append(self.videomux)
             self.elements[-1].set_property('streamable', True)
-            self.videosink = Gst.ElementFactory.make("shout2send", "videosink")
+            self.videosink = Gst.ElementFactory.make('shout2send', 'video-out-sink')
             self.videosink.set_property('ip', obplayer.Config.setting('streamer_icecast_ip'))
             self.videosink.set_property('port', obplayer.Config.setting('streamer_icecast_port'))
             self.videosink.set_property('mount', obplayer.Config.setting('streamer_icecast_mount'))
             self.videosink.set_property('password', obplayer.Config.setting('streamer_icecast_password'))
 
         elif video_out_mode == 'intersink':
-            self.elements.append(Gst.ElementFactory.make("queue2"))
-            self.videosink = Gst.ElementFactory.make("intervideosink")
+            self.elements.append(Gst.ElementFactory.make('queue2', 'video-out-intersink-queue'))
+            self.videosink = Gst.ElementFactory.make('intervideosink', 'video-out-intersink')
             self.videosink.set_property('channel', 'video')
             #self.videosink.set_property('sync', False)
             #self.videosink.set_property('async', False)
@@ -299,10 +299,10 @@ class ObVideoOutputBin (ObOutputBin):
             self.videosink.set_property('enable-last-sample', False)
 
         elif video_out_mode == 'test':
-            self.videosink = Gst.ElementFactory.make("fakesink", "videosink")
+            self.videosink = Gst.ElementFactory.make('fakesink', 'video-out-sink')
 
         else:
-            self.videosink = Gst.ElementFactory.make("autovideosink", "videosink")
+            self.videosink = Gst.ElementFactory.make('autovideosink', 'video-out-sink')
 
         self.elements.append(self.videosink)
 
@@ -311,8 +311,8 @@ class ObVideoOutputBin (ObOutputBin):
         """
         if obplayer.Config.setting('streamer_icecast_mode').startswith('video'):
             interpipe = [ ]
-            interpipe.append(Gst.ElementFactory.make("queue2"))
-            interpipe.append(Gst.ElementFactory.make("intervideosink"))
+            interpipe.append(Gst.ElementFactory.make('queue2'))
+            interpipe.append(Gst.ElementFactory.make('intervideosink'))
             interpipe[-1].set_property('channel', 'video')
             #interpipe[-1].set_property('sync', False)
             #interpipe[-1].set_property('async', False)
@@ -323,22 +323,22 @@ class ObVideoOutputBin (ObOutputBin):
 
 
         """
-        self.videotestsrc = Gst.ElementFactory.make("videotestsrc", "testsrc")
+        self.videotestsrc = Gst.ElementFactory.make('videotestsrc', 'testsrc')
         self.videotestsrc.set_property('pattern', 5)
         self.bin.add(self.videotestsrc)
 
-        self.caps_filter = Gst.ElementFactory.make('capsfilter', "canvas-capsfilter")
+        self.caps_filter = Gst.ElementFactory.make('capsfilter', 'canvas-capsfilter')
         self.caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
         self.bin.add(self.caps_filter)
 
-        self.alpha = Gst.ElementFactory.make("alpha", "alpha")
+        self.alpha = Gst.ElementFactory.make('alpha', 'alpha')
         self.alpha.set_property('method', 1)
         self.bin.add(self.alpha)
 
         self.overlay = ObVideoOverlayBin()
         self.bin.add(self.overlay.bin)
 
-        self.queue = Gst.ElementFactory.make("queue", "queuetoo")
+        self.queue = Gst.ElementFactory.make('queue', 'video-out-post-queue')
         self.bin.add(self.queue)
 
         self.videotestsrc.link(self.caps_filter)
@@ -353,8 +353,8 @@ class ObVideoOutputBin (ObOutputBin):
 
     def add_inter_tap(self, name):
         interpipe = [ ]
-        interpipe.append(Gst.ElementFactory.make("queue2"))
-        interpipe.append(Gst.ElementFactory.make("intervideosink"))
+        interpipe.append(Gst.ElementFactory.make('queue2'))
+        interpipe.append(Gst.ElementFactory.make('intervideosink'))
         interpipe[-1].set_property('channel', name)
         #interpipe[-1].set_property('sync', False)
         #interpipe[-1].set_property('async', False)
@@ -365,7 +365,7 @@ class ObVideoOutputBin (ObOutputBin):
 
 class ObVideoOverlayBin (ObOutputBin):
     def __init__(self):
-        ObOutputBin.__init__(self, 'overlay-output-bin')
+        ObOutputBin.__init__(self, 'video-overlay-output-bin')
 
         from .overlay import ObOverlay
         self.overlay = ObOverlay()
@@ -379,17 +379,17 @@ class ObVideoOverlayBin (ObOutputBin):
         # TODO uncomment this block for video boxing
 
         ## create basic filter elements
-        self.elements.append(Gst.ElementFactory.make("queue2", "pre_queue"))
-        #self.elements.append(Gst.ElementFactory.make("videoconvert", "pre_convert"))
+        self.elements.append(Gst.ElementFactory.make('queue2', 'video-overlay-pre-queue'))
+        #self.elements.append(Gst.ElementFactory.make('videoconvert', 'video-overlay-pre-convert'))
 
-        self.videoscale = Gst.ElementFactory.make("videoscale", "pre_scale")
-        self.videoscale.set_property("add-borders", True)
+        self.videoscale = Gst.ElementFactory.make('videoscale', 'video-overlay-pre-scale')
+        self.videoscale.set_property('add-borders', True)
         self.elements.append(self.videoscale)
 
         width = 854
         height = 480
 
-        self.videobox = Gst.ElementFactory.make('videobox', "videobox")
+        self.videobox = Gst.ElementFactory.make('videobox', 'video-overlay-videobox')
         #self.videobox.set_property("top", -50)
         #self.videobox.set_property("bottom", -50)
         #self.videobox.set_property("left", -50)
@@ -398,7 +398,7 @@ class ObVideoOverlayBin (ObOutputBin):
         #self.videobox.set_property("bottom", -0.15 * height)
         self.elements.append(self.videobox)
 
-        self.caps = Gst.ElementFactory.make('capsfilter', "capsfilter")
+        self.caps = Gst.ElementFactory.make('capsfilter', 'video-overlay-pre-capsfilter')
         #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height) + ",pixel-aspect-ratio=1/1"))
         #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=854,height=480"))
         #self.caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=854,height=480,pixel-aspect-ratio=1/1"))
@@ -409,14 +409,14 @@ class ObVideoOverlayBin (ObOutputBin):
 
 
         ## create overlay elements (if enabled)
-        self.cairooverlay = Gst.ElementFactory.make('cairooverlay', "overlay")
-        self.cairooverlay.connect("draw", self.overlay_draw)
-        self.cairooverlay.connect("caps-changed", self.overlay_caps_changed)
+        self.cairooverlay = Gst.ElementFactory.make('cairooverlay', 'video-overlay-canvas')
+        self.cairooverlay.connect('draw', self.overlay_draw)
+        self.cairooverlay.connect('caps-changed', self.overlay_caps_changed)
         self.elements.append(self.cairooverlay)
 
         """
         # RSVG Overlay Test
-        self.svgoverlay = Gst.ElementFactory.make("rsvgoverlay", "rsvgoverlay")
+        self.svgoverlay = Gst.ElementFactory.make('rsvgoverlay', 'video-overlay-rsvg')
         #self.svgoverlay.set_property('fit-to-frame', True)
         self.svgoverlay.set_property('width', width)
         self.svgoverlay.set_property('height', height)
@@ -427,10 +427,10 @@ class ObVideoOverlayBin (ObOutputBin):
         self.elements.append(self.svgoverlay)
         """
 
-        #self.elements.append(Gst.ElementFactory.make("queue", "post_queue"))
-        #self.elements.append(Gst.ElementFactory.make("videoscale", "post_scale"))
-        self.elements.append(Gst.ElementFactory.make("videoconvert", "post_convert"))
-        #self.elements.append(Gst.ElementFactory.make("videorate", "post_rate"))
+        #self.elements.append(Gst.ElementFactory.make('queue', 'video-overlay-post-queue'))
+        #self.elements.append(Gst.ElementFactory.make('videoscale', 'video-overlay-post-scale'))
+        self.elements.append(Gst.ElementFactory.make('videoconvert', 'video-overlay-post-convert'))
+        #self.elements.append(Gst.ElementFactory.make('videorate', 'video-overlay-post-rate'))
 
         self.build_pipeline(self.elements)
 

@@ -261,7 +261,7 @@ class ObPlayer (object):
         self.repatch_outputs(patch_class, req['media_type'])
 
         # set up and play the request
-        request_pipe.stop()
+        request_pipe.stop('by execute request')
         request_pipe.set_request(req)
         request_pipe.start()
 
@@ -285,7 +285,7 @@ class ObPlayer (object):
 
         req = self.requests[output]
         request_pipe = self.pipes[req['media_type']]
-        request_pipe.stop()
+        request_pipe.stop('by stop request')
 
         if outputs.Overlay and req['overlay_text']:
             outputs.Overlay.set_message('')
@@ -306,7 +306,7 @@ class ObPlayer (object):
                 unpatch_list = [ output for output in output_list if self.patches[output] == pipe ]
                 if len(unpatch_list) > 0:
                     if set(unpatch_list) == self.pipes[pipe].mode:
-                        self.pipes[pipe].stop()
+                        self.pipes[pipe].stop('by repatch outputs')
                         """
                         requeued = [ ]
                         for output in unpatch_list:

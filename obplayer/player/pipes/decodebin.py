@@ -47,7 +47,7 @@ class ObPlayBinPipeline (ObGstPipeline):
         self.pipeline.set_property('force-aspect-ratio', True)
 
         if audiovis is True:
-            self.audiovis = Gst.ElementFactory.make('libvisual_jess')
+            self.audiovis = Gst.ElementFactory.make('libvisual_jess', name + '-visualizer')
             self.pipeline.set_property('flags', self.pipeline.get_property('flags') | 0x00000008)
             self.pipeline.set_property('vis-plugin', self.audiovis)
 
@@ -138,7 +138,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
 
         self.pipeline = Gst.Pipeline(name)
 
-        self.decodebin = Gst.ElementFactory.make('uridecodebin')
+        self.decodebin = Gst.ElementFactory.make('uridecodebin', name + '-uridecodebin')
         self.pipeline.add(self.decodebin)
         self.decodebin.connect("pad-added", self.on_decoder_pad_added)
 
