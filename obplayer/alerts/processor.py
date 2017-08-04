@@ -469,7 +469,7 @@ class ObAlertProcessor (object):
                         obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 
                         self.ctrl.hold_requests(True)
-                        self.ctrl.add_request(media_type='break', duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
+                        self.ctrl.add_request(media_type='break', title="alert lead in delay", duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
 
                         expired_list = [ ]
                         with self.lock:
@@ -498,7 +498,7 @@ class ObAlertProcessor (object):
                                     if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
                                         expired_list.append(alert)
 
-                        self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
+                        self.ctrl.add_request(media_type='break', title="alert lead out delay", duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
                         self.ctrl.adjust_request_times(time.time())
                         self.ctrl.hold_requests(False)
 
