@@ -368,7 +368,8 @@ class ObAdvancedShow (ObShow):
     def play_next(self, present_time, media_class=None):
         if self.is_paused() or self.playlist.is_finished():
             self.ctrl.stop_requests()
-            self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "show paused break")
+            self.ctrl.add_request(media_type='break', end_time=self.end_time(), title = "show finished break")
+            self.next_media_update = self.end_time()
             return False
 
         # TODO there is a problem with the first play
