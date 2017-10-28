@@ -31,6 +31,9 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
+from .base import ObGstStreamer
+
+
 output_settings = {
     '240p': (426, 240, 700),
     '360p': (640, 360, 1000),
@@ -38,23 +41,18 @@ output_settings = {
     '720p': (1280, 720, 4000),
 }
 
-
-class ObYoutubeStreamer (object):
+class ObYoutubeStreamer (ObGstStreamer):
     def __init__(self):
-        self.pipeline = Gst.Pipeline()
+        ObGstStreamer.__init__(self, 'youtube')
 
         self.mode = output_settings[obplayer.Config.setting('streamer_youtube_mode')]
 
-        bus = self.pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect("message", self.message_handler)
-
-        obplayer.Player.add_inter_tap('youtube')
+        obplayer.Player.add_inter_tap(self.name)
 
         self.audiopipe = [ ]
 
         self.interaudiosrc = Gst.ElementFactory.make('interaudiosrc')
-        self.interaudiosrc.set_property('channel', 'youtube:audio')
+        self.interaudiosrc.set_property('channel', self.name + ':audio')
         #self.interaudiosrc.set_property('buffer-time', 8000000000)
         #self.interaudiosrc.set_property('latency-time', 8000000000)
         self.audiopipe.append(self.interaudiosrc)
@@ -90,7 +88,7 @@ class ObYoutubeStreamer (object):
         self.videopipe = [ ]
 
         self.intervideosrc = Gst.ElementFactory.make('intervideosrc')
-        self.intervideosrc.set_property('channel', 'youtube:video')
+        self.intervideosrc.set_property('channel', self.name + ':video')
         self.videopipe.append(self.intervideosrc)
 
         #self.videopipe.append(Gst.ElementFactory.make("videotestsrc"))
@@ -159,66 +157,5 @@ class ObYoutubeStreamer (object):
 
         self.audiopipe[-1].link(self.commonpipe[0])
         self.videopipe[-1].link(self.commonpipe[0])
-
-
-    def message_handler(self, bus, message):
-        if message.type == Gst.MessageType.ERROR:
-            err, debug = message.parse_error()
-            obplayer.Log.log("gstreamer error: %s, %s, %s" % (err, debug, err.code), 'error')
-            obplayer.Log.log("attempting to restart youtube streaming pipeline", 'info')
-            GObject.timeout_add(5000, self.restart_pipeline)
-
-        elif message.type == Gst.MessageType.WARNING:
-            err, debug = message.parse_warning()
-            obplayer.Log.log("gstreamer warning: %s, %s, %s" % (err, debug, err.code), 'warning')
-
-        elif message.type == Gst.MessageType.INFO:
-            err, debug = message.parse_info()
-            obplayer.Log.log("gstreamer info: %s, %s, %s" % (err, debug, err.code), 'info')
-
-    def restart_pipeline(self):
-        self.wait_state(Gst.State.NULL)
-        self.wait_state(Gst.State.PLAYING)
-
-    def build_pipeline(self, elements):
-        for element in elements:
-            #print("adding element to bin: " + element.get_name())
-            self.pipeline.add(element)
-        for index in range(0, len(elements) - 1):
-            elements[index].link(elements[index + 1])
-
-    def start(self):
-        obplayer.Log.log("starting youtube streamer", 'debug')
-        self.pipeline.set_state(Gst.State.PLAYING)
-
-    def stop(self):
-        obplayer.Log.log("stopping youtube streamer", 'debug')
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def quit(self):
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def wait_state(self, target_state):
-        self.pipeline.set_state(target_state)
-        (statechange, state, pending) = self.pipeline.get_state(timeout=5 * Gst.SECOND)
-        if statechange != Gst.StateChangeReturn.SUCCESS:
-            obplayer.Log.log("gstreamer failed waiting for state change to " + str(pending), 'error')
-            #raise Exception("Failed waiting for state change")
-            return False
-        return True
-
-    def detect_silence(self, bus, message, *args):
-        peak = message.get_structure().get_value('peak')
-        if peak[0] < -28:
-            if not self.is_dropping:
-                self.is_dropping = True
-                self.selector.set_property('drop', True)
-                print("now dropping buffers")
-        else:
-            if self.is_dropping:
-                self.is_dropping = False
-                self.selector.set_property('drop', False)
-                print("now outputting buffers")
-        return True
 
 

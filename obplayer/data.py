@@ -304,9 +304,10 @@ class ObConfigData (ObData):
         self.add_setting('overlay_enable', '0', 'bool')
 
         self.add_setting('streamer_enable', '0', 'bool')
-        self.add_setting('streamer_audio_in_mode', 'auto', 'text')
+        self.add_setting('streamer_audio_in_mode', 'intersink', 'text')
         self.add_setting('streamer_audio_in_alsa_device', 'default', 'text')
         self.add_setting('streamer_audio_in_jack_name', '', 'text')
+
         self.add_setting('streamer_icecast_enable', '1', 'bool')
         self.add_setting('streamer_icecast_mode', 'audio', 'text')
         self.add_setting('streamer_icecast_bitrate', '0', 'int')
@@ -319,10 +320,19 @@ class ObConfigData (ObData):
         self.add_setting('streamer_icecast_url', '', 'text')
         self.add_setting('streamer_icecast_public', '0', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
+
         self.add_setting('streamer_rtsp_enable', '0', 'bool')
         self.add_setting('streamer_rtsp_port', '8554', 'int')
         self.add_setting('streamer_rtsp_clock_rate', '48000', 'text')
         self.add_setting('streamer_rtsp_allow_discovery', '0', 'bool')
+
+        self.add_setting('streamer_rtp_enable', '0', 'bool')
+        self.add_setting('streamer_rtp_port', '5004', 'int')
+        self.add_setting('streamer_rtp_address', '', 'text')
+        self.add_setting('streamer_rtp_encoding', 'L24', 'text')
+        self.add_setting('streamer_rtp_clock_rate', '48000', 'text')
+        self.add_setting('streamer_rtp_enable_rtcp', '1', 'bool')
+
         self.add_setting('streamer_youtube_enable', '0', 'bool')
         self.add_setting('streamer_youtube_key', '', 'text')
         self.add_setting('streamer_youtube_mode', '240p', 'text')
@@ -358,7 +368,7 @@ class ObConfigData (ObData):
         self.add_setting('rtp_in_address', '', 'text')
         self.add_setting('rtp_in_encoding', 'OPUS', 'text')
         self.add_setting('rtp_in_clock_rate', '48000', 'text')
-        self.add_setting('rtp_in_enable_rtcp', '0', 'bool')
+        self.add_setting('rtp_in_enable_rtcp', '1', 'bool')
 
         self.add_setting('testsignal_enable', '1', 'bool')
 

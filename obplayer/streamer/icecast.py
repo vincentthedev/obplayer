@@ -31,19 +31,17 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
+from .base import ObGstStreamer
 
-class ObIcecastStreamer (object):
+
+class ObIcecastStreamer (ObGstStreamer):
     def __init__(self):
-        self.pipeline = Gst.Pipeline()
+        ObGstStreamer.__init__(self, 'icecast')
 
         if obplayer.Config.setting('streamer_icecast_mode') == 'audio':
             self.make_audio_pipe()
         else:
             self.make_video_pipe()
-
-        bus = self.pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect("message", self.message_handler)
 
     def make_audio_pipe(self):
         self.audiopipe = [ ]
@@ -72,9 +70,9 @@ class ObIcecastStreamer (object):
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
 
         elif audio_input == 'intersink':
-            obplayer.Player.add_inter_tap('icecast')
+            obplayer.Player.add_inter_tap(self.name)
             self.audiosrc = Gst.ElementFactory.make('interaudiosrc')
-            self.audiosrc.set_property('channel', 'icecast:audio')
+            self.audiosrc.set_property('channel', self.name + ':audio')
             #self.audiosrc.set_property('buffer-time', 8000000000)
             #self.audiosrc.set_property('latency-time', 8000000000)
 
@@ -130,12 +128,12 @@ class ObIcecastStreamer (object):
         self.build_pipeline(self.audiopipe)
 
     def make_video_pipe(self):
-        obplayer.Player.add_inter_tap('icecast')
+        obplayer.Player.add_inter_tap(self.name)
 
         self.audiopipe = [ ]
 
         self.interaudiosrc = Gst.ElementFactory.make('interaudiosrc')
-        self.interaudiosrc.set_property('channel', 'icecast:audio')
+        self.interaudiosrc.set_property('channel', self.name + ':audio')
         #self.interaudiosrc.set_property('buffer-time', 8000000000)
         #self.interaudiosrc.set_property('latency-time', 8000000000)
         self.audiopipe.append(self.interaudiosrc)
@@ -199,7 +197,7 @@ class ObIcecastStreamer (object):
         """
 
         self.intervideosrc = Gst.ElementFactory.make('intervideosrc')
-        self.intervideosrc.set_property('channel', 'icecast:video')
+        self.intervideosrc.set_property('channel', self.name + ':video')
         self.videopipe.append(self.intervideosrc)
 
         self.videopipe.append(Gst.ElementFactory.make("queue2"))
@@ -259,26 +257,6 @@ class ObIcecastStreamer (object):
         self.audiopipe[-1].link(self.commonpipe[0])
         self.videopipe[-1].link(self.commonpipe[0])
 
-
-    def message_handler(self, bus, message):
-        if message.type == Gst.MessageType.ERROR:
-            err, debug = message.parse_error()
-            obplayer.Log.log("gstreamer error: %s, %s, %s" % (err, debug, err.code), 'error')
-            obplayer.Log.log("attempting to restart icecast pipeline", 'info')
-            GObject.timeout_add(5000, self.restart_pipeline)
-
-        elif message.type == Gst.MessageType.WARNING:
-            err, debug = message.parse_warning()
-            obplayer.Log.log("gstreamer warning: %s, %s, %s" % (err, debug, err.code), 'warning')
-
-        elif message.type == Gst.MessageType.INFO:
-            err, debug = message.parse_info()
-            obplayer.Log.log("gstreamer info: %s, %s, %s" % (err, debug, err.code), 'info')
-
-    def restart_pipeline(self):
-        self.wait_state(Gst.State.NULL)
-        self.wait_state(Gst.State.PLAYING)
-
     def queue_data(self, data):
         with self.lock:
             self.microphone_queue.append(data)
@@ -302,33 +280,6 @@ class ObIcecastStreamer (object):
         #gbuffer.fill(0, data)
         #ret = self.appsrc.emit('push-buffer', gbuffer)
         ret = self.appsrc.emit('push-buffer', data)
-
-    def build_pipeline(self, elements):
-        for element in elements:
-            #print("adding element to bin: " + element.get_name())
-            self.pipeline.add(element)
-        for index in range(0, len(elements) - 1):
-            elements[index].link(elements[index + 1])
-
-    def start(self):
-        obplayer.Log.log("starting streamer", 'debug')
-        self.pipeline.set_state(Gst.State.PLAYING)
-
-    def stop(self):
-        obplayer.Log.log("stopping streamer", 'debug')
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def quit(self):
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def wait_state(self, target_state):
-        self.pipeline.set_state(target_state)
-        (statechange, state, pending) = self.pipeline.get_state(timeout=5 * Gst.SECOND)
-        if statechange != Gst.StateChangeReturn.SUCCESS:
-            obplayer.Log.log("gstreamer failed waiting for state change to " + str(pending), 'error')
-            #raise Exception("Failed waiting for state change")
-            return False
-        return True
 
     def detect_silence(self, bus, message, *args):
         peak = message.get_structure().get_value('peak')

@@ -919,7 +919,7 @@
           </tbody>
         </table>
 
-        <h4 data-t>RTP Audio Input Settings</h4>
+        <h4 data-t>RTP/Livewire Audio Input Settings</h4>
 
         <table class="settings">
           <tbody>
@@ -1324,6 +1324,45 @@
             <tr>
               <td data-t>streamer_rtsp_allow_discovery</td>
               <td><input type="checkbox" name="streamer_rtsp_allow_discovery" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_rtsp_allow_discovery') %> title="streamer_rtsp_allow_discovery_tooltip" data-t></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 data-t>RTP/Livewire Streaming</h4>
+
+        <table class="settings">
+          <tbody>
+            <tr>
+              <td data-t>streamer_rtp_enable</td>
+              <td><input type="checkbox" name="streamer_rtp_enable" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_rtp_enable') %>></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_rtp_port</td>
+              <td><input type="text" name="streamer_rtp_port" value="<%= obplayer.Config.setting('streamer_rtp_port', True) %>"></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_rtp_address</td>
+              <td><input type="text" name="streamer_rtp_address" value="<%= obplayer.Config.setting('streamer_rtp_address', True) %>" title="streamer_rtp_address_tooltip" data-t></td>
+            </tr>
+            <tr>
+              <td title="streamer_rtp_encoding_tooltip" data-t>streamer_rtp_encoding</td>
+              <td><select id="streamer_rtp_encoding_select" name="streamer_rtp_encoding">
+                  <option value="L24"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_encoding','L24') %>>24-bit PCM (Livewire)</option>
+                  <option value="L16"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_encoding','L16') %>>16-bit PCM</option>
+                  <option value="OPUS"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_encoding','OPUS') %>>Opus</option>
+                  <option value="MPA"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_encoding','MPA') %>>MP3</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_rtp_clock_rate</td>
+              <td><select id="streamer_rtp_clock_rate_select" name="streamer_rtp_clock_rate">
+                  <option value="48000"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_clock_rate','48000') %>>48000 Hz</option>
+                  <option value="44100"<%= obplayer.HTTPAdmin.form_item_selected('streamer_rtp_clock_rate','44100') %>>44100 Hz</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td data-t>streamer_rtp_enable_rtcp</td>
+              <td><input type="checkbox" name="streamer_rtp_enable_rtcp" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_rtp_enable_rtcp') %> title="streamer_rtp_enable_rtcp_tooltip" data-t></td>
             </tr>
           </tbody>
         </table>

@@ -28,7 +28,7 @@ Sources Tab
   aoip_in_uri_tooltip: URI of source audio stream to use.  This can either be an rtsp:// uri or an sdp:/// file reference.
 
 
-  RTP Audio Input Settings: RTP Audio Input Settings
+  RTP/Livewire Audio Input Settings: RTP/Livewire Audio Input Settings
 
   rtp_in_enable: RTP Input Enable
   rtp_in_port: RTP Input Port
