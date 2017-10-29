@@ -96,7 +96,7 @@ class ObRTPStreamer (ObGstStreamer):
             self.audiopipe.append(self.payloader)
 
         self.payloader.set_property('pt', 96)
-        self.payloader.set_property('max-ptime', 1000000)        # maximum 1msec of audio per packet
+        self.payloader.set_property('max-ptime', 100000)        # maximum audio per packet
 
         self.audiopipe.append(Gst.ElementFactory.make('queue2', self.name + '-streamer-prertp-queue'))
 
