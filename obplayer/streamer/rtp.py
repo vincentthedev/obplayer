@@ -45,10 +45,9 @@ class ObRTPStreamer (ObGstStreamer):
         self.clock_rate = obplayer.Config.setting('streamer_rtp_clock_rate')
         self.enable_rtcp = obplayer.Config.setting('streamer_rtp_enable_rtcp')
 
-        obplayer.Player.add_inter_tap(self.name)
-
         self.audiopipe = [ ]
 
+        obplayer.Player.add_inter_tap(self.name)
         self.interaudiosrc = Gst.ElementFactory.make('interaudiosrc')
         self.interaudiosrc.set_property('channel', self.name + ':audio')
         #self.interaudiosrc.set_property('buffer-time', 8000000000)
@@ -96,7 +95,9 @@ class ObRTPStreamer (ObGstStreamer):
             self.audiopipe.append(self.payloader)
 
         self.payloader.set_property('pt', 96)
-        self.payloader.set_property('max-ptime', 100000)        # maximum audio per packet
+        self.payloader.set_property('max-ptime', 1000000)
+        self.payloader.set_property('min-ptime', 1000000)
+        self.payloader.set_property('ptime-multiple', 1000000)
 
         self.audiopipe.append(Gst.ElementFactory.make('queue2', self.name + '-streamer-prertp-queue'))
 
