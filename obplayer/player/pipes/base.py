@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -35,6 +35,7 @@ from gi.repository import GObject, Gst, GstVideo, GstController
 
 class ObGstPipeline (object):
     def __init__(self, name):
+        #Gst.Bin.__init__(self)
         self.mode = set()
         self.name = name
 
@@ -42,8 +43,9 @@ class ObGstPipeline (object):
         #print(self.name + ": starting")
         self.wait_state(Gst.State.PLAYING)
 
-    def stop(self):
+    def stop(self, label=''):
         #print(self.name + ": stopping")
+        obplayer.Log.log(self.name + ": stopped " + label, 'debug')
         self.wait_state(Gst.State.NULL)
 
     def quit(self):
@@ -110,11 +112,11 @@ class ObGstPipeline (object):
     """
 
     def register_signals(self):
-        self.bus = self.pipeline.get_bus()
-        self.bus.add_signal_watch()
-        self.bus.enable_sync_message_emission()
-        self.bus.connect("sync-message::element", self.sync_handler)
-        self.bus.connect("message", self.message_handler)
+        bus = self.pipeline.get_bus()
+        bus.add_signal_watch()
+        bus.enable_sync_message_emission()
+        bus.connect("sync-message::element", self.sync_handler)
+        bus.connect("message", self.message_handler)
 
     def wait_state(self, target_state):
         self.pipeline.set_state(target_state)

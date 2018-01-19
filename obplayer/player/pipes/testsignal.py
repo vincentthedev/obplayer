@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -29,7 +29,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstController
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObTestSignalPipeline (ObGstPipeline):
@@ -40,24 +40,27 @@ class ObTestSignalPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
-        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc')
+        self.pipeline = Gst.Pipeline(name)
+
+        self.audiotestsrc = Gst.ElementFactory.make('audiotestsrc', name + '-audiotestsrc')
+        self.audiotestsrc.set_property('volume', 0.2)
+        self.audiotestsrc.set_property('is-live', True)
         self.pipeline.add(self.audiotestsrc)
-        self.videotestsrc = Gst.ElementFactory.make('videotestsrc')
+
+        self.videotestsrc = Gst.ElementFactory.make('videotestsrc', name + '-videotestsrc')
+        self.videotestsrc.set_property('is-live', True)
         self.pipeline.add(self.videotestsrc)
+
         self.audiosink = None
         self.videosink = None
 
         self.fakesinks = { }
-        for output in list(self.player.outputs.keys()) + [ 'audio', 'visual' ]:
+        for output in self.max_class:
             self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
         self.set_property('audio-sink', self.fakesinks['audio'])
         self.set_property('video-sink', self.fakesinks['visual'])
 
-        self.audiotestsrc.set_property('volume', 0.2)
-        self.audiotestsrc.set_property('is-live', True)
-        self.videotestsrc.set_property('is-live', True)
         self.register_signals()
 
     def set_property(self, property, value):

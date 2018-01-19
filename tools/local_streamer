@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -23,6 +23,8 @@ class ObLocalStreamer (object):
         parser.add_argument('-J', '--jack-port', type=str, help='Name of the jack port to monitor.', default='default')
         parser.add_argument('-i', '--ip', type=str, help='RTP receiver IP address.', default='127.0.0.1')
         parser.add_argument('-p', '--port', type=str, help='RTP receiver port number.', default='5004')
+        parser.add_argument('-e', '--encoding', type=str, help='Audio encoding format: OPUS, MPA, L16, or L24.', default='OPUS')
+        parser.add_argument('-c', '--clockrate', type=str, help='Audio clock rate: 48000 or 44100', default='48000')
 
         self.args = parser.parse_args()
 
@@ -81,9 +83,12 @@ class ObLocalStreamer (object):
         self.elements.append(self.shout2send)
         """
 
+        clockrate = self.args.clockrate
+
         self.capsfilter = Gst.ElementFactory.make('capsfilter', "audiocapsfilter")
         #self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100,format=S16LE,layout=interleaved"))
-        self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=48000"))
+        #self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=48000"))
+        self.capsfilter.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=" + str(clockrate)))
         self.elements.append(self.capsfilter)
 
         self.prequeue = Gst.ElementFactory.make("queue2")
@@ -95,16 +100,34 @@ class ObLocalStreamer (object):
         self.audioconvert = Gst.ElementFactory.make("audioconvert")
         self.elements.append(self.audioconvert)
 
-        self.encoder = Gst.ElementFactory.make("opusenc")
-        self.elements.append(self.encoder)
-        self.payloader = Gst.ElementFactory.make("rtpopuspay")
-        self.payloader.set_property('max-ptime', 1000000000)        # maximum 1sec of audio per packet
-        self.elements.append(self.payloader)
+        encoding = self.args.encoding.upper()
+        if encoding == 'OPUS':
+            self.encoder = Gst.ElementFactory.make("opusenc")
+            self.elements.append(self.encoder)
+            self.payloader = Gst.ElementFactory.make("rtpopuspay")
+            self.elements.append(self.payloader)
 
-        #self.encoder = Gst.ElementFactory.make("lamemp3enc")
-        #self.elements.append(self.encoder)
-        #self.payloader = Gst.ElementFactory.make("rtpmpapay")
-        #self.elements.append(self.payloader)
+        elif encoding == 'MPA':
+            self.encoder = Gst.ElementFactory.make("lamemp3enc")
+            self.elements.append(self.encoder)
+            self.payloader = Gst.ElementFactory.make("rtpmpapay")
+            self.payloader.set_property('pt', 96)
+            self.elements.append(self.payloader)
+
+        elif encoding == 'L16':
+            self.payloader = Gst.ElementFactory.make("rtpL16pay")
+            self.elements.append(self.payloader)
+
+        elif encoding == 'L24':
+            self.payloader = Gst.ElementFactory.make("rtpL24pay")
+            self.elements.append(self.payloader)
+
+        else:
+            print("Invalid encoding format: " + str(encoding))
+            return
+
+        self.payloader.set_property('max-ptime', 1000000000)        # maximum 1sec of audio per packet
+
 
         self.postqueue = Gst.ElementFactory.make("queue2")
         self.elements.append(self.postqueue)

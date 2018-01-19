@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -34,8 +34,6 @@ import base64
 import struct
 import random
 import hashlib
-
-import OpenSSL
 
 if sys.version.startswith('3'):
     from urllib.parse import parse_qs,urlparse,quote,unquote
@@ -95,10 +93,16 @@ class Response (object):
 class ObHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     daemon_threads = True
 
-    def __init__(self, server_address, sslcert):
+    def __init__(self, server_address, sslenable=False, sslreq=None, sslkey=None, sslcert=None, sslca=None):
         BaseHTTPServer.HTTPServer.__init__(self, server_address, ObHTTPRequestHandler)
-        if sslcert:
-            self.socket = OpenSSL.SSL.wrap_socket(self.socket, certfile=sslcert, server_side=True)
+        if sslenable:
+            import ssl
+            sslreq = ssl.CERT_NONE if not sslca else ssl.CERT_OPTIONAL if not sslreq else ssl.CERT_REQUIRED
+            try:
+                self.socket = ssl.wrap_socket(self.socket, keyfile=sslkey, certfile=sslcert, cert_reqs=sslreq, ca_certs=sslca, server_side=True)
+            except:
+                obplayer.Log.log("Error starting OpenSSL server. Falling back to normal HTTP", 'error')
+                obplayer.Log.log(traceback.format_exc(), 'error')
         self.routes = [ ]
 
     def shutdown(self):

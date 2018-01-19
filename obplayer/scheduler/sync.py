@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -876,4 +876,24 @@ class ObSync:
         fp = file(filename, 'rb')
         return hashlib.md5(fp.read()).hexdigest()
 
+    @staticmethod
+    def media_location(file_location):
+        if '/' not in file_location:
+            # file location specified as 2-character directory code.
+            file_location = obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1]
+        elif file_location[0] != '/':
+            file_location = os.getcwd() + '/' + file_location
+        return file_location
 
+    #
+    # expand file location and check that media file exists
+    #
+    @staticmethod
+    def media_uri(file_location, filename):
+        if not file_location:
+            return ''
+        file_location = obplayer.Sync.media_location(file_location)
+        if filename and os.path.exists(file_location + '/' + filename) == False:
+            obplayer.Log.log('ObPlayer: File ' + file_location + '/' + filename + ' does not exist. Skipping playback', 'error')
+            return None
+        return 'file://' + file_location + '/' + filename

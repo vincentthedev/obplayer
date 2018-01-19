@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import obplayer
@@ -78,6 +78,7 @@ class PyHTML (object):
         self._globals['print'] = self.write
         self._globals['t'] = self.translate
 
+        self._globals['sys'] = sys
         self._globals['json'] = json
         self._globals['re'] = re
         self._globals['time'] = time
@@ -121,7 +122,7 @@ class PyHTML (object):
         self.inline(code)
 
     def _read_contents(self, filename):
-        with open(nerve.files.find_source(filename), 'r') as f:
+        with open(filename, 'r') as f:
             contents = f.read()
         return contents
 

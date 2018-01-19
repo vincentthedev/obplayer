@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -32,7 +32,7 @@ class ObPriorityBroadcaster:
         #self.ctrl.set_update_callback(self.do_player_update)
         #self.ctrl.set_next_update(0)
 
-    def do_player_update(self, ctrl, present_time):
+    def do_player_update(self, ctrl, present_time, media_class):
         pass
 
     def check_update(self):
@@ -49,8 +49,7 @@ class ObPriorityBroadcaster:
 
                         self.ctrl.add_request(
                             media_type = broadcast['media_type'],
-                            file_location = broadcast['file_location'],
-                            filename = broadcast['filename'],
+                            uri = obplayer.Sync.media_uri(broadcast['file_location'], broadcast['filename']),
                             media_id = broadcast['media_id'],
                             artist = broadcast['artist'],
                             title = broadcast['title'],

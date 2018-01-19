@@ -1,7 +1,8 @@
 
 Footer
-  footer_message: OpenBroadcaster Player is released under Affero GPL v3 and may be downloaded at
-  footer_license: View license
+  footer_message1: OpenBroadcaster Player is released under 
+  footer_message2: Downloads and updates available at
+  footer_message3: Self-help instructions available at
 
 Miscellaneous
 

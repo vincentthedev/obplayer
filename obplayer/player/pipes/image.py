@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -28,9 +28,10 @@ import traceback
 
 import gi
 gi.require_version('Gst', '1.0')
+gi.require_version('GstController', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstController
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObImagePipeline (ObGstPipeline):
@@ -48,31 +49,31 @@ class ObImagePipeline (ObGstPipeline):
         self.images_height = obplayer.Config.setting('images_height')
         self.images_framerate = obplayer.Config.setting('images_framerate')
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         #self.imagebin = Gst.parse_launch('uridecodebin uri="file:///home/trans/Downloads/kitty.jpg" ! imagefreeze ! videoconvert ! videoscale ! video/x-raw, height=1920, width=1080 ! autovideosink')
 
-        self.decodebin = Gst.ElementFactory.make('uridecodebin', 'uridecodebin')
+        self.decodebin = Gst.ElementFactory.make('uridecodebin', name + '-uridecodebin')
         self.pipeline.add(self.decodebin)
         self.decodebin.connect("pad-added", self.on_decoder_pad_added)
 
         self.elements = [ ]
-        self.elements.append(Gst.ElementFactory.make('imagefreeze', 'imagefreeze'))
+        self.elements.append(Gst.ElementFactory.make('imagefreeze', name + '-freeze'))
 
         ## create basic filter elements
-        self.elements.append(Gst.ElementFactory.make("videoscale", "image_scale"))
+        self.elements.append(Gst.ElementFactory.make('videoscale', name + '-scale'))
         #self.elements[-1].set_property('add-borders', False)
-        self.elements.append(Gst.ElementFactory.make("videoconvert", "image_convert"))
-        self.elements.append(Gst.ElementFactory.make("videorate", "image_rate"))
+        self.elements.append(Gst.ElementFactory.make('videoconvert', name + '-convert'))
+        self.elements.append(Gst.ElementFactory.make('videorate', name + '-rate'))
 
         ## create caps filter element to set the output video parameters
-        caps = Gst.ElementFactory.make('capsfilter', "image_capsfilter")
+        caps = Gst.ElementFactory.make('capsfilter', name + '-capsfilter')
         #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=" + str(self.video_width) + ",height=" + str(self.video_height)))
         #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=640,height=480,framerate=15/1"))
         caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=%d,height=%d,framerate=%d/1" % (self.images_width, self.images_height, self.images_framerate)))
         self.elements.append(caps)
 
-        #self.videobalance = Gst.ElementFactory.make('videobalance', 'videobalance')
+        #self.videobalance = Gst.ElementFactory.make('videobalance', 'image-pipeline-videobalance')
         #self.videobalance.set_property('videobalance', 0.0)
         #self.elements.append(self.videobalance)
 
@@ -83,19 +84,19 @@ class ObImagePipeline (ObGstPipeline):
         #self.videobalance.add_control_binding(binding)
 
         if self.images_transitions_enable:
-            self.elements.append(Gst.ElementFactory.make('alpha', 'alpha'))
+            self.elements.append(Gst.ElementFactory.make('alpha', name + '-alpha'))
             #self.elements[-1].set_property('method', 1)
             binding = GstController.DirectControlBinding.new(self.elements[-1], 'alpha', self.control_source)
             self.elements[-1].add_control_binding(binding)
 
-            self.elements.append(Gst.ElementFactory.make('videomixer', 'videomixer'))
+            self.elements.append(Gst.ElementFactory.make('videomixer', name + '-videomixer'))
             self.elements[-1].set_property('background', 1)
 
         """
-        self.elements.append(Gst.ElementFactory.make('videorate', 'videorate'))
+        self.elements.append(Gst.ElementFactory.make('videorate', name + '-videorate'))
 
         ## create caps filter element to set the output video parameters
-        caps_filter = Gst.ElementFactory.make('capsfilter', "capsfilter3")
+        caps_filter = Gst.ElementFactory.make('capsfilter', name + '-capsfilter3')
         caps_filter.set_property('caps', Gst.Caps.from_string("video/x-raw,framerate=5/1"))
         self.elements.append(caps_filter)
         """
@@ -150,11 +151,11 @@ class ObImagePipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.request = req
-        self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.decodebin.set_property('uri', req['uri'])
 
         self.control_source.unset_all()
         end_time = req['end_time'] - time.time()
-        if end_time > 0:
+        if end_time >= 1:
             self.control_source.set(0, 0.0)
             self.control_source.set(1 * Gst.SECOND, 1.0)
             self.control_source.set((end_time - 1) * Gst.SECOND, 1.0)

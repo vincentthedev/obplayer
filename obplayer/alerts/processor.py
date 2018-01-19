@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -63,8 +63,9 @@ class ObAlertFetcher (obplayer.ObThread):
                     self.socket.shutdown(socket.SHUT_RDWR)
                     self.socket.close()
                 except:
-                    obplayer.Log.log("exception in " + self.name + " thread", 'error')
-                    obplayer.Log.log(traceback.format_exc(), 'error')
+                    #obplayer.Log.log("exception in " + self.name + " thread", 'error')
+                    #obplayer.Log.log(traceback.format_exc(), 'error')
+                    obplayer.Log.log('error while closing socket', 'error')
                 self.socket = None
                 self.last_received = 0
 
@@ -277,8 +278,7 @@ class ObAlertProcessor (object):
         alerts = { 'active' : [ ], 'expired' : [ ], 'last_heartbeat' : self.last_heartbeat, 'next_play' : self.next_alert_check }
         with self.lock:
             for (name, alert_list) in [ ('active', self.alerts_active), ('expired', self.alerts_expired) ]:
-                for id in alert_list.keys():
-                    alert = alert_list[id]
+                for alert in self.sort_by_importance(alert_list.values()):
                     info = alert.get_first_info(self.language_primary)
                     alerts[name].append({
                         'identifier' : alert.identifier,
@@ -308,24 +308,29 @@ class ObAlertProcessor (object):
                 self.alerts_expired[alert.identifier] = alert
 
     def handle_dispatch(self, alert):
+        # mark the alert as seen
+        seen = True if alert.identifier in self.alerts_seen else False
         self.mark_seen(alert)
+
+        # if first time seen, then fetch alerts
+        if not seen and alert.status == 'system':# or alert.msgtype == 'update':
+            self.fetch_references(alert.references, required=True if alert.status == 'system' else False)
 
         # deactivate any previous alerts that are cancelled or superceeded by this alert
         if alert.msgtype in ('update', 'cancel'):
             for (_, identifier, _) in alert.references:
                 if identifier in self.alerts_active:
+                    alert.previously_important = self.alerts_active[identifier].broadcast_immediately()     # message updates might not have the BI flag set
                     self.mark_expired(self.alerts_active[identifier])
 
         if alert.status == 'system':
             self.last_heartbeat = time.time()
-            self.fetch_references(alert.references)        # only fetch alerts referenced in system heartbeats
 
         elif alert.msgtype in ('alert', 'update'):
             if self.match_alert_conditions(alert):
                 self.mark_active(alert)
-                #print "Active Alert:"
-                #alert.print_data()
-                self.next_alert_check = time.time() + 20
+                if not alert.minor_change():
+                    self.next_alert_check = time.time() + 20
 
     def match_alert_conditions(self, alert):
         if not alert.has_geocode(self.target_geocodes):
@@ -348,28 +353,32 @@ class ObAlertProcessor (object):
 
         return False
 
-    def fetch_references(self, references):
+    def fetch_references(self, references, required=False):
         for (sender, identifier, timestamp) in references:
             if not identifier in self.alerts_seen:
-                (urldate, _, _) = timestamp.partition('T')
-                filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
+                self.fetch_reference(sender, identifier, timestamp, required)
 
-                for host in self.archive_hosts:
-                    url = "%s/%s/%s.xml" % (host, urldate, filename)
-                    try:
-                        obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
-                        r = requests.get(url)
+    def fetch_reference(self, sender, identifier, timestamp, required=False):
+        (urldate, _, _) = timestamp.partition('T')
+        filename = obplayer.alerts.ObAlert.reference(timestamp, identifier)
 
-                        if r.status_code == 200:
-                            #r.encoding = 'utf-8'
-                            with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
-                                f.write(r.content)
+        for host in self.archive_hosts:
+            url = "%s/%s/%s.xml" % (host, urldate, filename)
+            try:
+                obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
+                r = requests.get(url)
 
-                            alert = obplayer.alerts.ObAlert(r.content)
-                            self.handle_dispatch(alert)
-                            break
-                    except requests.ConnectionError:
-                        obplayer.Log.log("error fetching alert %s from %s" % (identifier, host), 'error')
+                if r.status_code == 200:
+                    #r.encoding = 'utf-8'
+                    with open(obplayer.ObData.get_datadir() + "/alerts/" + filename + '.xml', 'wb') as f:
+                        f.write(r.content)
+
+                    alert = obplayer.alerts.ObAlert(r.content)
+                    self.handle_dispatch(alert)
+                    return
+            except requests.ConnectionError:
+                pass
+        obplayer.Log.log("error fetching alert %s" % (identifier,), 'error' if required else 'debug')
 
     def trigger_alert_cycle_start(self):
         for trigger in self.triggers:
@@ -402,6 +411,9 @@ class ObAlertProcessor (object):
             except:
                 obplayer.Log.log("error during alert cycle each trigger", 'error')
                 obplayer.Log.log(traceback.format_exc(), 'error')
+
+    def sort_by_importance(self, alerts):
+        return sorted(alerts, key=lambda alert: alert.received_at * (10000 if alert.broadcast_immediately() else 1), reverse=True)
 
     def run(self):
         self.next_purge_check = time.time() if obplayer.Config.setting('alerts_purge_files') else None
@@ -442,11 +454,14 @@ class ObAlertProcessor (object):
                     then = datetime.datetime.now() - datetime.timedelta(days=90)
 
                     for filename in os.listdir(basedir):
-                        (year, month, day) = filename[:10].split('_')
-                        filedate = datetime.datetime(int(year), int(month), int(day))
-                        if filedate < then:
-                            obplayer.Log.log("deleting alert file " + filename, 'debug')
-                            os.remove(os.path.join(basedir, filename))
+                        try:
+                            (year, month, day) = filename[:10].split('_')
+                            filedate = datetime.datetime(int(year), int(month), int(day))
+                            if filedate < then:
+                                obplayer.Log.log("deleting alert file " + filename, 'debug')
+                                os.remove(os.path.join(basedir, filename))
+                        except:
+                            pass
 
                 # play active alerts
                 if present_time > self.next_alert_check:
@@ -454,19 +469,20 @@ class ObAlertProcessor (object):
                         obplayer.Log.log("playing active alerts (%d alert(s) to play)" % (len(self.alerts_active),), 'alerts')
 
                         self.ctrl.hold_requests(True)
-                        self.ctrl.add_request(media_type='break', duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
+                        self.ctrl.add_request(media_type='break', title="alert lead in delay", duration=self.leadin_delay, onstart=self.trigger_alert_cycle_start)
 
                         expired_list = [ ]
                         with self.lock:
                             self.trigger_alert_cycle_init()
 
-                            for alert in self.alerts_active.values():
+                            for alert in self.sort_by_importance(self.alerts_active.values()):
                                 alert_media = alert.get_media_info(self.language_primary, self.voice_primary, self.language_secondary, self.voice_secondary)
                                 if alert_media['primary']:
                                     alert.times_played += 1
 
                                     start_time = self.ctrl.get_requests_endtime()
-                                    self.ctrl.add_request(media_type='audio', file_location="obplayer/alerts/data", filename="canadian-attention-signal.mp3", duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
+                                    if alert.times_played <= 1:
+                                        self.ctrl.add_request(media_type='audio', uri=obplayer.Player.file_uri("obplayer/alerts/data", "canadian-attention-signal.mp3"), duration=8, artist=alert_media['primary']['audio']['artist'], title=alert_media['primary']['audio']['title'], overlay_text=alert_media['primary']['audio']['overlay_text'])
                                     self.ctrl.add_request(**alert_media['primary']['audio'])
                                     if 'visual' in alert_media['primary']:
                                         self.ctrl.add_request(start_time=start_time, **alert_media['primary']['visual'])
@@ -482,7 +498,7 @@ class ObAlertProcessor (object):
                                     if (self.repeat_times > 0 and alert.times_played >= self.repeat_times) or (alert.max_plays > 0 and alert.times_played >= alert.max_plays):
                                         expired_list.append(alert)
 
-                        self.ctrl.add_request(media_type='break', duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
+                        self.ctrl.add_request(media_type='break', title="alert lead out delay", duration=self.leadout_delay, onend=self.trigger_alert_cycle_stop)
                         self.ctrl.adjust_request_times(time.time())
                         self.ctrl.hold_requests(False)
 

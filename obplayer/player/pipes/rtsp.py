@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -30,7 +30,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstSdp', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstSdp
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObRTSPInputPipeline (ObGstPipeline):
@@ -41,14 +41,14 @@ class ObRTSPInputPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
         self.elements = [ ]
 
 
-        self.rtspsrc = Gst.ElementFactory.make('rtspsrc')
-        #self.rtspsrc.set_property('location', "rtsp://172.16.0.15/by-id/2")
+        self.rtspsrc = Gst.ElementFactory.make('rtspsrc', name + '-rtspsrc')
         self.pipeline.add(self.rtspsrc)
         self.rtspsrc.connect('on-sdp', self.rtspsrc_on_sdp)
+        #self.rtspsrc.connect('select-stream', self.rtspsrc_select_stream)
 
         def rtspsrc_pad_added(obj, pad):
             print("Pad added " + str(pad))
@@ -62,14 +62,14 @@ class ObRTSPInputPipeline (ObGstPipeline):
                 pad.link(Gst.ElementFactory.make('fakesink').get_static_pad('sink'))
         self.rtspsrc.connect('pad-added', rtspsrc_pad_added)
 
-        self.decodebin = Gst.ElementFactory.make('decodebin')
+        self.decodebin = Gst.ElementFactory.make('decodebin', name + '-decodebin')
         self.pipeline.add(self.decodebin)
         #self.rtspsrc.link(self.decodebin)
 
-        self.queue = Gst.ElementFactory.make('queue2')
+        self.queue = Gst.ElementFactory.make('queue2', name + '-queue')
         self.pipeline.add(self.queue)
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.pipeline.add(self.audioconvert)
         self.queue.link(self.audioconvert)
 
@@ -98,8 +98,11 @@ class ObRTSPInputPipeline (ObGstPipeline):
 
 
         self.audiosink = None
-        self.fakesink = Gst.ElementFactory.make('fakesink')
-        self.set_property('audio-src', self.fakesink)
+        self.fakesinks = { }
+        self.fakesinks['audio'] = Gst.ElementFactory.make('fakesink')
+        self.fakesinks['visual'] = Gst.ElementFactory.make('fakesink')
+        self.set_property('audio-sink', self.fakesinks['audio'])
+        self.set_property('video-sink', self.fakesinks['visual'])
 
         self.register_signals()
         #self.bus.connect("message", self.message_handler_rtp)
@@ -125,6 +128,8 @@ class ObRTSPInputPipeline (ObGstPipeline):
         self.wait_state(Gst.State.NULL)
         if 'audio' in mode:
             self.set_property('audio-sink', self.player.outputs['audio'].get_bin())
+        if 'visual' in mode:
+            self.set_property('video-sink', self.player.outputs['visual'].get_bin())
         ObGstPipeline.patch(self, mode)
 
         #self.wait_state(Gst.State.PLAYING)
@@ -135,7 +140,9 @@ class ObRTSPInputPipeline (ObGstPipeline):
     def unpatch(self, mode):
         self.wait_state(Gst.State.NULL)
         if 'audio' in mode:
-            self.set_property('audio-sink', self.fakesink)
+            self.set_property('audio-sink', self.fakesinks['audio'])
+        if 'visual' in mode:
+            self.set_property('video-sink', self.fakesinks['visual'])
         ObGstPipeline.unpatch(self, mode)
         if len(self.mode) > 0:
             #self.wait_state(Gst.State.PLAYING)
@@ -144,19 +151,15 @@ class ObRTSPInputPipeline (ObGstPipeline):
                 os.system(obplayer.Config.setting('gst_init_callback'))
 
     def set_request(self, req):
-        self.start_time = req['start_time']
-        #self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
-        #print(req['file_location'])
-        #self.rtspsrc.set_property('location', req['file_location'])
         #self.rtspsrc.set_property('location', "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov")
         #self.rtspsrc.set_property('location', "rtsp://localhost:8000/GoaTrance.mp3")
         #self.rtspsrc.set_property('location', "rtsp://localhost:8554/by-id/1")
         #self.rtspsrc.set_property('location', "rtsp://172.16.0.15/by-id/2")
         #self.rtspsrc.set_property('location', "rtsp://localhost:5544/")
-        if req['file_location'] or not req['filename'].startswith('rtsp'):
-            obplayer.Log.log("invalid RTSP uri: " + req['file_location'] + " " + req['filename'], 'info')
+        if not req['uri'].startswith('rtsp'):
+            obplayer.Log.log("invalid RTSP uri: " + req['uri'], 'info')
             return
-        self.rtspsrc.set_property('location', req['filename'])
+        self.rtspsrc.set_property('location', req['uri'])
         #self.seek_pause()
 
     def message_handler_rtp(self, bus, message):
@@ -171,4 +174,9 @@ class ObRTSPInputPipeline (ObGstPipeline):
     def rtspsrc_on_sdp(self, element, sdp):
         print(repr(sdp))
         print(sdp.as_text())
+
+    def rtspsrc_select_stream(self, element, num, caps):
+        #caps.set_value('media-type', 'application/x-rtp')
+        print("CONF", num, caps)
+        return True
 

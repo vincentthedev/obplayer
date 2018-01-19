@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -66,6 +66,6 @@ def init():
 
 def quit():
     # backup our main db to disk.
-    if hasattr(obplayer, 'RemoteData'):
+    if hasattr(obplayer, 'RemoteData') and obplayer.Main.exit_code == 0:
         obplayer.RemoteData.backup()
 

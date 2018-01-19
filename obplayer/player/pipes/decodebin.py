@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -30,24 +30,24 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstController
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObPlayBinPipeline (ObGstPipeline):
-    min_class = [ 'audio' ]
+    min_class = [ 'audio', 'visual' ]
     max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
         self.player = player
-        self.start_time = 0
-        self.pipeline = Gst.ElementFactory.make('playbin')
+        self.play_start_time = 0
+        self.pipeline = Gst.ElementFactory.make('playbin', name)
         # TODO this is false for testing
         #self.pipeline.set_property('force-aspect-ratio', False)
         self.pipeline.set_property('force-aspect-ratio', True)
 
         if audiovis is True:
-            self.audiovis = Gst.ElementFactory.make('libvisual_jess')
+            self.audiovis = Gst.ElementFactory.make('libvisual_jess', name + '-visualizer')
             self.pipeline.set_property('flags', self.pipeline.get_property('flags') | 0x00000008)
             self.pipeline.set_property('vis-plugin', self.audiovis)
 
@@ -87,6 +87,9 @@ class ObPlayBinPipeline (ObGstPipeline):
             if output in self.mode:
                 #print self.name + " -- Disconnecting " + output
                 self.pipeline.set_property('audio-sink' if output == 'audio' else 'video-sink', self.fakesinks[output])
+                #parent = self.player.outputs[output].get_bin().get_parent()
+                #if parent:
+                #    parent.remove(self.player.outputs[output].get_bin())
                 self.mode.discard(output)
 
         if len(self.mode) > 0 and state == Gst.State.PLAYING:
@@ -94,8 +97,9 @@ class ObPlayBinPipeline (ObGstPipeline):
             self.wait_state(Gst.State.PLAYING)
 
     def set_request(self, req):
-        self.start_time = req['start_time']
-        self.pipeline.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.play_start_time = req['start_time']
+        #self.pipeline.set_property('uri', Gst.filename_to_uri(req['file_location'] + '/' + req['filename']))
+        self.pipeline.set_property('uri', req['uri'])
         self.seek_pause()
 
     def seek_pause(self):
@@ -105,10 +109,10 @@ class ObPlayBinPipeline (ObGstPipeline):
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
-        if self.start_time <= 0:
-            self.start_time = time.time()
+        if self.play_start_time <= 0:
+            self.play_start_time = time.time()
 
-        offset = time.time() - self.start_time
+        offset = time.time() - self.play_start_time
         if offset != 0:
         #if offset > 0.25:
             if self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, offset * Gst.SECOND) == False:
@@ -116,20 +120,25 @@ class ObPlayBinPipeline (ObGstPipeline):
             obplayer.Log.log('resuming track at ' + str(offset) + ' seconds.', 'player')
 
 
+class ObAudioPlayBinPipeline (ObPlayBinPipeline):
+    min_class = [ 'audio' ]
+    max_class = [ 'audio', 'visual' ]
+
 
 class ObDecodeBinPipeline (ObGstPipeline):
-    output_caps = [ 'audio', 'visual' ]
+    min_class = [ 'audio' ]
+    max_class = [ 'audio', 'visual' ]
 
     def __init__(self, name, player, audiovis=False):
         ObGstPipeline.__init__(self, name)
         self.player = player
-        self.start_time = 0
+        self.play_start_time = 0
         self.audiosink = None
         self.videosink = None
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
-        self.decodebin = Gst.ElementFactory.make('uridecodebin')
+        self.decodebin = Gst.ElementFactory.make('uridecodebin', name + '-uridecodebin')
         self.pipeline.add(self.decodebin)
         self.decodebin.connect("pad-added", self.on_decoder_pad_added)
 
@@ -139,7 +148,7 @@ class ObDecodeBinPipeline (ObGstPipeline):
         #    self.pipeline.set_property('vis-plugin', self.audiovis)
 
         self.fakesinks = { }
-        for output in self.player.outputs.keys() + [ 'audio', 'visual' ]:
+        for output in list(self.player.outputs.keys()) + [ 'audio', 'visual' ]:
             self.fakesinks[output] = Gst.ElementFactory.make('fakesink')
 
         self.set_property('audio-sink', self.fakesinks['audio'])
@@ -211,8 +220,8 @@ class ObDecodeBinPipeline (ObGstPipeline):
             self.wait_state(Gst.State.PLAYING)
 
     def set_request(self, req):
-        self.start_time = req['start_time']
-        self.decodebin.set_property('uri', "file://" + req['file_location'] + '/' + req['filename'])
+        self.play_start_time = req['start_time']
+        self.decodebin.set_property('uri', req['uri'])
         self.seek_pause()
 
     def seek_pause(self):
@@ -222,10 +231,10 @@ class ObDecodeBinPipeline (ObGstPipeline):
         if obplayer.Config.setting('gst_init_callback'):
             os.system(obplayer.Config.setting('gst_init_callback'))
 
-        if self.start_time <= 0:
-            self.start_time = time.time()
+        if self.play_start_time <= 0:
+            self.play_start_time = time.time()
 
-        offset = time.time() - self.start_time
+        offset = time.time() - self.play_start_time
         if offset != 0:
         #if offset > 0.25:
             if self.pipeline.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, offset * Gst.SECOND) == False:

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -37,9 +37,12 @@ from gi.repository import GObject, Gst, GstNet, GstRtsp, GstRtspServer
 
 class ObRTSPStreamer (object):
     def __init__(self):
+        self.discovery_proc = None
         self.server = GstRtspServer.RTSPServer()
-        self.server.set_service('8554')
+        self.server.set_service(str(obplayer.Config.setting('streamer_rtsp_port')))
         self.server.connect("client-connected", self.client_connected) 
+
+        self.clock_rate = obplayer.Config.setting('streamer_rtsp_clock_rate')
 
         #auth = GstRtspServer.RTSPAuth.new()
         #self.server.set_auth(auth)
@@ -48,7 +51,7 @@ class ObRTSPStreamer (object):
         #factory.set_launch('( uridecodebin uri="file:///media/obsuser/Wheatley/GoaTrance.mp3" is-live=1 ! audioconvert ! lamemp3enc ! rtpmpapay name=pay0 pt=96 )')
         #factory.set_launch('( uridecodebin uri="file:///media/obsuser/Wheatley/GoaTrance.mp3" is-live=1 ! audioconvert ! audioresample ! "audio/x-raw,clock-rate=48000,channels=2" ! rtpL24pay name=pay0 pt=96 )')
         #factory.set_launch('uridecodebin uri="file:///media/obsuser/Wheatley/GoaTrance.mp3" is-live=1 ! audioresample ! audioconvert ! capsfilter caps="audio/x-raw,rate=48000,channels=2" ! queue2 ! rtpL24pay name=pay0 pt=96 max-ptime=1000000')
-        factory.set_launch('pulsesrc client-name="AudioOut@ObPlayer" ! audioresample ! audioconvert ! capsfilter caps="audio/x-raw,rate=48000,channels=2" ! queue2 ! rtpL24pay name=pay0 pt=96 max-ptime=1000000')
+        factory.set_launch('pulsesrc client-name="AudioOut@ObPlayer" ! audioresample ! audioconvert ! capsfilter caps="audio/x-raw,rate=' + self.clock_rate + ',channels=2" ! queue2 ! rtpL24pay name=pay0 pt=96 max-ptime=1000000')
         #factory.set_launch("( videotestsrc is-live=1 ! x264enc ! rtph264pay name=pay0 pt=96 )")
         factory.set_shared(True)
         #factory.set_protocols(GstRtsp.RTSPLowerTrans.UDP | GstRtsp.RTSPLowerTrans.UDP_MCAST)
@@ -78,6 +81,9 @@ class ObRTSPStreamer (object):
 
         self.server.attach(None)
 
+        if obplayer.Config.setting('streamer_rtsp_allow_discovery'):
+            self.start_discovery()
+
     def client_connected(self, server, client):
         obplayer.Log.log('client connected to RTSP streaming server', 'debug')
 
@@ -85,5 +91,12 @@ class ObRTSPStreamer (object):
         obplayer.Log.log('RTSP streaming server media configured', 'debug')
 
     def quit(self):
-        pass
+        if self.discovery_proc:
+            self.discovery_proc.terminate()
+
+    def start_discovery(self):
+        import subprocess
+
+        obplayer.Log.log('starting avahi service discovery for RTSP/Ravenna', 'debug')
+        self.discovery_proc = subprocess.Popen([ 'obplayer/streamer/avahi_publish.py' ], close_fds=True)
 

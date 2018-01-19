@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -71,11 +71,13 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         for (dirname, dirnames, filenames) in os.walk(unicode(obplayer.Config.setting('fallback_media'))):
             for filename in filenames:
                 try:
-                    filetype = m.file(os.path.join(dirname, filename).encode('utf-8')).split(';')[0]
+                    path = os.path.join(dirname, filename)
+                    uri = obplayer.Player.file_uri(path)
+                    filetype = m.file(path.encode('utf-8')).split(';')[0]
 
                     if filetype in self.media_types:
                         d = GstPbutils.Discoverer()
-                        mediainfo = d.discover_uri("file://" + dirname + '/' + filename)
+                        mediainfo = d.discover_uri(uri)
 
                         media_type = None
                         for stream in mediainfo.get_video_streams():
@@ -89,10 +91,10 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
 
                         if media_type:
                             # we discovered some more fallback media, add to our media list.
-                            self.media.append([ dirname, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
+                            self.media.append([ uri, filename, media_type, float(mediainfo.get_duration()) / Gst.SECOND ])
 
                     if filetype in self.image_types:
-                        self.media.append([ dirname, filename, 'image', self.image_duration ])
+                        self.media.append([ uri, filename, 'image', self.image_duration ])
                 except:
                     obplayer.Log.log("exception while loading fallback media: " + dirname + '/' + filename, 'error')
                     obplayer.Log.log(traceback.format_exc(), 'error')
@@ -104,7 +106,7 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
         self.ctrl.set_request_callback(self.do_player_request)
 
     # the player is asking us what to play next
-    def do_player_request(self, ctrl, present_time):
+    def do_player_request(self, ctrl, present_time, media_class):
         if len(self.media) == 0:
             return False
 
@@ -114,8 +116,7 @@ class ObFallbackPlayer (obplayer.player.ObPlayerController):
 
         ctrl.add_request(
             media_type = unicode(self.media[self.play_index][2]),
-            file_location = unicode(self.media[self.play_index][0]),
-            filename = unicode(self.media[self.play_index][1]),
+            uri = unicode(self.media[self.play_index][0]),
             duration = self.media[self.play_index][3],
             order_num = self.play_index,
             artist = u'unknown',

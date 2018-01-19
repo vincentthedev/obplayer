@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -29,7 +29,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst, GstVideo
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObLineInPipeline (ObGstPipeline):
@@ -40,46 +40,46 @@ class ObLineInPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
 
         audio_input = obplayer.Config.setting('audio_in_mode')
         if audio_input == 'alsa':
-            self.audiosrc = Gst.ElementFactory.make('alsasrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('alsasrc', name + '-src')
             alsa_device = obplayer.Config.setting('audio_in_alsa_device')
             if alsa_device != '':
                 self.audiosrc.set_property('device', alsa_device)
 
         elif audio_input == 'jack':
-            self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', name + '-src')
             self.audiosrc.set_property('connect', 0)  # don't autoconnect ports.
             name = obplayer.Config.setting('audio_in_jack_name')
             self.audiosrc.set_property('client-name', name if name else 'obplayer')
 
         elif audio_input == 'oss':
-            self.audiosrc = Gst.ElementFactory.make('osssrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('osssrc', name + '-src')
 
         elif audio_input == 'pulse':
-            self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('pulsesrc', name + '-src')
             self.audiosrc.set_property('client-name', 'obplayer-pipe: line-in')
 
         elif audio_input == 'test':
-            self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('fakesrc', name + '-src')
 
         else:
-            self.audiosrc = Gst.ElementFactory.make('autoaudiosrc', 'audiosrc')
+            self.audiosrc = Gst.ElementFactory.make('autoaudiosrc', name + '-src')
 
         self.pipeline.add(self.audiosrc)
 
-        self.queue = Gst.ElementFactory.make('queue2')
+        self.queue = Gst.ElementFactory.make('queue2', name + '-queue')
         self.pipeline.add(self.queue)
         self.audiosrc.link(self.queue)
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.pipeline.add(self.audioconvert)
         self.queue.link(self.audioconvert)
 
         self.audiosink = None
-        self.fakesink = Gst.ElementFactory.make('fakesink')
+        self.fakesink = Gst.ElementFactory.make('fakesink', name + '-fakesink')
         self.set_property('audio-src', self.fakesink)
 
         self.register_signals()

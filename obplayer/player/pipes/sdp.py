@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -30,7 +30,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstSdp', '1.0')
 from gi.repository import GObject, Gst, GstVideo, GstSdp
 
-from obplayer.player.pipes.base import ObGstPipeline
+from .base import ObGstPipeline
 
 
 class ObSDPInputPipeline (ObGstPipeline):
@@ -41,13 +41,13 @@ class ObSDPInputPipeline (ObGstPipeline):
         ObGstPipeline.__init__(self, name)
         self.player = player
 
-        self.pipeline = Gst.Pipeline()
+        self.pipeline = Gst.Pipeline(name)
         self.elements = [ ]
 
-        self.filesrc = Gst.ElementFactory.make('filesrc')
+        self.filesrc = Gst.ElementFactory.make('filesrc', name + '-filesrc')
         self.pipeline.add(self.filesrc)
 
-        self.sdpdemux = Gst.ElementFactory.make('sdpdemux')
+        self.sdpdemux = Gst.ElementFactory.make('sdpdemux', name + '-sdpdemux')
         #self.sdpdemux.set_property('debug', True)
         self.pipeline.add(self.sdpdemux)
         self.filesrc.link(self.sdpdemux)
@@ -58,7 +58,7 @@ class ObSDPInputPipeline (ObGstPipeline):
             pad.link(self.decodebin.get_static_pad('sink'))
         self.sdpdemux.connect('pad-added', sdpdemux_pad_added)
 
-        self.decodebin = Gst.ElementFactory.make('decodebin')
+        self.decodebin = Gst.ElementFactory.make('decodebin', name + '-decodebin')
         self.pipeline.add(self.decodebin)
 
         def decodebin_pad_added(obj, pad):
@@ -77,10 +77,10 @@ class ObSDPInputPipeline (ObGstPipeline):
             #    print("Pad: ", p, p.is_linked())
         self.decodebin.connect('pad-added', decodebin_pad_added)
 
-        self.audioconvert = Gst.ElementFactory.make('audioconvert')
+        self.audioconvert = Gst.ElementFactory.make('audioconvert', name + '-convert')
         self.pipeline.add(self.audioconvert)
 
-        self.queue = Gst.ElementFactory.make('queue2')
+        self.queue = Gst.ElementFactory.make('queue2', name + '-queue')
         self.pipeline.add(self.queue)
         self.audioconvert.link(self.queue)
 
@@ -131,7 +131,7 @@ class ObSDPInputPipeline (ObGstPipeline):
 
     def set_request(self, req):
         self.start_time = req['start_time']
-        self.filesrc.set_property('location', req['file_location'] + '/' + req['filename'])
+        self.filesrc.set_property('location', req['uri'][7:] if req['uri'].startswith('file://') else req['uri'])
 
     def message_handler_rtp(self, bus, message):
         if message.type == Gst.MessageType.ERROR:

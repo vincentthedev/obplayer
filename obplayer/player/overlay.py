@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -80,9 +80,9 @@ class ObOverlay (object):
             self.scroll_enable = False
 
     def draw_overlay(self, context, width, height):
-        if self.scroll_enable and self.message:
-            context = cairo_context_from_gi(context)
+        context = cairo_context_from_gi(context)
 
+        if self.scroll_enable and self.message:
             #print str(width) + " x " + str(height)
             #context.scale(width, height)
             #context.scale(width / 100, height / 100)
@@ -114,6 +114,7 @@ class ObOverlay (object):
             layout.set_font_description(font)
             layout.set_text(self.message, -1)
 
+            context.save()
             (layout_width, layout_height) = layout.get_pixel_size()
             self.scroll_wrap = 1.0 + (float(layout_width) / float(width))
             pos = (self.scroll_pos * width) - layout_width
@@ -121,6 +122,7 @@ class ObOverlay (object):
             context.translate(pos, 0.55 * height)
             PangoCairo.update_layout(context, layout)
             PangoCairo.show_layout(context, layout)
+            context.restore()
 
             #context.set_line_width(0.1)
             #context.move_to(0, 0)

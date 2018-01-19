@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -25,6 +25,7 @@ import obplayer
 import os
 import sys
 import time
+import os.path
 import threading
 import traceback
 
@@ -57,10 +58,6 @@ class ObPlayer (object):
         self.audio_levels_timestamp = 0
         self.audio_silence = 0
 
-        if not obplayer.Config.headless:
-            from . import xrandr
-            xrandr.init()
-
         self.player_init()
 
     def player_init(self):
@@ -80,7 +77,7 @@ class ObPlayer (object):
             self.requests[request] = None
 
         self.pipes = { }
-        self.pipes['audio'] = pipes.ObPlayBinPipeline('audio-playbin', self, obplayer.Config.setting('audio_out_visualization'))
+        self.pipes['audio'] = pipes.ObAudioPlayBinPipeline('audio-playbin', self, obplayer.Config.setting('audio_out_visualization'))
         self.pipes['video'] = pipes.ObPlayBinPipeline('video-playbin', self)
         self.pipes['testsignal'] = pipes.ObTestSignalPipeline('test-signal', self)
         self.pipes['image'] = pipes.ObImagePipeline('image-pipeline', self)
@@ -88,9 +85,10 @@ class ObPlayer (object):
         self.pipes['linein'] = pipes.ObLineInPipeline('line-input', self)
         self.pipes['rtp'] = pipes.ObRTPInputPipeline('rtp-input', self)
         self.pipes['rtsp'] = pipes.ObRTSPInputPipeline('rtsp-input', self)
+        #self.pipes['rtspa'] = pipes.ObRTSPAInputPipeline('rtspa-input', self)
         self.pipes['sdp'] = pipes.ObSDPInputPipeline('sdp-input', self)
 
-        def silence_request(self, present_time):
+        def silence_request(self, present_time, media_class):
             obplayer.Log.log("player has no requests to play; outputting silence", 'player')
             self.add_request(media_type='break', duration=3600)
 
@@ -115,17 +113,16 @@ class ObPlayer (object):
             return 'visual'
         """
         if media_type not in self.pipes:
-           raise Exception("unknown media type request")
+           raise Exception("unknown media type request: " + str(media_type))
         return '/'.join(self.pipes[media_type].min_class)
 
     @staticmethod
-    def get_media_location(file_location):
-        if '/' not in file_location:
-            # file location specified as 2-character directory code.
-            file_location = obplayer.Config.setting('remote_media') + '/' + file_location[0] + '/' + file_location[1]
-        elif file_location[0] != '/':
-            file_location = os.getcwd() + '/' + file_location
-        return file_location
+    def file_uri(file_location, filename=None):
+        if filename:
+            file_location = os.path.join(file_location, filename)
+        if not file_location.startswith('/'):
+            file_location = os.path.join(os.getcwd(), file_location)
+        return 'file://' + file_location
 
     def create_controller(self, name, priority, default_play_mode=None, allow_overlay=False, allow_requeue=True):
         ctrl = ObPlayerController(self, name, priority, default_play_mode, allow_overlay, allow_requeue)
@@ -211,16 +208,8 @@ class ObPlayer (object):
                 if ctrl.priority <= priority:
                     break
 
-                req = ctrl.get_request(present_time, allow_query=allow_query)
+                req = ctrl.get_request(present_time, '/'.join(output_list), allow_query=allow_query)
                 if req is not None:
-                    if output_list:
-                        # the request must play on at least one of the outputs in output list or there's no point in trying to play it (it would be masked by a higher priority req)
-                        class_list = req['media_class'].split('/')
-                        for output in output_list:
-                            if output in class_list:
-                                return req
-                        ctrl.requeue_request(req)
-                        return None
                     return req
 
                 if ctrl.allow_overlay is False and ctrl.has_requests():
@@ -262,7 +251,7 @@ class ObPlayer (object):
             unicode(req['artist']).encode('ascii', 'replace').decode('ascii'),
             unicode(req['title']).encode('ascii', 'replace').decode('ascii'),
             req['media_id'],
-            unicode(req['filename']).encode('ascii', 'replace').decode('ascii'),
+            unicode(os.path.basename(req['uri'])).encode('ascii', 'replace').decode('ascii'),
             str(req['duration']),
             req['media_type'],
             req['controller'].name
@@ -272,7 +261,7 @@ class ObPlayer (object):
         self.repatch_outputs(patch_class, req['media_type'])
 
         # set up and play the request
-        request_pipe.stop()
+        request_pipe.stop('by execute request')
         request_pipe.set_request(req)
         request_pipe.start()
 
@@ -296,7 +285,7 @@ class ObPlayer (object):
 
         req = self.requests[output]
         request_pipe = self.pipes[req['media_type']]
-        request_pipe.stop()
+        request_pipe.stop('by stop request')
 
         if outputs.Overlay and req['overlay_text']:
             outputs.Overlay.set_message('')
@@ -317,7 +306,7 @@ class ObPlayer (object):
                 unpatch_list = [ output for output in output_list if self.patches[output] == pipe ]
                 if len(unpatch_list) > 0:
                     if set(unpatch_list) == self.pipes[pipe].mode:
-                        self.pipes[pipe].stop()
+                        self.pipes[pipe].stop('by repatch outputs')
                         """
                         requeued = [ ]
                         for output in unpatch_list:
@@ -331,7 +320,8 @@ class ObPlayer (object):
                             #print("*** Requeued request " + repr(self.requests[unpatch_list[0]]))
                         else:
                             # TODO requeue any request for which we stop the pipe
-                            print("*** We didn't requeue " + repr(unpatch_list[0]))
+                            #print("*** We didn't requeue " + repr(unpatch_list[0]))
+                            pass
 
                     self.pipes[pipe].unpatch('/'.join(unpatch_list))
 
@@ -361,6 +351,23 @@ class ObPlayer (object):
                         self.requests[class_name] = self.requests[output]
                     if outputs.Overlay:
                         outputs.Overlay.set_message(self.requests[output]['overlay_text'])
+
+    def add_inter_tap(self, name):
+        with self.lock:
+            if self.patches['audio']:
+                audio_state = self.pipes[self.patches['audio']].is_playing()
+                self.pipes[self.patches['audio']].stop()
+
+            if self.patches['visual']:
+                visual_state = self.pipes[self.patches['visual']].is_playing()
+                self.pipes[self.patches['visual']].stop()
+
+            obplayer.Player.outputs['audio'].add_inter_tap(name + ':audio')
+            obplayer.Player.outputs['visual'].add_inter_tap(name + ':video')
+            if self.patches['audio'] and audio_state:
+                self.pipes[self.patches['audio']].start()
+            if self.patches['visual'] and visual_state and self.patches['audio'] != self.patches['visual']:
+                self.pipes[self.patches['visual']].start()
 
     def get_controller_requests(self, ctrl):
         return [ output for output in self.requests.keys() if self.requests[output] != None and self.requests[output]['controller'] == ctrl ]
@@ -427,16 +434,13 @@ class ObPlayerController (object):
 
     # media_type can be: audio, video, image, linein, break, testsignal
     # play_mode can be:  exclusive, overlap
-    def add_request(self, media_type, start_time=None, end_time=None, file_location='', filename='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
+    def add_request(self, media_type, start_time=None, end_time=None, uri='', duration=0.0, offset=0, media_id=0, order_num=-1, artist='unknown', title='unknown', play_mode=None, overlay_text=None, onstart=None, onend=None):
         if not self.enabled:
             return
 
-        # expand file location if necessary and check that media file exists
-        if file_location:
-            file_location = ObPlayer.get_media_location(file_location)
-            if filename and os.path.exists(file_location + '/' + filename) == False:
-                obplayer.Log.log('ObPlayer: File ' + file_location + '/' + filename + ' does not exist. Skipping playback', 'error')
-                return None
+        # if uri was explicitly set to None, then don't add this request (media might be missing)
+        if uri is None:
+            return None
 
         # calculate start time and end time based on given info
         if start_time is None:
@@ -457,8 +461,7 @@ class ObPlayerController (object):
             'media_type' : media_type,
             'start_time' : start_time,
             'end_time' : end_time,
-            'file_location' : file_location,
-            'filename' : filename,
+            'uri' : uri,
             'duration' : duration,
             'offset' : offset,
             'media_id' : media_id,
@@ -485,16 +488,17 @@ class ObPlayerController (object):
     def requeue_request(self, req):
         if self.allow_requeue is True:
             with self.lock:
-                for queued in self.queue:
+                for (i, queued) in enumerate(self.queue):
                     if queued == req:
-                        print("We totally didn't requeue!")
+                        #print("We totally didn't requeue!")
                         return
+                        #self.queue.pop(i)
             #print("Requeuing request from [" + self.name + "] for (Duration: " + str(req['duration']) + ") [" + req['media_type'] + "] " + req['filename'])
             self.insert_request(req)
         else:
             # if requeues are not allowed and we are requeuing, then the player wont be playing the currently queued requests,
             # and we should get rid of them all, so that the player always calls the controllers to get new requests
-            print("Clearing queue for source " + self.name + " (" + str(len(self.queue)) + " items)")
+            obplayer.Log.log("Clearing queue for source " + self.name + " (" + str(len(self.queue)) + " items)", 'debug')
             self.clear_queue()
 
     def clear_queue(self):
@@ -513,13 +517,13 @@ class ObPlayerController (object):
         self.clear_queue()
         self.player.stop_controller_requests(self)
 
-    def get_request(self, present_time, allow_query=False):
+    def get_request(self, present_time, media_class, allow_query=False):
         if self.hold_requests_flag is True:
             return None
-        index = self.find_current_request(present_time)
+        index = self.find_current_request(present_time, media_class)
         if index is None and allow_query is True:
-            self.call_player_request(present_time)
-            index = self.find_current_request(present_time + 1)                # the plus one is because the new request's start time will be slight after present_time
+            self.call_player_request(present_time, media_class)
+            index = self.find_current_request(present_time + 1, media_class)                # the plus one is because the new request's start time will be slight after present_time
 
         if index is None:
             return None
@@ -529,11 +533,15 @@ class ObPlayerController (object):
             self.queue = self.queue[index+1:]
         return req
 
-    def find_current_request(self, present_time):
+    def find_current_request(self, present_time, media_class):
+        output_list = media_class.split('/')
         with self.lock:
             for (i, req) in enumerate(self.queue):
                 if present_time >= req['start_time'] and present_time < req['end_time']:
-                    return i
+                    class_list = req['media_class'].split('/')
+                    for output in output_list:
+                        if output in class_list:
+                            return i
         return None
 
     def get_requests_endtime(self):
@@ -575,9 +583,9 @@ class ObPlayerController (object):
     def get_next_update(self):
         return self.next_update
 
-    def call_player_request(self, present_time):
+    def call_player_request(self, present_time, media_class):
         try:
-            return self.do_player_request(self, present_time)
+            return self.do_player_request(self, present_time, media_class)
         except:
             obplayer.Log.log("exception while calling do_player_request() on " + self.name, 'error')
             obplayer.Log.log(traceback.format_exc(), 'error')
@@ -591,7 +599,7 @@ class ObPlayerController (object):
 
     # called by the player to ask the controller what it wants to happen
     @staticmethod
-    def do_player_request(ctrl, present_time):
+    def do_player_request(ctrl, present_time, media_class):
         pass
 
     @staticmethod

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -30,7 +30,7 @@ import traceback
 
 
 class ObData (object):
-    datadir = None
+    datadir = os.path.expanduser('~/.openbroadcaster')
 
     @classmethod
     def set_datadir(cls, name):
@@ -201,6 +201,9 @@ class ObConfigData (ObData):
         if setting_name == 'sync_freq_playlog' and self.is_int(setting_value) == False:
             return 'sync_freq_playlog_invalid'
 
+        if setting_name == 'streamer_icecast_bitrate' and (self.is_int(setting_value) == False or int(setting_value) not in [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]):
+            return 'streamer_icecast_bitrate_invalid'
+
         url_regex = re.compile(
                 r'^(?:http|ftp)s?://' # http:// or https://
                 r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
@@ -223,8 +226,8 @@ class ObConfigData (ObData):
         if setting_name == 'alerts_naad_archive2' and url_regex.match(setting_value) == None:
             return 'alerts_naad_archive2_invalid'
 
-        if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
-            return 'alerts_trigger_serial_file_invalid'
+        #if setting_name == 'alerts_trigger_serial_file' and setting_value and not os.path.exists(setting_value):
+        #    return 'alerts_trigger_serial_file_invalid'
 
         geocode_regex = re.compile(r'^\s*(|\d+(|\s*,\s*\d+)*)$', re.IGNORECASE)
         if setting_name == 'alerts_geocode' and geocode_regex.match(setting_value) == None:
@@ -245,8 +248,14 @@ class ObConfigData (ObData):
         if setting_name == 'http_admin_port' and self.is_int(setting_value) == False:
             return 'http_admin_port_invalid'
 
-        if setting_name == 'http_admin_secure' and settings['http_admin_secure'] and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
+        if setting_name == 'http_admin_secure' and int(setting_value) and os.access(settings['http_admin_sslcert'], os.F_OK) == False:
             return 'http_admin_sslcert_invalid'
+
+        if setting_name == 'http_admin_password' and not setting_value:
+            return 'http_password_blank'
+
+        if setting_name == 'http_readonly_password' and not setting_value:
+            return 'http_password_blank'
 
         if setting_name == 'live_assist_port' and settings['live_assist_enable'] and settings['live_assist_port'] == settings['http_admin_port']:
             return 'live_assist_port_invalid'
@@ -277,22 +286,17 @@ class ObConfigData (ObData):
         self.add_setting('audio_out_shout2send_port', '8000', 'int')
         self.add_setting('audio_out_shout2send_mount', 'stream', 'text')
         self.add_setting('audio_out_shout2send_password', 'hackme', 'text')
-        self.add_setting('audio_out_visualization', '1', 'bool')
+        self.add_setting('audio_out_visualization', '0', 'bool')
         self.add_setting('gst_init_callback', '', 'text')
-
-        self.add_setting('audio_in_enable', '0', 'bool')
-        self.add_setting('audio_in_mode', 'auto', 'text')
-        self.add_setting('audio_in_alsa_device', 'default', 'text')
-        self.add_setting('audio_in_jack_name', '', 'text')
 
         self.add_setting('audiolog_enable', '0', 'bool')
         self.add_setting('audiolog_purge_files', '0', 'bool')
 
-        self.add_setting('video_out_enable', '1', 'bool')
+        self.add_setting('video_out_enable', '0', 'bool')
         self.add_setting('video_out_mode', 'auto', 'text')
         self.add_setting('video_out_resolution', 'default', 'text')
 
-        self.add_setting('images_transitions_enable', '1', 'bool')
+        self.add_setting('images_transitions_enable', '0', 'bool')
         self.add_setting('images_width', '640', 'int')
         self.add_setting('images_height', '480', 'int')
         self.add_setting('images_framerate', '15', 'int')
@@ -300,20 +304,38 @@ class ObConfigData (ObData):
         self.add_setting('overlay_enable', '0', 'bool')
 
         self.add_setting('streamer_enable', '0', 'bool')
-        self.add_setting('streamer_audio_in_mode', 'auto', 'text')
+        self.add_setting('streamer_audio_in_mode', 'intersink', 'text')
         self.add_setting('streamer_audio_in_alsa_device', 'default', 'text')
         self.add_setting('streamer_audio_in_jack_name', '', 'text')
+
+        self.add_setting('streamer_icecast_enable', '1', 'bool')
+        self.add_setting('streamer_icecast_mode', 'audio', 'text')
+        self.add_setting('streamer_icecast_bitrate', '0', 'int')
         self.add_setting('streamer_icecast_ip', '127.0.0.1', 'text')
         self.add_setting('streamer_icecast_port', '8000', 'int')
         self.add_setting('streamer_icecast_mount', 'stream', 'text')
-        self.add_setting('streamer_icecast_password', 'hackme', 'text')
+        self.add_setting('streamer_icecast_password', '1c3c4stS0uRc3', 'text')
         self.add_setting('streamer_icecast_streamname', '', 'text')
         self.add_setting('streamer_icecast_description', '', 'text')
         self.add_setting('streamer_icecast_url', '', 'text')
-        self.add_setting('streamer_icecast_public', '1', 'bool')
+        self.add_setting('streamer_icecast_public', '0', 'bool')
         self.add_setting('streamer_play_on_startup', '1', 'bool')
-        self.add_setting('streamer_enable_rtsp', '0', 'bool')
-        self.add_setting('streamer_allow_sd', '0', 'bool')
+
+        self.add_setting('streamer_rtsp_enable', '0', 'bool')
+        self.add_setting('streamer_rtsp_port', '8554', 'int')
+        self.add_setting('streamer_rtsp_clock_rate', '48000', 'text')
+        self.add_setting('streamer_rtsp_allow_discovery', '0', 'bool')
+
+        self.add_setting('streamer_rtp_enable', '0', 'bool')
+        self.add_setting('streamer_rtp_port', '5004', 'int')
+        self.add_setting('streamer_rtp_address', '', 'text')
+        self.add_setting('streamer_rtp_encoding', 'L24', 'text')
+        self.add_setting('streamer_rtp_clock_rate', '48000', 'text')
+        self.add_setting('streamer_rtp_enable_rtcp', '1', 'bool')
+
+        self.add_setting('streamer_youtube_enable', '0', 'bool')
+        self.add_setting('streamer_youtube_key', '', 'text')
+        self.add_setting('streamer_youtube_mode', '240p', 'text')
 
         self.add_setting('scheduler_enable', '0', 'bool')
         self.add_setting('sync_device_id', '1', 'int')
@@ -321,7 +343,7 @@ class ObConfigData (ObData):
         self.add_setting('sync_url', '', 'text')
         self.add_setting('sync_buffer', '24', 'int')
         self.add_setting('sync_showlock', '20', 'int')
-        self.add_setting('sync_playlog_enable', '1', 'bool')
+        self.add_setting('sync_playlog_enable', '0', 'bool')
         self.add_setting('sync_freq', '2', 'int')
         self.add_setting('sync_freq_priority', '1', 'int')
         self.add_setting('sync_freq_playlog', '3', 'int')
@@ -330,6 +352,26 @@ class ObConfigData (ObData):
         self.add_setting('remote_media', self.datadir + '/media', 'text')
         self.add_setting('local_media', '', 'text')
 
+        self.add_setting('fallback_enable', '1', 'bool')
+        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
+
+        self.add_setting('audio_in_enable', '0', 'bool')
+        self.add_setting('audio_in_mode', 'auto', 'text')
+        self.add_setting('audio_in_alsa_device', 'default', 'text')
+        self.add_setting('audio_in_jack_name', '', 'text')
+
+        self.add_setting('aoip_in_enable', '0', 'bool')
+        self.add_setting('aoip_in_uri', '', 'text')
+
+        self.add_setting('rtp_in_enable', '0', 'bool')
+        self.add_setting('rtp_in_port', '5004', 'int')
+        self.add_setting('rtp_in_address', '', 'text')
+        self.add_setting('rtp_in_encoding', 'OPUS', 'text')
+        self.add_setting('rtp_in_clock_rate', '48000', 'text')
+        self.add_setting('rtp_in_enable_rtcp', '1', 'bool')
+
+        self.add_setting('testsignal_enable', '1', 'bool')
+
         self.add_setting('http_admin_port', '23233', 'int')
         self.add_setting('http_admin_username', 'admin', 'text')
         self.add_setting('http_admin_password', 'admin', 'text')
@@ -337,15 +379,18 @@ class ObConfigData (ObData):
         self.add_setting('http_readonly_password', 'user', 'text')
         self.add_setting('http_readonly_allow_restart', '1', 'bool')
         self.add_setting('http_admin_secure', '0', 'bool')
+        self.add_setting('http_admin_sslreq', '0', 'bool')
         self.add_setting('http_admin_sslcert', '', 'text')
+        self.add_setting('http_admin_sslkey', '', 'text')
+        self.add_setting('http_admin_sslca', '', 'text')
         self.add_setting('http_admin_title', 'OpenBroadcaster Player Dashboard', 'text')
         self.add_setting('http_admin_language', 'en', 'text')
 
-        self.add_setting('http_show_sync', '0', 'bool')
-        self.add_setting('http_show_streaming', '0', 'bool')
+        self.add_setting('http_show_sync', '1', 'bool')
+        self.add_setting('http_show_streaming', '1', 'bool')
         self.add_setting('http_show_alerts', '1', 'bool')
         self.add_setting('http_show_location', '1', 'bool')
-        self.add_setting('http_show_liveassist', '0', 'bool')
+        self.add_setting('http_show_liveassist', '1', 'bool')
 
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')
@@ -362,7 +407,7 @@ class ObConfigData (ObData):
         self.add_setting('alerts_language_secondary', 'french', 'text')
         self.add_setting('alerts_voice_primary', 'en', 'text')
         self.add_setting('alerts_voice_secondary', 'fr', 'text')
-        self.add_setting('alerts_geocode', '59', 'text')
+        self.add_setting('alerts_geocode', '10,11,12,13,24,35,46,47,48,59,60,61,62', 'text')
         self.add_setting('alerts_repeat_interval', '30', 'int')
         self.add_setting('alerts_repeat_times', '0', 'int')
         self.add_setting('alerts_leadin_delay', '1', 'int')
@@ -372,25 +417,20 @@ class ObConfigData (ObData):
         self.add_setting('alerts_naad_archive1', "http://capcp1.naad-adna.pelmorex.com", 'text')
         self.add_setting('alerts_naad_archive2', "http://capcp2.naad-adna.pelmorex.com", 'text')
         self.add_setting('alerts_truncate', '0', 'bool')
-        self.add_setting('alerts_play_moderates', '1', 'bool')
+        self.add_setting('alerts_play_moderates', '0', 'bool')
         self.add_setting('alerts_play_tests', '0', 'bool')
         self.add_setting('alerts_trigger_serial', '0', 'bool')
         self.add_setting('alerts_trigger_serial_file', '/dev/ttyS0', 'text')
         self.add_setting('alerts_trigger_streamer', '0', 'bool')
         self.add_setting('alerts_purge_files', '1', 'bool')
 
-        self.add_setting('fallback_enable', '1', 'bool')
-        self.add_setting('fallback_media', self.datadir + '/fallback_media', 'text')
-
-        self.add_setting('testsignal_enable', '1', 'bool')
-
-        self.add_setting('location_enable', '1', 'bool')
+        self.add_setting('location_enable', '0', 'bool')
         self.add_setting('location_longitude', '-134.18537', 'float')
         self.add_setting('location_latitude', '60.27434', 'float')
 
         self.add_setting('led_sign_enable', '0', 'bool')
         self.add_setting('led_sign_serial_file', '/dev/ttyS1', 'text')
-        self.add_setting('led_sign_timedisplay', '1', 'bool')
+        self.add_setting('led_sign_timedisplay', '0', 'bool')
         self.add_setting('led_sign_init_message', '', 'text')
 
     def add_setting(self, name, value, datatype=None):
@@ -433,7 +473,7 @@ class ObConfigData (ObData):
     def list_settings(self, hidepasswords=False):
         result = { }
         for (name, value) in self.settings_cache.items():
-            if not hidepasswords or name not in [ 'streamer_icecast_password', 'sync_device_password', 'http_admin_password', 'http_readonly_password' ]:
+            if not hidepasswords or not name.endswith('_password'):
                 result[name] = value
         return result
 

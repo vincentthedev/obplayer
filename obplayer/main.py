@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -65,7 +65,6 @@ class ObMainApp:
         obplayer.Main = self
 
     def start(self):
-
         signal.signal(signal.SIGINT, self.sigint_handler)
 
         try:
@@ -77,14 +76,22 @@ class ObMainApp:
             self.load_module('player')
             self.load_module('httpadmin')
 
+            if obplayer.Config.setting('audio_out_mode') == 'pulse' or obplayer.Config.setting('audio_in_mode') == 'pulse':
+                self.load_module('pulse')
+            if not obplayer.Config.headless:
+                self.load_module('xrandr')
             if obplayer.Config.setting('testsignal_enable'):
-                    self.load_module('testsignal')
+                self.load_module('testsignal')
             if obplayer.Config.setting('alerts_enable'):
                 self.load_module('alerts')
             if obplayer.Config.setting('fallback_enable'):
-                    self.load_module('fallback')
+                self.load_module('fallback')
+            if obplayer.Config.setting('aoip_in_enable'):
+                self.load_module('aoipin')
+            if obplayer.Config.setting('rtp_in_enable'):
+                self.load_module('rtpin')
             if obplayer.Config.setting('audio_in_enable'):
-                    self.load_module('linein')
+                self.load_module('linein')
             if obplayer.Config.setting('scheduler_enable'):
                 self.load_module('scheduler')
             if obplayer.Config.setting('live_assist_enable'):
@@ -93,6 +100,7 @@ class ObMainApp:
                 self.load_module('audiolog')
             if obplayer.Config.setting('streamer_enable'):
                 self.load_module('streamer')
+
 
             #### TEST CODE ####
 
@@ -104,21 +112,24 @@ class ObMainApp:
 
             #ctrl = obplayer.Player.create_controller('testsource', 60, default_play_mode='overlap')
             #ctrl.add_request(media_type='break', duration=40)
-            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
-            #ctrl.add_request(media_type='audio', start_time=time.time() + 5, file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
-            #ctrl.add_request(media_type='video', file_location="/home/trans/.openbroadcaster/fallback_media/", filename="110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
-            #ctrl.add_request(media_type='image', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="97-ctfn_potlatch-sdfsdg.svg", duration=30)
-            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
-            #ctrl.add_request(media_type='audio', start_time=time.time(), file_location="/home/trans/.openbroadcaster/fallback_media/", filename="104-Lamb-Piste_6.mp3", duration=70)
-            #ctrl.add_request(media_type='video', start_time=time.time() + 2, file_location="/home/trans/.openbroadcaster/fallback_media/", filename="109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
-            #ctrl.add_request(media_type='rtsp', start_time=time.time() + 2, file_location="", filename="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov", duration=153)
-            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/home/obsuser", filename="xnode-rtsp.sdp", duration=3600)
-            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, file_location="/media/work/OpenBroadcaster/Player/tools", filename="local_streamer.sdp", duration=3600)
+            #ctrl.add_request(media_type='testsignal', duration=40)
+            #ctrl.add_request(media_type='video', uri="file:///home/trans/.openbroadcaster/fallback_media/110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='audio', start_time=time.time() + 5, uri="file:///home/trans/.openbroadcaster/alerts/2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=10)
+            #ctrl.add_request(media_type='video', uri="file:///home/trans/.openbroadcaster/fallback_media/110-Unknown-The_Return_Of_Doctor_X.ogg", duration=153)
+            #ctrl.add_request(media_type='image', start_time=time.time(), uri="file:///home/trans/.openbroadcaster/fallback_media/97-ctfn_potlatch-sdfsdg.svg", duration=5)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), uri="file:///home/trans/.openbroadcaster/fallback_media/104-Lamb-Piste_6.mp3", duration=70)
+            #ctrl.add_request(media_type='audio', start_time=time.time(), uri="file:///home/trans/.openbroadcaster/alerts-backup/2014_07_08T10_09_38_05_00I473E9B47_D474_B3F1_9765_1AFED0761075-english.wav", duration=70)
+            #ctrl.add_request(media_type='video', start_time=time.time() + 2, uri="file:///home/trans/.openbroadcaster/fallback_media/109-Unknown-The_Pit_And_The_Pendulum.ogg", duration=153)
+            #ctrl.add_request(media_type='rtsp', start_time=time.time() + 2, uri="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov", duration=153)
+            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, uri="file:///home/obsuser/xnode-rtsp.sdp", duration=3600)
+            #ctrl.add_request(media_type='sdp', start_time=time.time() + 2, uri="file:///media/work/OpenBroadcaster/Player/tools/local_streamer.sdp", duration=3600)
             #ctrl.add_request(media_type='rtp', start_time=time.time() + 2, duration=3600)
+            #ctrl.add_request(media_type='rtsp', start_time=time.time() + 2, uri="rtsp://localhost:8554/by-id/1", duration=153)
+            #ctrl.add_request(media_type='rtspa', start_time=time.time() + 2, uri="rtsp://localhost:8554/by-id/1", duration=153)
 
             #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
-            #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, file_location="obplayer/alerts/data", filename="attention-signal.ogg", duration=4)
-            #alertctrl.add_request(media_type='audio', file_location="/home/trans/.openbroadcaster/alerts/", filename="2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
+            #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, uri=obplayer.Player.file_uri("obplayer/alerts/data", "attention-signal.ogg"), duration=4)
+            #alertctrl.add_request(media_type='audio', uri="file:///home/trans/.openbroadcaster/alerts/2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
 
             #### END TEST CODE ####
 

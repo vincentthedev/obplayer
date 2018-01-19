@@ -28,7 +28,7 @@ Site.restart = function(extra)
   },'json');
 }
 
-Site.restartCountdownCount = 10;
+Site.restartCountdownCount = 6;
 Site.restartCountdown = function()
 {
   Site.restartCountdownCount--;
@@ -53,6 +53,7 @@ Site.save = function(section)
   $('#content-'+section+' .settings input').add('#content-'+section+' .settings select').each(function(index,element)
   {
     if($(element).attr('name')=='save') return; // ignore 'save' button.
+    if($(element).hasClass('nosave')) return; // ignore fields marked as nosave
 
     if($(element).attr('type')=='checkbox') var value = ($(element).is(':checked') ? 1 : 0);
     else var value = $(element).val();
@@ -62,20 +63,14 @@ Site.save = function(section)
 
   $.post('/save',postfields,function(response)
   {
-    //Site.saveSuccess,'json');
-    var namespace = undefined; // $('#content-'+section).attr('data-tns');
     if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
-    else $('#error').text(Site.t(namespace ? namespace : 'Responses', response.error)).show();
+    else {
+      var errormsg = Site.t($('#content-'+section).attr('data-tns'), response.error);
+      if(errormsg==response.error) Site.t('Responses', response.error);
+      $('#error').text(errormsg).show();
+    }
   });
-
 }
-
-Site.saveSuccess = function(response)
-{
-  if(response.status) $('#notice').text(Site.t('Responses', 'settings-saved-success')).show();
-  else $('#error').text(Site.t('Responses', response.error)).show();
-}
-
 
 Site.injectAlert = function()
 {
@@ -186,10 +181,10 @@ Site.updateStatusInfo = function()
   if($('#tabs .tab[data-content="status"]').hasClass('selected')){
     $.post('/status_info',{},function(response,status)
     {
+      $('#show-summary-time').html(Site.friendlyTime(response.time));
+      $('#show-summary-uptime').html(response.uptime);
 
       if(response.show){
-	$('#show-summary-time').html(Site.friendlyTime(response.time));
-	$('#show-summary-uptime').html(response.uptime);
 	$('#show-summary-type').html(Site.t('Status Show Type', response.show.type));
 	$('#show-summary-id').html(response.show.id);
 	$('#show-summary-name').html(response.show.name);
@@ -500,8 +495,8 @@ $(document).ready(function()
 
   $('#sync_media_mode').change(function()
   {
-    $('.sync_display_adjust').hide();
-    $('.sync_display_adjust.sync_'+$('#sync_media_mode').val()).show();
+    $('.sync_display_adjust').hide().find('input').addClass('nosave');
+    $('.sync_display_adjust.sync_'+$('#sync_media_mode').val()).show().find('input').removeClass('nosave');
   });
   $('#sync_media_mode').change();
 
@@ -557,8 +552,8 @@ $(document).ready(function()
 
   $('#http_admin_secure').change(function()
   {
-    if($(this).is(':checked')) $('#http_admin_sslcert_row').show();
-    else $('#http_admin_sslcert_row').hide();
+    if($(this).is(':checked')) $('.http_admin_sslcert_row').show();
+    else $('.http_admin_sslcert_row').hide();
   });
   $('#http_admin_secure').change();
 
@@ -647,5 +642,24 @@ $(document).ready(function()
     else $('#live_assist_monitor_jack_name_row').hide();
   });
   $('#live_assist_monitor_mode_select').change();
+
+
+  $('.pulse-volume').change(function () {
+    $.post('/pulse/volume', { n: $(this).prop('name'), v: $(this).val() }, function (response) {
+    }, 'json');
+  });
+
+  $('.pulse-mute').click(function () {
+    var $button = $(this);
+    $.post('/pulse/mute', { n: $button.prop('name') }, function (response) {
+        if (response.m) $button.addClass('mute');
+        else $button.removeClass('mute');
+    }, 'json');
+  });
+
+  $('.pulse-select').change(function () {
+    $.post('/pulse/select', { n: $(this).prop('name'), s: $(this).val() }, function (response) {
+    }, 'json');
+  });
 
 });

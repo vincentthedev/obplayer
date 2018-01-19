@@ -73,7 +73,8 @@ h2:first-child
   width: 16em;
 }
 
-#error
+#error,
+.error
 {
   border: 1px solid #333;
   padding: 5px;
@@ -209,6 +210,32 @@ label.advanced-settings::before {
   display: inline-block;
 }
 
+.pulse-mixer {
+  margin-left: 10px;
+}
+
+.pulse-mixer h5 {
+  margin-bottom: 4px;
+}
+
+.pulse-mute {
+  padding: 0px;
+  font-size: 0.7em;
+}
+
+.pulse-mute.mute {
+    text-decoration: line-through;
+}
+
+input[type="range"] {
+  background: aliceblue;
+}
+
+.pulse-select {
+  width: 20em;
+  font-size: 0.7em;
+}
+
 #map-container {
   height:400px;
   width:400px;
@@ -242,4 +269,5 @@ label.advanced-settings::before {
   font-size: 0.75em;
   text-align: right;
 }
+
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -25,7 +25,7 @@ from __future__ import absolute_import
 import obplayer
 
 def init():
-    def testsignal_request(self, present_time):
+    def testsignal_request(self, present_time, media_class):
         self.add_request(media_type='break', duration=5)
         self.add_request(media_type='testsignal', duration=31536000)        # duration = 1 year (ie. indefinitely)
 

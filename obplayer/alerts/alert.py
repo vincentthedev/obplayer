@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -29,14 +29,15 @@ import datetime
 import dateutil.tz
 import dateutil.parser
 
-import traceback
-import time
-
-import socket
-import sys
 import os
 import os.path
+import sys
+import time
+import socket
 
+import traceback
+
+import cgi
 import requests
 import subprocess
 
@@ -84,7 +85,9 @@ class ObAlert (object):
         self.active = False
         self.max_plays = 0
         self.times_played = 0
+        self.previously_important = False
         self.media_info = { }
+        self.received_at = time.time()
 
         if xmlcode is not None:
             self.parse_cap_xml(xmlcode)
@@ -161,11 +164,20 @@ class ObAlert (object):
         return True
 
     def broadcast_immediately(self):
+        if self.previously_important:
+            return True
         for info in self.info:
-            val = info.get_parameter("layer:SOREM:1.0:Broadcast_Immediately");
+            val = info.get_parameter("layer:SOREM:1.0:Broadcast_Immediately")
             if val.lower() == "yes":
                 return True
         return False
+
+    def minor_change(self):
+        for info in self.info:
+            val = info.get_parameter("profile:CAP-CP:0.4:MinorChange")
+            if val:
+                return val
+        return None
 
     def generate_audio(self, language, voice=None):
         info = self.get_first_info(language, bestmatch=False)
@@ -181,6 +193,7 @@ class ObAlert (object):
         if os.access(location, os.F_OK) == False:
             os.mkdir(location)
         filename = self.reference(self.sent, self.identifier) + "-" + language + ".wav"
+        uri = obplayer.Player.file_uri(location, filename)
 
         resources = info.get_resources('audio')
         if resources:
@@ -194,7 +207,7 @@ class ObAlert (object):
             return False
 
         d = GstPbutils.Discoverer()
-        mediainfo = d.discover_uri("file:///%s/%s" % (location, filename))
+        mediainfo = d.discover_uri(uri)
 
         self.media_info[language] = { }
         self.media_info[language]['audio'] = {
@@ -202,8 +215,7 @@ class ObAlert (object):
             'artist' : 'Emergency Alert',
             'title' : str(self.identifier),
             'overlay_text' : message_text,
-            'file_location' : location,
-            'filename' : filename,
+            'uri' : uri,
             'duration' : (mediainfo.get_duration() / float(Gst.SECOND))
         }
 
@@ -221,8 +233,7 @@ class ObAlert (object):
                 'artist' : 'Emergency Alert',
                 'title' : str(self.identifier),
                 #'overlay_text' : message_text,
-                'file_location' : location,
-                'filename' : filename,
+                'uri' : obplayer.Player.file_uri(location, filename),
                 'duration' : self.media_info[language]['audio']['duration']
             }
             self.media_info[language]['audio']['overlay_text'] = None
@@ -234,19 +245,21 @@ class ObAlert (object):
             self.generate_audio(primary_language, primary_voice)
         if secondary_language and secondary_language not in self.media_info:
             self.generate_audio(secondary_language, secondary_voice)
-        if self.media_info[primary_language] is None:
+        if primary_language not in self.media_info or self.media_info[primary_language] is None:
             return { 'primary' : self.media_info[secondary_language], 'secondary' : None }
         return { 'primary': self.media_info[primary_language], 'secondary' : self.media_info[secondary_language] if secondary_language else None }
 
     def write_tts_file(self, path, message_text, voice=None):
         if not voice:
             voice = 'en'
+        message_text = message_text.rstrip('*')
         #os.system("echo \"%s\" | text2wave > %s/%s" % (message_text[0], location, filename))
         #os.system(u"espeak -v %s -s 130 -w %s/%s \"%s\"" % (voice, location, filename, message_text[0].encode('utf-8')))
         #cmd = u"espeak -v %s -s 130 -w %s/%s " % (voice, location, filename)
         #cmd += u"\"" + message_text[0] + u"\""
         proc = subprocess.Popen([ 'espeak', '-m', '-v', voice, '-s', '130', '--stdout' ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
-        (stdout, stderr) = proc.communicate(message_text.encode('utf-8') + b" <break time=\"2s\" /> " + message_text.encode('utf-8') + b" <break time=\"3s\" /> ")
+        message_text = cgi.escape(message_text).encode('utf-8')
+        (stdout, stderr) = proc.communicate(message_text + b" <break time=\"2s\" /> " + message_text + b" <break time=\"3s\" /> ")
         proc.wait()
 
         with open(path, 'wb') as f:
@@ -324,28 +337,36 @@ class ObAlertInfo (object):
     def get_parameter(self, name):
         for param in self.parameters:
             if param[0] == name:
-                return param[1];
+                return param[1]
         return None
 
     def get_resources(self, typename=None):
         return [ resource for resource in self.resources if not typename or typename in resource.mimetype ]
 
     def get_message_text(self, truncate=False):
-        text = self.get_parameter("layer:SOREM:1.0:Broadcast_Text");
+        text = self.get_parameter("layer:SOREM:1.0:Broadcast_Text")
         if not text:
-            text = self.description if self.description else self.headline
-
-        if truncate:
-            parts = text.split('\n\n', 1)
-            text = parts[0]
-
-        text = text.replace('\n', ' ').replace('\r', '')
+            #text = self.description if self.description else self.headline
+            # CLF Guide 1.2: Appendix D, Section 2.2
+            sender = ' - ' + self.sender if self.sender else ''
+            areadesc = ' - ' + ', '.join([ area.description for area in self.areas ])
+            instruction = ' - ' + self.instruction if self.instruction else ''
+            if self.language == 'fr-CA':
+                text = 'Alerte' + sender + ' - ' + 'Alerte ' + self.event + areadesc + instruction
+            else:
+                text = 'Alert' + sender + ' - ' + self.event + ' Alert' + areadesc + instruction
 
         if sys.version.startswith('3'):
             import html
             text = html.unescape(text)
         else:
-            text = text.replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<')
+            text = text.replace('&apos;', "\'").replace('&quot;', '\"').replace('&amp;', '&').replace('&gt;', '>').replace('&lt;', '<').replace('&#xA;', '\n')
+
+        if truncate:
+            parts = text.split('\n\n', 1)
+            text = parts[0] + ('***' if len(parts) > 1 else '')
+
+        text = text.replace('\n', ' ').replace('\r', '')
         return text
 
 
@@ -413,7 +434,8 @@ class ObAlertResource (object):
                     self.data = r.content
                 else:
                     obplayer.Log.log("error fetching alert resource %s: returned status code %s" % (self.uri, r.status_code), 'alerts')
-            except requests.exceptions.RequestException:
+            #except requests.exceptions.RequestException:
+            except:
                 obplayer.Log.log("connection error while fetching alert resource %s" % (self.uri,), 'alerts')
 
     def write_file(self, filename):

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -24,20 +24,55 @@ from __future__ import absolute_import
 
 import obplayer
 
-from .icecast import ObIcecastStreamer
+import gi
+from gi.repository import GObject
+
 
 def init():
-    obplayer.Streamer = ObIcecastStreamer()
-    if obplayer.Config.setting('streamer_play_on_startup'):
-        obplayer.Streamer.start()
+    obplayer.Streamer = None
+    obplayer.RTSPStreamer = None
+    obplayer.RTPStreamer = None
+    obplayer.YoutubeStreamer = None
+
+    if obplayer.Config.setting('streamer_icecast_enable'):
+        from .icecast import ObIcecastStreamer
+        def delaystart():
+            obplayer.Streamer = ObIcecastStreamer()
+            if obplayer.Config.setting('streamer_play_on_startup'):
+                obplayer.Streamer.start()
+        GObject.timeout_add(1000, delaystart)
 
     obplayer.RTSPStreamer = None
-    if obplayer.Config.setting('streamer_enable_rtsp'):
+    if obplayer.Config.setting('streamer_rtsp_enable'):
         from .rtsp import ObRTSPStreamer
         obplayer.RTSPStreamer = ObRTSPStreamer()
 
+    if obplayer.Config.setting('streamer_rtp_enable'):
+        from .rtp import ObRTPStreamer
+        obplayer.ObRTPStreamer = ObRTPStreamer()
+        obplayer.ObRTPStreamer.start()
+
+    if obplayer.Config.setting('streamer_youtube_enable'):
+        from .youtube import ObYoutubeStreamer
+        obplayer.YoutubeStreamer = ObYoutubeStreamer()
+        obplayer.YoutubeStreamer.start()
+
 def quit():
-    obplayer.Streamer.quit()
+    if obplayer.Streamer:
+        obplayer.Streamer.quit()
     if obplayer.RTSPStreamer:
         obplayer.RTSPStreamer.quit()
+    if obplayer.RTPStreamer:
+        obplayer.RTPStreamer.quit()
+    if obplayer.YoutubeStreamer:
+        obplayer.YoutubeStreamer.quit()
+
+
+"""
+def start_streamer(name, clsname):
+    exec("from .{0} import {1}".format(name, clsname))
+    streamer = eval(name)()
+    streamer.start()
+    return streamer
+"""
 
