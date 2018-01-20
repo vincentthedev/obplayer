@@ -24,8 +24,8 @@ OBPlayer can be run in a variety of configurations:
 + Standalone Emergency Alerting CAP Player supporting audio, image and video
 
 OpenBroadcaster Player
-http://www.openbroadcaster.pro/
+http://www.openbroadcaster.com/
 
-Copyright 2012-2015 OpenBroadcaster, Inc.
+Copyright 2012-2018 OpenBroadcaster, Inc.
 
 Licensed under GNU AGPLv3. See COPYING.
