@@ -32,10 +32,6 @@ Dependencies are Debian/Ubuntu package names.
 - gstreamer1.0-plugins-bad
 - gstreamer1.0-plugins-ugly
 
-- ubuntu-restricted-addons
-- ubuntu-restricted-extras 
-
-
 Recommended if using for CATV:
 
 - gstreamer1.0-vaapi
@@ -68,3 +64,7 @@ Include if using PulseAudio:
 - pip3 install pulsectl         (Note: pkg not included in apt-get; must be installed using pip3)
 
 
+Include if using Ubuntu Desktop
+
+- ubuntu-restricted-addons
+- ubuntu-restricted-extras 
