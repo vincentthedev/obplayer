@@ -64,7 +64,7 @@ Include if using PulseAudio:
 - pip3 install pulsectl         (Note: pkg not included in apt-get; must be installed using pip3)
 
 
-Include if using Ubuntu Desktop
+Include if using Ubuntu Desktop for extra codecs to allow playback of more media types
 
 - ubuntu-restricted-addons
 - ubuntu-restricted-extras 
