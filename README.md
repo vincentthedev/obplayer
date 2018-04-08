@@ -29,3 +29,6 @@ http://www.openbroadcaster.com/
 Copyright 2012-2018 OpenBroadcaster, Inc.
 
 Licensed under GNU AGPLv3. See COPYING.
+
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/openbroadcaster/obplayer.svg?columns=all)](https://waffle.io/openbroadcaster/obplayer)
+
