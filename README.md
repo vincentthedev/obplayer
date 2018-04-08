@@ -23,7 +23,7 @@ OBPlayer can be run in a variety of configurations:
 + GTK desktop application for a Digital Video Screen.
 + Standalone Emergency Alerting CAP Player supporting audio, image and video
 
-OpenBroadcaster Player
+OpenBroadcaster 
 https://openbroadcaster.com/
 
 Copyright 2012-2018 OpenBroadcaster, Inc.
