@@ -366,7 +366,8 @@ class ObAlertProcessor (object):
             url = "%s/%s/%s.xml" % (host, urldate, filename)
             try:
                 obplayer.Log.log("fetching alert %s using url %s" % (identifier, url), 'debug')
-                r = requests.get(url)
+                headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' }
+                r = requests.get(url, headers=headers)
 
                 if r.status_code == 200:
                     #r.encoding = 'utf-8'
@@ -522,5 +523,3 @@ class ObAlertProcessor (object):
             except:
                 obplayer.Log.log("exception in " + self.thread.name + " thread", 'error')
                 obplayer.Log.log(traceback.format_exc(), 'error')
-
-
