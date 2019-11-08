@@ -2,7 +2,6 @@ Site = new Object();
 
 Site.fullscreen = function()
 {
-  
   $('#command_fullscreen').text(Site.t('Miscellaneous', 'Fullscreen'));
 
   $.post('/command/fstoggle',{},function(response)
@@ -58,7 +57,25 @@ Site.save = function(section)
     if($(element).attr('type')=='checkbox') var value = ($(element).is(':checked') ? 1 : 0);
     else var value = $(element).val();
 
-    postfields[$(element).attr('name')] = value;	
+    if ($(element).attr('name') != 'alerts_geocode' && $(element).attr('name') != 'alerts_selected_indigenous_languages') {
+        // Handle blank non setting dropdown that the dropdown
+        // plugin builds.
+        if($(element).attr('name') != undefined) {
+          postfields[$(element).attr('name')] = value;
+        }
+    } else {
+      var output = '';
+      if (value != null) {
+        value.forEach((item) => {
+          if (value.slice(-1)[0] != item) {
+            output = output + item + ','
+          } else {
+            output = output + item
+          }
+        });
+        postfields[$(element).attr('name')] = output;
+      }
+      }
   });
 
   $.post('/save',postfields,function(response)
@@ -72,6 +89,36 @@ Site.save = function(section)
   });
 }
 
+//Add support for dropdown menu for alerts locations
+
+$(document).ready(function() {
+  $.post('/alerts/geocodes_list', {}, function(data, status) {
+    if (data != '') {
+       $('#alerts_geocode').select2({
+         placeholder: data
+       });
+    } else {
+      $('#alerts_geocode').select2({
+        placeholder: 'Select an a location'
+      });
+    }});
+});
+
+//Add support for dropdown menu for indigenous languages
+
+$(document).ready(function() {
+  $.post('/alerts/indigenous_languages', {}, function(data, status) {
+    if (data != '') {
+       $('#alerts_selected_indigenous_languages').select2({
+         placeholder: data
+       });
+    } else {
+      $('#alerts_selected_indigenous_languages').select2({
+        placeholder: ''
+      });
+    }});
+});
+
 Site.injectAlert = function()
 {
   test_alert=$('#test_alert_select').val();
@@ -79,6 +126,15 @@ Site.injectAlert = function()
   $.post('/alerts/inject_test',{'alert':test_alert},function(response)
   {
     if(response.status) $('#notice').text(Site.t('Responses', 'alerts-inject-success')).show();
+    else $('#error').text(Site.t('Responses', response.error)).show();
+  },'json');
+}
+
+Site.replayAlert = function(id)
+{
+  $.post('/alerts/replay',{'identifier':id},function(response)
+  {
+    if(response.status) $('#notice').text(Site.t('Responses', 'alerts-cancel-success')).show();
     else $('#error').text(Site.t('Responses', response.error)).show();
   },'json');
 }
@@ -111,7 +167,7 @@ Site.updateAlertInfo = function()
 	var alerts = response.active;
 	var existing = $('#active-alerts');
 	var alert_list = [ ];
-	alert_list.push('<tr data-tns="Alerts Tab"><th class="fit" data-t>Cancel</th><th data-t>Sender</th><th data-t>Times Played</th><th data-t>Headline</th></tr>');
+	alert_list.push('<tr data-tns="Alerts Tab"><th class="fit" data-t>Cancel</th><th data-t>Sender</th><th data-t>Times Played</th><th data-t>Headline</th><th data-t>Replay Message</th></tr>');
 	for(var key in alerts){
 	  var row;
 	  row = '<tr>';
@@ -119,7 +175,8 @@ Site.updateAlertInfo = function()
 	  row += '<td>'+alerts[key].sender+'<br />'+alerts[key].identifier+'<br />'+alerts[key].sent+'</td>';
 	  row += '<td class="center">' + alerts[key].played + '</td>';
 	  row += '<td><div class="headline" data-id="'+alerts[key].identifier+'">'+alerts[key].headline+'</div><div>'+alerts[key].description+'</div></td>';
-	  row += '</tr>';
+    row += '<td class="fit"><button onclick="Site.replayAlert(\'' + alerts[key].identifier + '\')">Replay</button></td>';
+    row += '</tr>';
 	  alert_list.push(row);
 	}
 	$('#active-alerts').html(alert_list);
@@ -212,13 +269,29 @@ Site.updateStatusInfo = function()
 	$('#visual-summary-duration').html(Site.friendlyDuration(response.visual.duration));
 	$('#visual-summary-end-time').html(Site.friendlyTime(response.visual.end_time));
       }
-
       Site.formatLogs(response.logs);
     },'json').error(function()
     {
       $('#log-data').html('<span style="color: red; font-weight: bold;">(' + Site.t('Responses', 'player-connection-lost') + ')</span>');
     });
   }
+}
+
+//  Check override status and update button text.
+
+if ($('#tabs .tab[data-content="outputs"]').hasClass('selected')) {
+  const updateStationOverrideBtnInterval = setInterval(Site.updateStationOverrideBtn, 1000);
+}
+
+Site.updateStationOverrideBtn = function() {
+  const btn = $('.audio-override-btn');
+  $.post('/inter_station_ctrl/is_live', {}, function (response, status) {
+    if (response == 'True') {
+      btn.text('Stop');
+    } else {
+      btn.text('Start');
+    }
+  });
 }
 
 Site.updateMapInfo = function()
@@ -236,33 +309,14 @@ Site.formatLogs = function(lines)
   var log_level = $('#log_level').val();
 
   if(logdiv.scrollTop == logdiv.scrollTopMax) scroll=true;
-
-  for(var i=0; i<lines.length; i++)
-  {
-    lines[i] = lines[i].replace(/\</g,'&lt;');
-    lines[i] = lines[i].replace(/\>/g,'&gt;');
-    lines[i] = lines[i].replace(/\&/g,'&amp;');
-
-    if(lines[i].search('\\\[error\\\]')>0) lines[i] = '<span style="color: #880000;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[warning\\\]')>0) lines[i] = '<span style="color: #888800;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[alerts\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[priority\\\]')>0) lines[i] = '<span style="color: #880088;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[player\\\]')>0) lines[i] = '<span style="color: #005500;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[data\\\]')>0) lines[i] = '<span style="color: #333333;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[scheduler\\\]')>0) lines[i] = '<span style="color: #005555;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[sync\\\]')>0) lines[i] = '<span style="color: #000055;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[sync download\\\]')>0) lines[i] = '<span style="color: #AA4400;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[admin\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\\[live\\\]')>0) lines[i] = '<span style="color: #333300;">'+lines[i]+'</span>';
-    else if(lines[i].search('\\[debug\\]')>0)
-    {
-      if(log_level=='debug') lines[i] = '<span style="color: #008000;">'+lines[i]+'</span>';
-      else {
-	lines.splice(i, 1);
-	i -= 1;
-      }
-    }
+  if (log_level == 'normal') {
+    lines = lines.normal;
+  } else if (log_level == 'debug') {
+    lines = lines.debug;
+  } else if (log_level == 'alert') {
+    lines = lines.alerts;
   }
+  $('#log-data').html('');
   $('#log-data').html(lines.join('<br />\n'));
   if(scroll) logdiv.scrollTop = logdiv.scrollHeight;
 }
@@ -338,6 +392,11 @@ Site.updateIntervals = function ()
       clearInterval(Site.updateStatusInfoInterval);
       Site.updateStatusInfoInterval = null;
     }
+
+    if (Site.updateStationOverrideBtnInterval) {
+      clearInterval(Site.updateStationOverrideBtnInterval);
+      Site.updateStationOverrideBtnInterval = null;
+    }
   }
   else {
     if (Site.updateAlertInfoInterval)
@@ -347,7 +406,11 @@ Site.updateIntervals = function ()
     if (Site.updateStatusInfoInterval)
       clearInterval(Site.updateStatusInfoInterval);
     Site.updateStatusInfoInterval = setInterval(Site.updateStatusInfo, 1000);
+    if (Site.updateStationOverrideBtnInterval)
+      clearInterval(Site.updateStationOverrideBtnInterval);
+    const updateStationOverrideBtnInterval = setInterval(Site.updateStationOverrideBtn, 1000);
   }
+
 }
 
 
@@ -375,7 +438,7 @@ Site.translateHTML = function( $element )
   });
 
   // translate data-t items in namespace
-  $namespaces.each(function(index,namespace) 
+  $namespaces.each(function(index,namespace)
   {
 
     var tns = $(namespace).attr('data-tns');
@@ -441,16 +504,16 @@ Site.translate = function(namespace,name,data)
   // if we have a singular data item passed as a string, make it an array.
   if(typeof(data)=='string') data = [data];
 
-  string = string.replace(/(\\)?%([0-9])+/g,function(match_string,is_escaped,data_index) { 
+  string = string.replace(/(\\)?%([0-9])+/g,function(match_string,is_escaped,data_index) {
 
     // is this escaped? also data_index = 0 is not valid.
     if(is_escaped || data_index==0) return '%'+data_index;
- 
+
     // do we have a data at the data_index?
     if(!data || !data[data_index-1]) return '';
-    
+
     // we have everything we need, do replace.
-    return data[data_index-1]; 
+    return data[data_index-1];
   });
 
   return string;
@@ -469,7 +532,7 @@ $(document).ready(function()
     {
       $(this).parent().parent().first().attr('title', $(this).attr('title'));
     });
-  }); 
+  });
 
   $('#logs-open').on('click', function (e) {
     window.open('/logs.html', '_blank', "width=600, height=600, scrollbars=1, menubar=0, toolbar=0, titlebar=0");
@@ -583,6 +646,26 @@ $(document).ready(function()
     });
   });
 
+  $('#import_leadin_audio').submit(function (event)
+  {
+    event.preventDefault();
+    console.log(this);
+    $.ajax( {
+      url: '/import_leadin_audio',
+      type: 'POST',
+      data: new FormData(this),
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        $('#notice').hide();
+        $('#error').hide();
+
+        if(response.status) $('#notice').html(Site.t('Responses', response.notice)).show();
+        else $('#error').html(Site.t('Responses', response.error)).show();
+      }
+    });
+  });
+
   $('#update-player').click(function (event)
   {
     $.post('/update_player', {}, function (response) {
@@ -660,6 +743,50 @@ $(document).ready(function()
   $('.pulse-select').change(function () {
     $.post('/pulse/select', { n: $(this).prop('name'), s: $(this).val() }, function (response) {
     }, 'json');
+  });
+
+  $('.audio-override-btn').click(function (e) {
+    const btn = $('.audio-override-btn');
+    const action = btn.text();
+    if (action == 'Start') {
+      $.post('/inter_station_ctrl/start', {}, function (response, status) {
+        if (status == 'success') {
+            btn.text('Stop');
+        } else {
+          $('#notice').text(Site.t('Responses', 'linein_override_failed_action')).show();
+        }
+      });
+    } else {
+      $.post('/inter_station_ctrl/stop', {}, function (response, status) {
+        if (status == 'success') {
+          btn.text('Start');
+        } else {
+          $('#notice').text(Site.t('Responses', 'linein_override_failed_action')).show();
+        }
+      });
+    }
+    //console.log($('.audio-override-btn').html());
+  })
+
+  $('#open_streams_btn').click(function (e) {
+    $('#stream_players').show();
+  });
+
+  $('.modal_close_btn').click(function (e) {
+    $('#stream_players').hide();
+    let players = $('.audio_player');
+    for (var i = 0; i < players.length; i++) {
+      let player = players[i];
+      if (player.paused == false){
+        player.pause();
+        let src = player.src;
+        player.src = '';
+        player.src = src;
+      }
+    }
+    //players.forEach((player) => {
+    //  console.log(player);
+    //});
   });
 
 });

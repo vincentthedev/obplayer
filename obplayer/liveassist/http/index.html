@@ -14,8 +14,14 @@
 
 <body>
 
-<div id="header">
+<div id="header" <% if obplayer.Config.setting('station_override_enabled') == False: %> class="header-no-override" <% end %>>
   <div id="header-show_name"><span id="info-show_name">Loading...</span></div>
+    <% if obplayer.Config.setting('station_override_enabled'): %>
+    <label>Stations on-air:</label>
+    <span id="live_stations">Loading...</span>
+    <label>Remote Station Override:</label>
+    <button type="button" name="button" class="button override-btn override-start" onclick="javascript:  LA.station_override();">Start</button>
+    <% end %>
 </div>
 
 <div id="main">
@@ -27,11 +33,6 @@
   </div>
 
   <div id="main-buttons">
-
-    <div style="min-width: 480px">
-
-
-    </div>
 
   </div>
 

@@ -36,7 +36,7 @@ from .base import ObGstStreamer
 import uuid
 
 
-class ObIcecastStreamer (ObGstStreamer):
+class ObLineinIcecastStreamer (ObGstStreamer):
     def __init__(self, streamer_icecast_ip, streamer_icecast_port, streamer_icecast_password,
         streamer_icecast_mount, streamer_icecast_streamname, streamer_icecast_description,
         streamer_icecast_url, streamer_icecast_public, streamer_icecast_bitrate):
@@ -51,25 +51,22 @@ class ObIcecastStreamer (ObGstStreamer):
         self.icecast_bitrate = streamer_icecast_bitrate
         ObGstStreamer.__init__(self, 'icecast_' + uuid.uuid4().hex)
 
-        if obplayer.Config.setting('streamer_icecast_mode') == 'audio':
-            self.make_audio_pipe()
-        else:
-            self.make_video_pipe()
+        self.make_audio_pipe()
 
     def make_audio_pipe(self):
         self.audiopipe = [ ]
 
-        audio_input = obplayer.Config.setting('streamer_audio_in_mode')
+        audio_input = obplayer.Config.setting('audio_in_mode')
         if audio_input == 'alsa':
             self.audiosrc = Gst.ElementFactory.make('alsasrc', 'audiosrc')
-            alsa_device = obplayer.Config.setting('streamer_audio_in_alsa_device')
+            alsa_device = obplayer.Config.setting('audio_in_alsa_device')
             if alsa_device != '':
                 self.audiosrc.set_property('device', alsa_device)
 
         elif audio_input == 'jack':
             self.audiosrc = Gst.ElementFactory.make('jackaudiosrc', 'audiosrc')
             self.audiosrc.set_property('connect', 0)  # don't autoconnect ports.
-            name = obplayer.Config.setting('streamer_audio_in_jack_name')
+            name = obplayer.Config.setting('audio_in_jack_name')
             self.audiosrc.set_property('client-name', name if name else 'obplayer')
 
         elif audio_input == 'oss':
@@ -77,7 +74,7 @@ class ObIcecastStreamer (ObGstStreamer):
 
         elif audio_input == 'pulse':
             self.audiosrc = Gst.ElementFactory.make('pulsesrc', 'audiosrc')
-            self.audiosrc.set_property('client-name', 'obplayer-streamer-to-icecast')
+            self.audiosrc.set_property('client-name', 'obplayer-line-streamer-to-icecast')
 
         elif audio_input == 'test':
             self.audiosrc = Gst.ElementFactory.make('fakesrc', 'audiosrc')
@@ -149,136 +146,6 @@ class ObIcecastStreamer (ObGstStreamer):
         #self.elements.append(ObRtpOutput())
 
         self.build_pipeline(self.audiopipe)
-
-    def make_video_pipe(self):
-        obplayer.Player.add_inter_tap(self.name)
-
-        self.audiopipe = [ ]
-
-        self.interaudiosrc = Gst.ElementFactory.make('interaudiosrc')
-        self.interaudiosrc.set_property('channel', self.name + ':audio')
-        #self.interaudiosrc.set_property('buffer-time', 8000000000)
-        #self.interaudiosrc.set_property('latency-time', 8000000000)
-        self.audiopipe.append(self.interaudiosrc)
-
-        caps = Gst.ElementFactory.make('capsfilter')
-        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,channel-mask=(bitmask)=0x3"))
-        self.audiopipe.append(caps)
-
-        self.audiopipe.append(Gst.ElementFactory.make("queue2"))
-
-        self.audiopipe.append(Gst.ElementFactory.make("audioconvert"))
-        self.audiopipe.append(Gst.ElementFactory.make("audioresample"))
-
-        caps = Gst.ElementFactory.make('capsfilter')
-        #caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=44100"))
-        caps.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=2,rate=48000"))
-        self.audiopipe.append(caps)
-
-        #self.encoder = Gst.ElementFactory.make("lamemp3enc")
-        #self.encoder = Gst.ElementFactory.make("opusenc")
-        self.encoder = Gst.ElementFactory.make("vorbisenc")
-        self.audiopipe.append(self.encoder)
-
-        self.audiopipe.append(Gst.ElementFactory.make("queue2"))
-
-        self.build_pipeline(self.audiopipe)
-
-
-        self.videopipe = [ ]
-
-        """
-        self.videopipe.append(Gst.ElementFactory.make("udpsrc"))
-        self.videopipe[-1].set_property('port', 5500)
-        self.videopipe[-1].set_property('caps', Gst.Caps.from_string("application/x-rtp"))
-
-        self.videopipe.append(Gst.ElementFactory.make("queue2"))
-        self.videopipe.append(Gst.ElementFactory.make("rtpvp9depay"))
-        #self.videopipe.append(Gst.ElementFactory.make("vp9dec"))
-        #self.videopipe.append(Gst.ElementFactory.make("videotestsrc"))
-        #self.videopipe.append(Gst.ElementFactory.make("videoconvert"))
-        #self.videopipe.append(Gst.ElementFactory.make("videorate"))
-        #self.videopipe.append(Gst.ElementFactory.make("queue2"))
-        #self.videopipe.append(Gst.ElementFactory.make("theoraenc"))
-        """
-
-        """
-        self.lock = threading.Lock()
-        self.microphone_queue = []
-        self.appsrc = Gst.ElementFactory.make('appsrc')
-        self.appsrc.set_property('is-live', True)
-        self.appsrc.set_property('format', 3)
-        #self.appsrc.set_property('caps', Gst.Caps.from_string("audio/x-raw,channels=1,rate=" + str(self.rate) + ",format=S16LE,layout=interleaved"))
-        self.appsrc.set_property('caps', Gst.Caps.from_string("video/x-raw,format=RGBA,width=384,height=288,framerate=30/1"))
-        self.blocksize = 384 * 288 * 4
-        self.appsrc.connect("need-data", self._cb_need_data)
-        self.videopipe.append(self.appsrc)
-        #self.videopipe.append(Gst.ElementFactory.make("videoparse"))
-        self.videopipe.append(Gst.ElementFactory.make("queue2"))
-        self.videopipe.append(Gst.ElementFactory.make("videoconvert"))
-        self.videopipe.append(Gst.ElementFactory.make("vp9enc"))
-        """
-
-        self.intervideosrc = Gst.ElementFactory.make('intervideosrc')
-        self.intervideosrc.set_property('channel', self.name + ':video')
-        self.videopipe.append(self.intervideosrc)
-
-        self.videopipe.append(Gst.ElementFactory.make("queue2"))
-
-        #self.videopipe.append(Gst.ElementFactory.make("videotestsrc"))
-        #self.videopipe[-1].set_property('is-live', True)
-
-        self.videopipe.append(Gst.ElementFactory.make("videorate"))
-        self.videopipe.append(Gst.ElementFactory.make("videoconvert"))
-        self.videopipe.append(Gst.ElementFactory.make("videoscale"))
-
-        caps = Gst.ElementFactory.make('capsfilter', "videocapsfilter")
-        #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
-        #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=100,height=75,framerate=15/1"))
-        #caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=384,height=288,framerate=15/1"))
-        caps.set_property('caps', Gst.Caps.from_string("video/x-raw,width=320,height=200,framerate=24/1,pixel-aspect-ratio=1/1"))
-        self.videopipe.append(caps)
-
-        #self.videopipe.append(Gst.ElementFactory.make("vp8enc"))
-        #self.videopipe.append(Gst.ElementFactory.make("vp9enc"))
-        self.videopipe.append(Gst.ElementFactory.make("theoraenc"))
-        #self.videopipe.append(Gst.ElementFactory.make("x264enc"))
-        #self.videopipe[-1].set_property('target-bitrate', 128000)
-
-        self.videopipe.append(Gst.ElementFactory.make("queue2"))
-
-        self.build_pipeline(self.videopipe)
-
-
-        self.commonpipe = [ ]
-
-        self.commonpipe.append(Gst.ElementFactory.make("oggmux"))
-        #self.commonpipe.append(Gst.ElementFactory.make("webmmux"))
-        #self.commonpipe[-1].set_property('streamable', True)
-
-        self.commonpipe.append(Gst.ElementFactory.make("queue2"))
-
-        self.shout2send = Gst.ElementFactory.make("shout2send", "shout2send")
-        self.shout2send.set_property('ip', self.icecast_ip)
-        self.shout2send.set_property('port', int(self.icecast_port))
-        self.shout2send.set_property('password', self.icecast_password)
-        self.shout2send.set_property('mount', self.icecast_mount)
-        self.shout2send.set_property('streamname', self.icecast_streamname)
-        self.shout2send.set_property('description', self.icecast_description)
-        self.shout2send.set_property('url', self.icecast_url)
-        self.shout2send.set_property('public', self.icecast_public)
-        self.shout2send.set_property('async', False)
-        self.shout2send.set_property('sync', False)
-        self.shout2send.set_property('qos', True)
-        self.commonpipe.append(self.shout2send)
-
-        #self.commonpipe.append(Gst.ElementFactory.make("filesink"))
-        #self.commonpipe[-1].set_property('location', "/home/trans/test.webm")
-
-        self.build_pipeline(self.commonpipe)
-
-        self.audiopipe[-1].link(self.commonpipe[0])
-        self.videopipe[-1].link(self.commonpipe[0])
 
     def queue_data(self, data):
         with self.lock:

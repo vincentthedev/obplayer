@@ -24,6 +24,8 @@ import obplayer
 
 import time
 import threading
+import re
+import cgi
 
 MAX_BACKLOG = 2000
 
@@ -39,13 +41,78 @@ class ObLog:
 
         self.logdate = False
         self.logfile = False
+        self.alertlogfile = False
 
         self.lock = threading.Lock()
 
     def set_debug(self, flag):
         self.debug = flag
 
-    def log(self, message, mtype='error'):
+    def format_logs(self, log_level=None):
+        output = []
+        log_data = self.get_log()
+        #log_data = cgi.escape(log_data)
+        for line in log_data:
+            line = cgi.escape(line)
+            if log_level == 'normal':
+                if re.search('\[error\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880000;', line))
+                elif re.search('\[warning\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#888800;', line))
+                elif re.search('\[priority\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+                elif re.search('\[player\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#005500;', line))
+                elif re.search('\[data\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333333;', line))
+                elif re.search('\[data\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333333;', line))
+                elif re.search('\[scheduler\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#005555;', line))
+                elif re.search('\[sync\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#000055;', line))
+                elif re.search('\[sync download\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#AA4400;', line))
+                elif re.search('\[admin\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333300;', line))
+                elif re.search('\[live\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333300;', line))
+                elif re.search('\[alerts\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+            elif log_level == 'debug':
+                if re.search('\[error\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880000;', line))
+                elif re.search('\[warning\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#888800;', line))
+                elif re.search('\[priority\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+                elif re.search('\[player\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#005500;', line))
+                elif re.search('\[data\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333333;', line))
+                elif re.search('\[data\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333333;', line))
+                elif re.search('\[scheduler\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#005555;', line))
+                elif re.search('\[sync\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#000055;', line))
+                elif re.search('\[sync download\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#AA4400;', line))
+                elif re.search('\[admin\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333300;', line))
+                elif re.search('\[live\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#333300;', line))
+                elif re.search('\[debug\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+                elif re.search('\[alerts\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+
+            elif log_level == 'alerts':
+                if re.search('\[alerts\]', line):
+                    output.append('<span style="color: {0}">{1}</span>'.format('#880088;', line))
+        return output
+
+    def log(self, message, mtype='error', alert_data=None):
 
         mstring = '[' + time.strftime('%b %d %Y %H:%M:%S', time.gmtime()) + ' UTC] [' + mtype + '] ' + message
 
@@ -58,7 +125,19 @@ class ObLog:
             if self.logfile != False:
                 self.logfile.close()
 
+            if self.alertlogfile != False:
+                self.alertlogfile.close()
+
             self.logfile = open(self.datadir + '/logs/' + self.logdate + '.obplayer.log', 'a', 1)
+            self.alertlogfile = open(self.datadir + '/logs/' + self.logdate + '.alerts.obplayer.log', 'a', 1)
+
+        # if alert, log to alerts only log too.
+        if mtype == 'alerts':
+            self.alertlogfile.write(mstring + '\n')
+        if alert_data != None:
+            with open(self.datadir + '/' + '.' + 'alert_count.txt', 'w') as file:
+                print(str(alert_data.times_played))
+                #file.write(alert_data.times_played)
         self.logfile.write(mstring + '\n')
 
         self.logbuffer.append(mstring)
@@ -81,4 +160,3 @@ class ObLog:
         minutes = seconds / 60
         seconds -= 60 * minutes
         return "%02d:%02d:%02d" % (hours, minutes, seconds)
-

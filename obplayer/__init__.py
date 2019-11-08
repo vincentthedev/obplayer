@@ -27,6 +27,7 @@ from obplayer.log import ObLog
 from obplayer.data import ObData, ObConfigData
 from obplayer.main import ObMainApp
 from obplayer.gui import ObGui
+from obplayer.alert_counter import Alert_Counter
 
 Log = None
 Config = None

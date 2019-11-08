@@ -24,12 +24,23 @@ body
   width: 100%;
 
   border-bottom: 1px solid #999;
-  height: 60px;
-  line-height: 60px;
   overflow: hidden;
 
   background-color: #333;
   z-index: 100;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+          align-items: center;
+}
+
+.header-no-override {
+  line-height: 60px;
 }
 
 #header-show_name
@@ -58,7 +69,7 @@ body
 
   #main-playlist .ui-resizable-handle
   {
-    background-color: #555;    
+    background-color: #555;
   }
 
   #main-playlist-tracks
@@ -215,7 +226,7 @@ body
   {
     display: inline-block;
     line-height: normal;
-    vertical-align: middle;    
+    vertical-align: middle;
   }
 
 #main-mixer-toggle
@@ -326,10 +337,10 @@ body
   left: 0;
   height: 70px;
   border-top: 1px solid #999;
-  width: 100%; 
+  width: 100%;
 
   background-color: #333;
-  z-index: 100;   
+  z-index: 100;
 }
 
   #supfooter > *
@@ -353,6 +364,40 @@ body
   #supfooter-controls
   {
     width: 25%;
+  }
+
+  .override-btn {
+    border: 0;
+    border-radius: 6px;
+    color: #000;
+    font-size: 24px;
+    padding: 12px;
+    text-align: center;
+    margin: auto;
+    border: 1px solid #000;
+  }
+
+  .override-start {
+    background-color: #669;
+  }
+
+  .override-stop {
+    background-color: green;
+  }
+
+  #live_stations {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  #header > label {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  #supfooter-controls *
+  {
+    margin-right: 6px;
   }
 
   #supfooter-track_position
@@ -470,19 +515,19 @@ body
     color: #ff4;
 }
 
-@-moz-keyframes blinker {  
+@-moz-keyframes blinker {
     0% { opacity: 1.0; }
     50% { opacity: 0.5; }
     100% { opacity: 1.0; }
 }
 
-@-webkit-keyframes blinker {  
+@-webkit-keyframes blinker {
     0% { opacity: 1.0; }
     50% { opacity: 0.5; }
     100% { opacity: 1.0; }
 }
 
-@keyframes blinker {  
+@keyframes blinker {
     0% { opacity: 1.0; }
     50% { opacity: 0.5; }
     100% { opacity: 1.0; }

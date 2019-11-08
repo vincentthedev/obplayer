@@ -22,6 +22,8 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 import obplayer
 
+from obplayer.alert_counter import *
+
 import sys
 import time
 import signal
@@ -57,6 +59,7 @@ class ObMainApp:
         obplayer.Log.set_debug(self.args.debug)
 
         obplayer.Config = obplayer.ObConfigData()
+
         obplayer.Config.args = self.args
 
         if self.args.headless is True:
@@ -98,8 +101,14 @@ class ObMainApp:
                 self.load_module('liveassist')
             if obplayer.Config.setting('audiolog_enable'):
                 self.load_module('audiolog')
+            if obplayer.Config.setting('offair_audiolog_enable'):
+               self.load_module('offair_audiolog')
             if obplayer.Config.setting('streamer_enable'):
                 self.load_module('streamer')
+            if obplayer.Config.setting('station_override_enabled'):
+                self.load_module('override_streamer')
+            if obplayer.Config.setting('newsfeed_override_enabled'):
+                self.load_module('newsfeed_override')
 
 
             #### TEST CODE ####
@@ -130,6 +139,10 @@ class ObMainApp:
             #alertctrl = obplayer.Player.create_controller('testalert', 100, default_play_mode='overlap', allow_overlay=True)
             #alertctrl.add_request(media_type='audio', start_time=time.time() + 7, uri=obplayer.Player.file_uri("obplayer/alerts/data", "attention-signal.ogg"), duration=4)
             #alertctrl.add_request(media_type='audio', uri="file:///home/trans/.openbroadcaster/alerts/2014_12_01T00_13_00_00_00I2.49.0.1.124.b7fb9ec4.2014", duration=5)
+
+            #ctrl.add_request(media_type='rtp_2', start_time=time.time() + 2, duration=3600)
+
+            #ctrl.add_request(media_type='rtp_2', start_time=time.time() + 2, duration=3600)
 
             #### END TEST CODE ####
 
@@ -174,4 +187,3 @@ class ObMainApp:
     def quit_modules(self):
         for name in self.modules:
             exec('obplayer.%s.quit()' % (name,))
-

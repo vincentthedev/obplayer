@@ -30,10 +30,40 @@ import signal
 import os.path
 import traceback
 import subprocess
+import re
 
 
 from obplayer.httpadmin import httpserver
+from obplayer.streamer.linein import ObLineinIcecastStreamer
 
+def inter_station_ctrl_is_live():
+    res = httpserver.Response()
+    try:
+        if hasattr(obplayer, 'LineinStreamer'):
+            res.send_content('text/plain', 'True')
+            return res
+        else:
+            res.send_content('text/plain', 'False')
+            return res
+    except Exception as e:
+            res.send_content('text/plain', '500 error')
+            return res
+
+def inter_station_ctrl_toggle(live):
+    res = httpserver.Response()
+    try:
+        if live == False:
+            obplayer.LineinStreamer.quit()
+            del obplayer.LineinStreamer
+        else:
+            obplayer.LineinStreamer = ObLineinIcecastStreamer(obplayer.Config.setting('station_override_server_ip'), obplayer.Config.setting('station_override_server_port'),
+            obplayer.Config.setting('station_override_server_password'), obplayer.Config.setting('station_override_server_mountpoint'), '', '', '', False, 128)
+            obplayer.LineinStreamer.start()
+    except Exception as e:
+            res.send_content(500, 'text/plain', '500 error')
+            return res
+    res.send_content('text/plain', '')
+    return res
 
 class ObHTTPAdmin (httpserver.ObHTTPServer):
     def __init__(self):
@@ -65,11 +95,17 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
 
 
     def log(self, message):
-        if not "POST /status_info" in message and not "POST /alerts/list" in message:
+        hidden = False
+        hidden_log_items = ["POST /status_info", "POST /alerts/list", "POST /inter_station_ctrl/start",
+        "POST /inter_station_ctrl/stop", "POST /inter_station_ctrl/is_live"]
+        for item in hidden_log_items:
+            if item in message:
+                hidden = True
+        if hidden == False:
             obplayer.Log.log(message, 'debug')
 
     def form_item_selected(self, setting, value):
-        if obplayer.Config.setting(setting, True) == value:
+        if str(obplayer.Config.setting(setting, True)) == str(value):
             return ' selected="selected"'
         else:
             return ''
@@ -102,9 +138,17 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         self.route('/toggle_scheduler', self.req_scheduler_toggle, 'admin')
         self.route('/alerts/inject_test', self.req_alert_inject, 'admin')
         self.route('/alerts/cancel', self.req_alert_cancel, 'admin')
+        self.route('/alerts/replay', self.req_alert_replay, 'admin')
+        self.route('/alerts/geocodes_list', self.req_geocodes_list)
+        self.route('/alerts/indigenous_languages', self.req_indigenous_languages_list)
         self.route('/pulse/volume', self.req_pulse_volume, 'admin')
         self.route('/pulse/mute', self.req_pulse_mute, 'admin')
         self.route('/pulse/select', self.req_pulse_select, 'admin')
+        self.route('/import_leadin_audio', self.req_import_leadin_audio, 'admin')
+        self.route('/inter_station_ctrl/start', self.req_start_inter_station_ctrl, 'admin')
+        self.route('/inter_station_ctrl/stop', self.req_stop_inter_station_ctrl, 'admin')
+        self.route('/inter_station_ctrl/is_live', self.req_is_live_inter_station_ctrl, 'admin')
+        self.route('/logs/alert_log', self.req_export_alert_log, 'admin')
 
     def req_status_info(self, request):
         proc = subprocess.Popen([ "uptime", "-p" ], stdout=subprocess.PIPE)
@@ -114,6 +158,7 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         select_keys = [ 'media_type', 'end_time', 'filename', 'duration', 'media_id', 'order_num', 'artist', 'title' ]
 
         data = { }
+        logs = {}
         data['time'] = time.time()
         data['uptime'] = uptime.decode('utf-8')
         for stream in requests.keys():
@@ -121,13 +166,52 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         data['audio_levels'] = obplayer.Player.get_audio_levels()
         if hasattr(obplayer, 'scheduler'):
             data['show'] = obplayer.Scheduler.get_show_info()
-        data['logs'] = obplayer.Log.get_log()
+        logs['normal'] = obplayer.Log.format_logs('normal')
+        logs['debug'] = obplayer.Log.format_logs('debug')
+        logs['alerts'] = obplayer.Log.format_logs('alerts')
+        data['logs'] = logs
         return data
 
+    def req_geocodes_list(self, request):
+        data = obplayer.Config.setting('alerts_geocode', True)
+        res = httpserver.Response()
+        if data:
+            res.send_content('text/plain', data)
+            return res
+        else:
+            res.send_content('text/plain', '')
+            return res
+
+    def req_indigenous_languages_list(self, request):
+        data = obplayer.Config.setting('alerts_selected_indigenous_languages', True)
+        res = httpserver.Response()
+        if data:
+            res.send_content('text/plain', data)
+            return res
+        else:
+            res.send_content('text/plain', '')
+            return res
+
+    def req_start_inter_station_ctrl(self, request):
+        return inter_station_ctrl_toggle(True)
+
+    def req_stop_inter_station_ctrl(self, request):
+        return inter_station_ctrl_toggle(False)
+
+    def req_is_live_inter_station_ctrl(self, request):
+        return inter_station_ctrl_is_live()
+
     def req_alert_list(self, request):
-        if hasattr(obplayer, 'alerts'):
+        if hasattr(obplayer, 'alerts') and obplayer.Config.setting('alerts_enable'):
             return obplayer.alerts.Processor.get_alerts()
         return { 'status' : False }
+
+    def req_alert_replay(self, request):
+        identifier = request.args['identifier'][0]
+        if hasattr(obplayer, 'alerts'):
+            obplayer.alerts.Processor.replay_alert(identifier)
+            return { 'status' : True }
+        return { 'status' : False, 'error' : "alerts-replay-error" }
 
     def req_strings(self, request):
         strings = { '': { } }
@@ -217,6 +301,38 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         obplayer.Config.save_settings(settings)
         return { 'status' : True, 'notice' : "settings-imported-success" }
 
+    def req_import_leadin_audio(self, request):
+        file_ok = False
+        content = request.args.getvalue('leadin_audio_file')
+        file_type = request.args.getvalue('leadin_audio_file_type')
+
+        errors = 'settings-imported-leadin-audio-error'
+
+        if file_type == '.wav' or file_type == '.ogg' or file_type == '.mp3' and content != None:
+            audio_path = os.path.join(obplayer.ObData.get_datadir(), 'media', 'L', 'leadin_message' + file_type)
+            if os.path.exists(os.path.join(obplayer.ObData.get_datadir(), 'media', 'L')) == False:
+                os.mkdir(os.path.join(obplayer.ObData.get_datadir(), 'media', 'L'))
+            file = open(audio_path, 'wb')
+            file.write(content)
+            file.close()
+
+            ffmpeg_proc = subprocess.Popen(['ffmpeg', '-i', audio_path, '-hide_banner'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            data = ffmpeg_proc.communicate(None, None)
+            print(data)
+            for audio_format in ['wav', 'mp3', 'ogg']:
+                format_data = data[1].decode()
+                if audio_format in format_data and 'could not find codec parameters' not in format_data:
+                    file_ok = True
+
+            obplayer.Config.save_settings({'alerts_alert_start_audio': audio_path})
+
+            obplayer.Log.log("importing audio file {0}".format(audio_path), 'config')
+            if file_ok:
+                return { 'status' : True, 'notice' : "settings-imported-leadin-audio" }
+            else:
+                return { 'status' : False, 'error' : errors }
+
     def req_export(self, request):
         settings = ''
         for (name, value) in sorted(obplayer.Config.list_settings(hidepasswords=True).items()):
@@ -298,6 +414,18 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         obplayer.pulse.select_output(request.args['n'][0], request.args['s'][0])
         return { 'status' : True }
 
+    def req_export_alert_log(self, request):
+        output = []
+        log_data = obplayer.Log.get_log()
+        for line in log_data:
+            if re.search('\[alerts\]', line):
+                output.append(line)
+        res = httpserver.Response()
+        res.add_header('Content-Disposition', 'attachment; filename=obalerts.txt')
+        res.send_content('text/plain', '\n'.join(output))
+        #return '\n'.join(output)
+        return res
+
     @staticmethod
     def load_strings(lang, strings):
         namespace = ''
@@ -320,4 +448,3 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
                                     namespace = name
                                     strings[namespace] = { }
         return strings
-
