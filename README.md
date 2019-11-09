@@ -26,7 +26,7 @@ OBPlayer can be run in a variety of configurations:
 OpenBroadcaster 
 https://openbroadcaster.com/
 
-Copyright 2012-2018 OpenBroadcaster, Inc.
+Copyright 2012-2019 OpenBroadcaster, Inc.
 
 Licensed under GNU AGPLv3. See COPYING.
 
@@ -35,5 +35,5 @@ Support Site
 http://support.openbroadcaster.com/player/
 
 
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/openbroadcaster/obplayer.svg?columns=all)](https://waffle.io/openbroadcaster/obplayer)
+
 
