@@ -32,6 +32,12 @@ Dependencies are Debian/Ubuntu package names.
 - gstreamer1.0-plugins-bad
 - gstreamer1.0-plugins-ugly
 
+- ffmpeg
+
+- ubuntu-restricted-addons
+- ubuntu-restricted-extras
+
+
 Recommended if using for CATV:
 
 - gstreamer1.0-vaapi
@@ -48,6 +54,7 @@ Include if using alerts module:
 - mbrola-us3
 - mbrola-fr1
 - mbrola-fr4
+- pip3 install boto3
 
 
 Include if using RS-232 option in the alerts module:
@@ -63,8 +70,9 @@ Include if using PulseAudio:
 
 - pip3 install pulsectl         (Note: pkg not included in apt-get; must be installed using pip3)
 
+Include if using Off-air audio log:
 
-Include if using Ubuntu Desktop for extra codecs to allow playback of more media types
+- pip3 install pyrtlsdr         (Note: pkg not included in apt-get; must be installed using pip3)
 
-- ubuntu-restricted-addons
-- ubuntu-restricted-extras 
+Include if using the news feed override:
+ - pip3 install inotify
