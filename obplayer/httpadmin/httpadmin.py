@@ -130,6 +130,9 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         self.route('/strings', self.req_strings)
         self.route('/command/restart', self.req_restart)
         self.route('/command/fstoggle', self.req_fstoggle)
+        self.route('/command/update_check', self.req_update_check)
+        self.route('/command/update_upgrade_list', self.req_update_upgrade_list)
+        self.route('/command/update_upgrade', self.req_update_upgrade)
         self.route('/save', self.req_save, 'admin')
         self.route('/import_settings', self.req_import, 'admin')
         self.route('/export_settings', self.req_export, 'admin')
@@ -425,6 +428,35 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         res.send_content('text/plain', '\n'.join(output))
         #return '\n'.join(output)
         return res
+
+    def req_update_check(self, request):
+        output = []
+        import re
+        proc = subprocess.Popen(['sudo', 'apt', 'update'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, err = proc.communicate()
+        stdout = stdout.decode()
+        if re.search("(\d+ packages can be upgraded.)", stdout):
+            data = re.search("(\d+ packages can be upgraded.)", stdout)[0]
+        return {'update_data': data}
+
+    def req_update_upgrade_list(self, request):
+        import re
+        proc = subprocess.Popen(['apt', 'list', '--upgradeable'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, err = proc.communicate()
+        stdout = stdout.decode()
+        return {'update_data': stdout}
+
+    def req_update_upgrade(self, request):
+        from datetime import datetime
+        proc = subprocess.Popen(['apt', 'upgrade', '-y'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, err = proc.communicate()
+        stdout = stdout.decode()
+        if obplayer.Config.setting('update_at_3_am'):
+            os.system('shutdown -r 03:00')
+        else:
+            os.system('shutdown -r')
+        return {'update_data': stdout}
+
 
     @staticmethod
     def load_strings(lang, strings):
