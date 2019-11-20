@@ -985,8 +985,35 @@
                 <td><button id="update-check" type="button" data-t>Check</button></td>
                 <td><button id="update-player" type="button" data-t>Update</button></td>
               </tr>
+              <tr>
+                <td data-t>Update System OS</td>
+                <td><button id="os-update-check" type="button" data-t onclick="javascript: Site.updateStationOverrideBtn();">Check</button></td>
+                <td><button id="os-update-upgrade" type="button" data-t>OS Update</button></td>
+              </tr>
+              <tr>
+                <td data-t>update_at_3_am</td>
+                <td><input type="checkbox" id="update_at_3_am_checkbox" name="update_at_3_am" value="1"></td>
+              </tr>
+              <tr>
+                <td><div id="update-data"></div></td>
+              </tr>
+              <tr>
+                <td><p>Please note: updating only works on the offical OBPlayer units.</p></td>
+              </tr>
             </tbody>
           </table>
+
+          <div class="modal" id="update_modal">
+            <div class="modal-content">
+              <h1 class="warning-text" id="update-header-text">Warning!</h1>
+              <p id="update_more_info">When updating the system will restart.<br>continue?</p>
+              <textarea id="update-packages" rows="20" cols="20"></textarea>
+              <div class="button_box">
+                <button type="button" id="update_exit_btn" data-t>Exit (no update)</button>
+                <button type="button" id="update_continue_btn" data-t>Continue(update, and restart)</button>
+              </div>
+            </div>
+          </div>
 
           <table>
             <tbody>
