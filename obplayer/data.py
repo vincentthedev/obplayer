@@ -455,6 +455,7 @@ class ObConfigData (ObData):
         self.add_setting('http_show_alerts', '1', 'bool')
         self.add_setting('http_show_location', '1', 'bool')
         self.add_setting('http_show_liveassist', '1', 'bool')
+        self.add_setting('update_at_3_am', '1', 'bool')
 
         self.add_setting('live_assist_enable', '0', 'bool')
         self.add_setting('live_assist_port', '23456', 'int')
