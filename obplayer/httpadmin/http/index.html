@@ -918,10 +918,51 @@
             </table>
           </div>
 
+          <div class="modal" id="icecast_config_modal">
+            <div class="modal-content">
+              <table class="setting">
+                <tr>
+                  <td data-t>icecast_admin_password</td>
+                  <td>
+                    <input type="text" id="icecast_config_modal_admin_password" value="">
+                  </td>
+                </tr>
+                <tr>
+                  <td data-t>icecast_source_password</td>
+                  <td>
+                    <input type="text" id="icecast_config_modal_source_password" value="">
+                  </td>
+                </tr>
+                <tr>
+                  <td data-t>icecast_relay_password</td>
+                  <td>
+                    <input type="text" id="icecast_config_modal_relay_password" value="">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2">
+                    <p>Any values set as default will be replaced with a random password.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <button type="button" id="icecast_config_editor_save_btn">Save</button>
+                    <button type="button" id="icecast_config_editor_exit_btn">Exit</button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
           <table class="settings">
             <tbody>
               <tr>
-                <td colspan="2"><button name="save" type="button" onclick="javascript: Site.save('admin');" data-tns="Common" data-t>Save</button></td>
+                <td colspan="2">
+                  <button name="save" type="button" onclick="javascript: Site.save('admin');" data-tns="Common" data-t>Save</button>
+                </td>
+                <td colspan="2">
+                  <button type="button" id="icecast_config_editor_open_btn">Icecast confing editor</button>
+                </td>
               </tr>
             </tbody>
           </table>
