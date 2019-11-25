@@ -235,6 +235,10 @@
               <td>[<%= obplayer.Config.setting('location_longitude') %>, <%= obplayer.Config.setting('location_latitude') %>]</td>
             </tr>
             <% end %>
+      <tr>
+        <td data->Update At 3 AM</td>
+        <td><%= obplayer.Config.setting('update_at_3_am') %></td>
+      </tr>
   	</table>
 
           <% if obplayer.Config.setting('http_show_sync'): %>
@@ -992,7 +996,7 @@
               </tr>
               <tr>
                 <td data-t>update_at_3_am</td>
-                <td><input type="checkbox" id="update_at_3_am_checkbox" name="update_at_3_am" value="1"></td>
+                <td><input type="checkbox" id="update_at_3_am_checkbox" name="update_at_3_am" <%= obplayer.HTTPAdmin.form_item_checked('update_at_3_am') %>></td>
               </tr>
               <tr>
                 <td><div id="update-data"></div></td>

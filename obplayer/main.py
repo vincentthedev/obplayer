@@ -109,7 +109,23 @@ class ObMainApp:
                 self.load_module('override_streamer')
             if obplayer.Config.setting('newsfeed_override_enabled'):
                 self.load_module('newsfeed_override')
-
+            # check if automatic updater file exists
+            update_file = '/tmp/obplayer.update'
+            if obplayer.Config.setting('update_at_3_am'):
+                try:
+                    if os.path.exists(update_file):
+                        obplayer.Log.log('update file already exists. not recreating.', 'debug')
+                    else:
+                        os.system('touch {0}'.format(update_file))
+                        obplayer.Log.log('Created update file. System will check for updates and reboot at 3 am local time.', 'debug')
+                except Exception as e:
+                    obplayer.Log.log('OS updater failed. if you a openbroadcaster system unit, Please contact support.', 'error')
+            else:
+                try:
+                    os.remove(update_file)
+                    obplayer.Log.log('OS updating file is being removed. Automatic OS updating is disabled.', 'debug')
+                except Exception as e:
+                    pass
 
             #### TEST CODE ####
 

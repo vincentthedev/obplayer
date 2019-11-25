@@ -753,7 +753,7 @@ $(document).ready(function()
   });
 
   $('#update_at_3_am_checkbox').click(() => {
-    Site.save();
+    Site.save('admin');
   });
 
   $('#toggle-scheduler').click(function (event)
