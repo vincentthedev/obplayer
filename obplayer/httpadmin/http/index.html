@@ -1934,6 +1934,33 @@
                 <td data-t>streamer_play_on_startup</td>
                 <td><input type="checkbox" name="streamer_play_on_startup" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_play_on_startup') %> title="streamer_play_on_startup_tooltip" data-t></td>
               </tr>
+              <tr>
+                <td data-t>streamer_0_admin_username</td>
+                <td>
+                  <input type="text" name="streamer_0_admin_username" value="<%= obplayer.Config.setting('streamer_0_admin_username',True) %>">
+                </td>
+              </tr>
+              <tr>
+                <td data-t>streamer_0_admin_password</td>
+                <td>
+                  <input type="password" name="streamer_0_admin_password" value="<%= obplayer.Config.setting('streamer_0_admin_password',True) %>">
+                </td>
+              </tr>
+              <tr>
+                <td data-t>streamer_0_metadata_push_mode</td>
+                <td>
+                  <select name="stremaer_0_metadata_push_mode">
+                    <option value="none">None</option>
+                    <option value="file-output">File ouput</option>
+                    <option value="icecast-api">Icecast API update</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p>the icecast admin password is only needed for API mode.</p>
+                </td>
+              </tr>
             </tbody>
             </table>
               <div class="stl-settings">
@@ -1999,6 +2026,33 @@
                     <tr>
                       <td data-t>streamer_1_icecast_public</td>
                       <td><input type="checkbox" name="streamer_1_icecast_public" value="1"<%= obplayer.HTTPAdmin.form_item_checked('streamer_1_icecast_public') %>></td>
+                    </tr>
+                    <tr>
+                      <td data-t>streamer_1_admin_username</td>
+                      <td>
+                        <input type="text" name="streamer_1_admin_username" value="<%= obplayer.Config.setting('streamer_1_admin_username',True) %>">
+                      </td>
+                    </tr>
+                    <tr>
+                      <td data-t>streamer_1_admin_password</td>
+                      <td>
+                        <input type="password" name="streamer_1_admin_password" value="<%= obplayer.Config.setting('streamer_1_admin_password',True) %>">
+                      </td>
+                    </tr>
+                    <tr>
+                      <td data-t>streamer_1_metadata_push_mode</td>
+                      <td>
+                        <select name="stremaer_1_metadata_push_mode">
+                          <option value="none">None</option>
+                          <option value="file-output">File ouput</option>
+                          <option value="icecast-api">Icecast API update</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                        <p>the icecast admin password is only needed for API mode.</p>
+                      </td>
                     </tr>
                   </tbody>
                 </table>

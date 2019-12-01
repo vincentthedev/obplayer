@@ -361,6 +361,8 @@ class ObConfigData (ObData):
             self.add_setting('streamer_' + i + '_icecast_description', '', 'text')
             self.add_setting('streamer_' + i + '_icecast_url', '', 'text')
             self.add_setting('streamer_' + i + '_icecast_public', '0', 'bool')
+            self.add_setting('streamer_' + i + '_admin_username', 'admin', 'text')
+            self.add_setting('streamer_' + i + '_admin_password', 'hackme', 'text')
             self.add_setting('streamer_play_on_startup', '1', 'bool')
 
         self.add_setting('streamer_rtsp_enable', '0', 'bool')
