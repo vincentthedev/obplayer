@@ -42,6 +42,7 @@ class ObMainApp:
     def __init__(self):
         self.modules = [ ]
         self.exit_code = 0
+        self.os_updater_disabled = False
 
         parser = argparse.ArgumentParser(prog='obplayer', formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='OpenBroadcaster Player')
         parser.add_argument('-f', '--fullscreen', action='store_true', help='start fullscreen', default=False)
@@ -51,6 +52,7 @@ class ObMainApp:
         parser.add_argument('-d', '--debug', action='store_true', help='print log messages to stdout', default=False)
         parser.add_argument('-c', '--configdir', nargs=1, help='specifies an alternate data directory', default=[ '~/.openbroadcaster' ])
         parser.add_argument('--disable-http', action='store_true', help='disables the http admin', default=False)
+        parser.add_argument('--disable-updater', action='store_true', help='disables the OS updater', default=False)
 
         self.args = parser.parse_args()
         obplayer.ObData.set_datadir(self.args.configdir[0])
@@ -61,6 +63,11 @@ class ObMainApp:
         obplayer.Config = obplayer.ObConfigData()
 
         obplayer.Config.args = self.args
+
+        # check if the user requested the updater to be disabled
+        # and update the value of 'update_at_3_am'.
+        if self.args.disable_updater:
+            obplayer.Config.save_settings({'update_at_3_am': '0'})
 
         if self.args.headless is True:
             obplayer.Config.headless = self.args.headless

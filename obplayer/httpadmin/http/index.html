@@ -1030,6 +1030,8 @@
                 <td><button id="update-check" type="button" data-t>Check</button></td>
                 <td><button id="update-player" type="button" data-t>Update</button></td>
               </tr>
+
+              <% if obplayer.Config.args.disable_updater == False: %>
               <tr>
                 <td data-t>Update System OS</td>
                 <td><button id="os-update-check" type="button" data-t onclick="javascript: Site.updateStationOverrideBtn();">Check</button></td>
@@ -1045,6 +1047,7 @@
               <tr>
                 <td><p>Please note: updating only works on the offical OBPlayer units.</p></td>
               </tr>
+              <% end %>
             </tbody>
           </table>
 
