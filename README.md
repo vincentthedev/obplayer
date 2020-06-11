@@ -40,9 +40,7 @@ Copyright 2012-2019 OpenBroadcaster, Inc.
 
 Licensed under GNU AGPLv3. See COPYING.
 
-Support Site
 
-http://support.openbroadcaster.com/player/
 
 
 
