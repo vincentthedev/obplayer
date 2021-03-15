@@ -117,18 +117,6 @@ $(document).ready(function() {
         placeholder: ''
       });
     }});
-    // Handle the TOS modal actions.
-    $('#tos_agree_btn').on('click', (e) => {
-      $('#tos_modal').hide();
-      $.post('/command/tos_agreed', {}, function(data, status) {
-          // No action needed here.
-          console.log(status);
-        });
-      });
-    $('#tos_disagree_btn').on('click', (e) => {
-      $('#tos_modal').hide();
-      window.location.href = "https://openbroadcaster.com";
-    });
 });
 
 Site.injectAlert = function()
@@ -733,6 +721,79 @@ $(document).ready(function()
       else
         $('#update-check-output-row').html($('<td>' + Site.t('Admin Tab', 'Already up to date') + '</td>')).show();
     }, 'json');
+  });
+
+  // Checks for system updates,
+  // and display them to the user.
+
+  $('#os-update-check').click(() => {
+    $btn = $('#os-update-check');
+    $update_div = $('#update-data');
+    $btn.disabled = true;
+    $btn.text("Please Wait...");
+    $.post('/command/update_check', {}, function (response, status) {
+      console.log(response);
+      $update_div.html(response.update_data + "<br>" + "Click OS Update start the update.");
+      $btn.disabled = false;
+      $btn.text("Check");
+    });
+  });
+
+  // display modal for system updates,
+  // and if allowed updates and reboots the system.
+
+  $('#os-update-upgrade').click(() => {
+    $btn = $('#os-update-upgrade');
+    $update_div = $('#update-data');
+    $modal = $('#update_modal');
+    $modal.show();
+    $btn.disabled = true;
+    $btn.text("Updating...");
+    $.post('/command/update_upgrade', {}, function (response, status) {
+      console.log(response);
+      $update_div.html();
+      $btn.disabled = false;
+      $btn.text("Check");
+    });
+  });
+
+  // Check for click on update_modal buttons
+
+  $('#update_exit_btn').click(() => {
+    $btn_upgrade = $('#os-update-upgrade');
+    $update_div = $('#update-data');
+    $modal = $('#update_modal');
+    $modal.hide();
+    $btn_upgrade.disabled = false;
+    $btn_upgrade.text("OS Update");
+  });
+
+  $('#update_continue_btn').click(() => {
+    const btn_upgrade = $('#os-update-upgrade');
+    const btn_exit = $('#update_exit_btn');
+    const btn_continue = $('#update_continue_btn');
+    const packages = $('#update-packages');
+    const modal = $('#update_modal');
+    const header_text = $('#update-header-text');
+    const update_more_info = $('#update_more_info');
+    btn_exit.hide();
+    btn_continue.hide();
+    header_text.text('Updating...');
+    update_more_info.text('Please wait for your system to restart. You shouldn\'t ever unplug power during this update.');
+    $.post('/command/update_upgrade_list', {}, function (response, status) {
+      console.log(response);
+      packages.text(response.update_data);
+    });
+    $.post('/command/update_upgrade', {}, function (response, status) {
+      console.log(response);
+    });
+    $btn_upgrade.disabled = false;
+    $btn_upgrade.text("OS Update");
+    $btn_exit.show();
+  });
+
+  $('#update_at_3_am_checkbox').click(() => {
+    Site.save('admin');
   });
 
   $('#toggle-scheduler').click(function (event)
