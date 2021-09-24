@@ -86,8 +86,16 @@ LA.sliderChangeStop = function(event, ui)
     LA.changeGroupTrack(LA.currentGroupNumber,LA.currentTrackNumber,$('#control-track_position').slider('value'));
 }
 
+LA.setServer = function() {
+  $.post('/info/server_url', null, (res) => {
+    LA.server_url = res;
+  }, 'json');
+}
+
 LA.init = function()
 {
+
+  LA.setServer();
 
   LA.updateShow();
   LA.updateStatus();
@@ -159,7 +167,7 @@ LA.updateShow = function()
       var count = 0;
       $(response).each(function(index,track)
       {
-        $('#main-playlist-tracks').append('<div class="track" id="track-'+count+'"></div>');
+        $('#main-playlist-tracks').append('<div class="track" id="track-'+count+'" ></div>');
 
         var $track = $('#track-'+count);
 
@@ -167,7 +175,8 @@ LA.updateShow = function()
           $track.text('Breakpoint');
         else
         {
-          $track.text(track.artist+' - '+track.title);
+          $track.append('<img src="' + LA.server_url + 'thumbnail.php?id=' + track.track_id + '" alt="">');
+          $track.append('<div>' + track.artist + ' - ' +track.title + '<div>');
           $track.append('<span class="duration">'+LA.friendlyDuration(track.duration)+'</span>');
           $track.attr('data-artist',track.artist);
           $track.attr('data-title',track.title);
@@ -198,8 +207,7 @@ LA.updateShow = function()
 
       $(response).each(function(index,group)
       {
-
-        $('#main-buttons > div').append('<ul class="column" id="group-'+group_count+'"></ul>');
+        $('#main-buttons').append('<ul class="column" id="group-'+group_count+'"></ul>');     
 
         var $group = $('#group-'+group_count);
 
@@ -210,9 +218,11 @@ LA.updateShow = function()
 
         $.each(group.items, function(index,track)
         {
-
-          $group.append('<li class="button" id="group-'+group_count+'-item-'+track_count+'"><span></span></li>');
-
+          if (track.artist != "System") {
+            $group.append('<li class="button" id="group-'+group_count+'-item-'+track_count+'"><img src="' + LA.server_url + 'thumbnail.php?id=' + track.media_id + '" alt=""><span></span></li>');
+          } else {
+            $group.append('<li class="button" id="group-'+group_count+'-item-'+track_count+'"><span></span></li>');
+          }
           var $track = $('#group-'+group_count+'-item-'+track_count);
           $track.find('span').html(track.artist+' - '+track.title+'<br>'+LA.friendlyDuration(track.duration));
           $track.attr('data-type',track.media_type);

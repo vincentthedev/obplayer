@@ -22,26 +22,14 @@ along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
-from obplayer.liveassist.liveassist import *
+import obplayer
 
-LiveAssist = None
-
-class LiveAssistThread (obplayer.ObThread):
-    def try_run(self):
-        obplayer.LiveAssist = ObLiveAssist()
-        obplayer.LiveAssist.serve_forever()
-
-    def stop(self):
-        if hasattr(obplayer, 'LiveAssist') and obplayer.LiveAssist:
-            obplayer.LiveAssist.shutdown()
+from .audiolog import Oboff_air_AudioLog
 
 def init():
-    if not obplayer.Config.setting('scheduler_enable'):
-        obplayer.Log.log("error starting liveassist.  The scheduler must be enabled in order to use the liveassist interface, but it is currently disabled in the settings", 'error')
-        return
-
-    if obplayer.Config.setting('live_assist_enable'):
-        LiveAssistThread().start()
+    obplayer.off_air_AudioLog = Oboff_air_AudioLog()
 
 def quit():
-    pass
+    # stop the audio logger.
+    if hasattr(obplayer, 'off_air_AudioLog'):
+        obplayer.off_air_AudioLog.stop()

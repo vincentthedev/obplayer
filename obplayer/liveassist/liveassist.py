@@ -86,6 +86,9 @@ class ObLiveAssist (httpserver.ObHTTPServer):
             groups = obplayer.Scheduler.get_current_groups()
             return groups
 
+        elif request.path == '/info/server_url':
+            return obplayer.Config.setting('sync_url').replace('remote.php', '')
+
         elif request.path == '/command/play':
             if obplayer.Scheduler.unpause_show() == True:
                 return {'status' : True }

@@ -223,16 +223,29 @@ class ObShow (object):
             self.ctrl.add_request(media_type = 'break', end_time = self.end_time(), title = "live assist breakpoint", order_num = media['order_num'])
 
         else:
-            self.ctrl.add_request(
-                start_time = self.media_start_time,
-                media_type = media['media_type'],
-                uri = obplayer.Sync.media_uri(media['file_location'], media['filename']),
-                media_id = media['media_id'],
-                order_num = media['order_num'],
-                artist = media['artist'],
-                title = media['title'],
-                duration = media['duration']
-            )
+            # if track does not end in time, use show end_time instead of track duration
+            if self.end_time() and self.media_start_time + media['duration'] > self.end_time():
+                self.ctrl.add_request(
+                    start_time = self.media_start_time,
+                    end_time = self.end_time(),
+                    media_type = media['media_type'],
+                    uri = obplayer.Sync.media_uri(media['file_location'], media['filename']),
+                    media_id = media['media_id'],
+                    order_num = media['order_num'],
+                    artist = media['artist'],
+                    title = media['title'],
+                )
+            else:
+                self.ctrl.add_request(
+                    start_time = self.media_start_time,
+                    media_type = media['media_type'],
+                    uri = obplayer.Sync.media_uri(media['file_location'], media['filename']),
+                    media_id = media['media_id'],
+                    order_num = media['order_num'],
+                    artist = media['artist'],
+                    title = media['title'],
+                    duration = media['duration']
+                )
 
             obplayer.Sync.now_playing_update(self.show_data['show_id'], self.show_data['end_time'], media['media_id'], self.media_start_time + media['duration'], self.show_data['name'])
 
@@ -493,7 +506,7 @@ class ObScheduler:
             for group in self.present_show.get_groups():
                 group_items = [ ]
                 for group_item in group['items']:
-                    data = { 'id' : group_item['id'], 'artist' : group_item['artist'], 'title' : group_item['title'], 'duration' : group_item['duration'], 'media_type' : group_item['media_type'] }
+                    data = { 'id' : group_item['id'], 'artist' : group_item['artist'], 'title' : group_item['title'], 'duration' : group_item['duration'], 'media_type' : group_item['media_type'], 'media_id': group_item['media_id'] }
                     group_items.append(data)
                 groups.append({ 'name' : group['name'], 'items' : group_items })
         return groups
