@@ -1,6 +1,6 @@
 # OBPlayer Code Style Guide
 
-OBPLayer rewrite supports Python 3
+OBPlayer rewrite supports Python 3
 
 OBPlayer was originally written in Python (v2) and uses the style guide described at http://www.python.org/
 
