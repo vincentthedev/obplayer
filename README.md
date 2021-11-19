@@ -28,18 +28,21 @@ OBPlayer can be run in a variety of configurations:
 <li>Dynamic Podcast assembler, logging and archiving</li></ul>
 </details>
 
+<details>
 <summary>CAP Emergency Alerting</summary>
 <ul><li>Broadcast Radio and TV</li>
 <li>LED Outdoor Signage</li>
 <li>CATV Alerts</li></ul>
 </details>
 
+<details>
 <summary>Video Streaming</summary>
 <ul><li>Low power community television</li>
 <li>User generated community IPTV channel on CATV</li>
 <li>Digital signage and visitor information</li></ul>
 </details>
 
+<details>
 <summary>Media Asset Management</summary>
 <ul><li>Media Asset Management</li>
 <li>Media library, versioning and archiving</li>
