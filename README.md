@@ -5,15 +5,13 @@
 
 ## Overview OBPlayer
 
-OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless process on a server.
+OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless processes.
 
-OBPlayer is built with rules based intelligence to continue broadcasting no matter what happens. It functions by continually syncing with OBServer, looking for updated schedules, media, and priority broadcasts. If there is a blank spot in the schedule, it falls back to a Default Playlist. If that fails, it goes into Fallback Media Mode. If that fails, it plays from the analog input bypass. Finally, it will play a test signal as a last resort.
-
-OBPlayer will always play valid CAP (Common Alerting Protocol) Alerts at the highest priority.
+OBPlayer is built with rules based intelligence to continue broadcasting no matter what happens. It functions by continually syncing with OBServer, looking for updated schedules, media, and priority broadcasts. If there is a blank spot in the schedule, it falls back to a Default Playlist. If that fails, it goes into Fallback Media Mode. If that fails, it plays from the analog input bypass. Finally, it will play a test signal as a last resort. OBPlayer will always play valid CAP (Common Alerting Protocol) Alerts at the highest priority.
 
 OBPlayer can be run in a variety of configurations:
 
-+ Headless OBPlayer (Virtual Process)
++ Headless OBPlayer (CLI Process)
 + LIVE Assist with Mobile HTML5 Touch Screen interface
 + GTK desktop application for a Digital Display and output to CATV
 + Standalone Emergency Alerting CAP Player supporting audio, image and video
