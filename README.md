@@ -5,7 +5,7 @@
 
 ## Overview OBPlayer
 
-OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer instance. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless process on a server.
+OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless process on a server.
 
 OBPlayer is built with rules based intelligence to continue broadcasting no matter what happens. It functions by continually syncing with OBServer, looking for updated schedules, media, and priority broadcasts. If there is a blank spot in the schedule, it falls back to a Default Playlist. If that fails, it goes into Fallback Media Mode. If that fails, it plays from the analog input bypass. Finally, it will play a test signal as a last resort.
 
@@ -21,29 +21,30 @@ OBPlayer can be run in a variety of configurations:
 
 ## Usage Scenarios
 
-### Broadcast Radio and TV
+<details>
+<summary>Broadcast Radio and TV</summary>
+<ul><li>Special interest, LPFM, community and multicultural broadcasters</li>
+<li>Time and theme based music segments for public spaces</li>
+<li>Dynamic Podcast assembler, logging and archiving</li></ul>
+</details>
 
-* Special interest, LPFM, community and multicultural broadcasters
-* Time and theme based music segments for public spaces
-* Dynamic Podcast assembler, logging and archiving
+<summary>CAP Emergency Alerting</summary>
+<ul><li>Broadcast Radio and TV</li>
+<li>LED Outdoor Signage</li>
+<li>CATV Alerts</li></ul>
+</details>
 
-### CAP Emergency Alerting
+<summary>Video Streaming</summary>
+<ul><li>Low power community television</li>
+<li>User generated community IPTV channel on CATV</li>
+<li>Digital signage and visitor information</li></ul>
+</details>
 
-* Broadcast Radio and TV 
-* LED Outdoor Signage
-* CATV Alerts
-
-### Video Streaming
-
-* Low power community television 
-* User generated community IPTV channel on CATV
-* Digital signage and visitor information 
-
-### Media Asset Management
-
-* Language preservation repository
-* Media library, versioning and archiving
-* API Access and secure distribution
+<summary>Media Asset Management</summary>
+<ul><li>Media Asset Management</li>
+<li>Media library, versioning and archiving</li>
+<li>API Access and secure distribution</li></ul>
+</details>
 
 ## Installation
 
