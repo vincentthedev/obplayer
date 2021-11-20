@@ -87,7 +87,7 @@ Contributions are more than welcome! You can help us improve OpenBroadcaster by 
 
 Any help is welcome, big or small. We are all learning together.
 
-See our [Contributing Guide](https://github.com/openbroadcaster/obplayer/blob/main/CONTRIBUTING.MD)to learn how to get involved.
+See our [Contributing Guide](https://github.com/openbroadcaster/obplayer/blob/main/docs/CONTRIBUTING.md) to learn how to get involved.
 
 Please check out the various GIT projects and components on [OpenBroadcaster](https://github.com/openbroadcaster)
 
