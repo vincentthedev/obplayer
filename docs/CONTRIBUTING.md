@@ -1,13 +1,14 @@
 ## How to contribute
 
 First of all, thank you for taking the time to contribute to this project. We've tried to make a stable project and try to fix bugs and add new features continuously. You can help us do more.
+
 Before you start, read the **[README.md](https://github.com/openbroadcaster/obplayer/blob/main/README.md)** file for info on the project and how to set it up.
 
 ## Finding first issue
 
 Go to [issues tab](https://github.com/openbroadcaster/obplayer/issues) and look for 
 
-*✏️ `good first issue`* - it is a label for tasks that are perfect for people who want to start with OpenBroadcaster.
+*✏️ `good first issue`* - it is a label for tasks that are perfect for people who want to start with OBPlayer.
 
 ## Reporting issues
 
@@ -33,7 +34,7 @@ You're change should not break the existing code and should pass the tests.
 
 ## Contributor Instructions
 
-There are some basic development guidelines which you need to follow if you like to contribute to OpenBroadcaster.
+There are some basic development guidelines which you need to follow if you like to contribute to OpenBroadcaster Player.
 
 [Code Style Guide](https://github.com/openbroadcaster/obplayer/blob/main/docs/StyleGuide.md)
 
