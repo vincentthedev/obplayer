@@ -20,6 +20,8 @@ You should have received a copy of the GNU Affero General Public License
 along with OpenBroadcaster Player.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from ast import Try
+import signal
 import obplayer
 
 import apsw
@@ -174,9 +176,24 @@ class ObConfigData (ObData):
             self.settings_cache[row['name']] = value
             self.settings_type[row['name']] = datatype
 
+        password_system_move = False
+        
+        if self.setting("http_admin_password_hash", False) == False:
+            self.add_setting("http_admin_password_hash", obplayer.password_system.create_password_hash("admin"), "text")
+            password_system_move = True
+
+        if self.setting("http_readonly_password_hash", False) == False:
+            self.add_setting("http_readonly_password_hash", obplayer.password_system.create_password_hash("user"), "text")
+            password_system_move = True
+
         # keep track of settings as they have been edited.
         # they don't take effect until restart, but we want to keep track of them for subsequent edits.
         self.settings_edit_cache = self.settings_cache.copy()
+
+        if password_system_move:
+            obplayer.Log.log(message="Your player has moved from the old password system. Your passwods for the\
+                                        readonly and admin users have been reset to the defaults. Your player will now restart.", mtype='config')
+            os.kill(os.getpid(), signal.SIGINT)
 
         if not self.setting("video_out_enable"):
             self.headless = True
