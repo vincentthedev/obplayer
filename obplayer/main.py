@@ -63,6 +63,8 @@ class ObMainApp:
         obplayer.Config = obplayer.ObConfigData()
 
         obplayer.Config.args = self.args
+        
+        obplayer.Password_System = obplayer.password_system
 
         if self.args.headless is True:
             obplayer.Config.headless = self.args.headless

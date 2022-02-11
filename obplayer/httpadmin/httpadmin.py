@@ -70,9 +70,9 @@ class ObHTTPAdmin (httpserver.ObHTTPServer):
         self.root = 'obplayer/httpadmin/http'
 
         self.username = obplayer.Config.setting('http_admin_username')
-        self.password = obplayer.Config.setting('http_admin_password')
+        self.password_hash = obplayer.Config.setting('http_admin_password_hash')
         self.readonly_username = obplayer.Config.setting('http_readonly_username')
-        self.readonly_password = obplayer.Config.setting('http_readonly_password')
+        self.readonly_password_hash = obplayer.Config.setting('http_readonly_password_hash')
         self.readonly_allow_restart = obplayer.Config.setting('http_readonly_allow_restart')
         self.title = obplayer.Config.setting('http_admin_title')
 
