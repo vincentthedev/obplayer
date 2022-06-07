@@ -93,7 +93,7 @@ Please check out the various GIT projects and components on [OpenBroadcaster](ht
 
 ## Releases and Versioning
 
-See our [Releases Guide]([https://github.com/openbroadcaster/obplayer/blob/main/docs/Releases.md) ](https://github.com/openbroadcaster/obplayer/main/docs/Releases.md)
+See our [Releases Guide](https://github.com/openbroadcaster/obplayer/blob/main/docs/Releases.md) 
 
 ## Code of Conduct
 
