@@ -91,6 +91,10 @@ See our [Contributing Guide](https://github.com/openbroadcaster/obplayer/blob/ma
 
 Please check out the various GIT projects and components on [OpenBroadcaster](https://github.com/openbroadcaster)
 
+## Releases and Versioning
+
+See our [Releases Guide]([https://github.com/openbroadcaster/obplayer/blob/main/docs/Releases.md) ](https://github.com/openbroadcaster/obplayer/main/docs/Releases.md)
+
 ## Code of Conduct
 
 We abide by our [Code of Conduct](https://github.com/openbroadcaster/obplayer/blob/main/docs/CONTRIBUTING.md) and feel strongly about open, appreciative, and empathetic people joining us. 
