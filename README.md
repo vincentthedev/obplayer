@@ -71,7 +71,7 @@ Visit our [Change Log](https://openbroadcaster.com/resource/change-log) and proj
 
 ## API Access
 
-All of the functionality and metadata in OBServer, (Media, Playlists,Scheduling) is available through our [Documented API](https://docs.openbroadcaster.com/wip/)
+All of the functionality and metadata in OBServer, (Media, Playlists,Scheduling) is available through our [Documented API](https://docs.openbroadcaster.com/)
 
 ## New feature requests
 
@@ -103,6 +103,6 @@ We abide by our [Code of Conduct](https://github.com/openbroadcaster/obplayer/bl
 
 OpenBroadcaster will always be available free of charge. OpenBroadcaster is built and maintained by passionate volunteers and broadcasters, so there may be some delays in getting back to you. We make the best effort possible to resolve issues and answer questions. If you find the software useful and would like to support the project, visit the links below. Your support is greatly appreciated.
 
-Copyright 2012-2021 OpenBroadcaster, Inc.
+Copyright 2012-2022 OpenBroadcaster Inc.
 
 Licensed under GNU AGPLv3.  See COPYING.
