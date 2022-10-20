@@ -101,7 +101,7 @@ We abide by our [Code of Conduct](https://github.com/openbroadcaster/obplayer/bl
 
 ## Support OpenBroadcaster
 
-OpenBroadcaster will always be available free of charge. OpenBroadcaster is built and maintained by passionate volunteers and broadcasters, so there may be some delays in getting back to you. We make the best effort possible to resolve issues and answer questions. If you find the software useful and would like to support the project, visit the links below. Your support is greatly appreciated.
+OpenBroadcaster will always be available free of charge. OpenBroadcaster is built and maintained by passionate volunteers and broadcasters, so there may be some delays in getting back to you. We make the best effort possible to resolve issues and answer questions. If you find the software useful and would like to support the project, become a [Sponsor](https://github.com/sponsors/openbroadcaster). Your support is greatly appreciated.
 
 Copyright 2012-2022 OpenBroadcaster Inc.
 
