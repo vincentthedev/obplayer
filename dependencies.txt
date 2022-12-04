@@ -34,10 +34,14 @@ Dependencies are Debian/Ubuntu package names.
 
 - ffmpeg
 
+Ubuntu
+
 - ubuntu-restricted-addons
 - ubuntu-restricted-extras
 
-- pip3 install passlib
+- pip3 install passlib[bcrypt]
+
+- pip3 install apsw
 
 Recommended for CATV Video Playout:
 
