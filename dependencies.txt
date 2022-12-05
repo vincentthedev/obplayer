@@ -1,4 +1,4 @@
-Dependencies for OpenBroadcaster Player.  This list may be incomplete.
+Dependencies for OpenBroadcaster OBPlayer.  This list may be incomplete.
 
 Dependencies are Debian/Ubuntu package names.
 
@@ -40,8 +40,6 @@ Ubuntu
 - ubuntu-restricted-extras
 
 - pip3 install passlib[bcrypt]
-
-- pip3 install apsw
 
 Recommended for CATV Video Playout:
 
