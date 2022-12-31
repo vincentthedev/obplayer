@@ -1,13 +1,8 @@
-[![CodeQL](https://github.com/openbroadcaster/obplayer/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/openbroadcaster/obplayer/actions/workflows/codeql-analysis.yml)
+#  OpenBroadcaster Multimedia Playout
 
-#  OpenBroadcaster Multimedia Framework
+## Overview 
 
-
-## Overview OBPlayer
-
-OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless processes.
-
-OBPlayer is built with rules based intelligence to continue broadcasting no matter what happens. It functions by continually syncing with OBServer, looking for updated schedules, media, and priority broadcasts. If there is a blank spot in the schedule, it falls back to a Default Playlist. If that fails, it goes into Fallback Media Mode. If that fails, it plays from the analog input bypass. Finally, it will play a test signal as a last resort. OBPlayer will always play valid CAP (Common Alerting Protocol) Alerts at the highest priority.
+OBPlayer is a stable and secure UNIX-based media streaming playout application that can operate as a standalone player or controlled over a network by a managing OBServer. It can be installed remotely at a transmitter site, in the studio or as multiple virtual headless processes. OBPlayer is built with rules based intelligence to continue broadcasting no matter what happens. It functions by continually syncing with OBServer, looking for updated schedules, media, and priority broadcasts. If there is a blank spot in the schedule, it falls back to a Default Playlist. If that fails, it goes into Fallback Media Mode. If that fails, it plays from the analog input bypass. Finally, it will play a test signal as a last resort. OBPlayer will always play valid CAP (Common Alerting Protocol) Alerts at the highest priority.
 
 OBPlayer can be run in a variety of configurations:
 
@@ -17,41 +12,11 @@ OBPlayer can be run in a variety of configurations:
 + Standalone Emergency Alerting CAP Player supporting audio, image and video
 + Support For IPAWS CAP Profile Version 1.0 via [Alert-Hub](https://www.alert-hub.org/)
 
-## Usage Scenarios
-
-<details>
-<summary>Broadcast Radio and TV</summary>
-<ul><li>Special interest, LPFM, community and multicultural broadcasters</li>
-<li>Time and theme based music segments for public spaces</li>
-<li>Dynamic Podcast assembler, logging and archiving</li></ul>
-</details>
-
-<details>
-<summary>CAP Emergency Alerting</summary>
-<ul><li>Broadcast Radio and TV</li>
-<li>LED Outdoor Signage</li>
-<li>CATV Alerts</li></ul>
-</details>
-
-<details>
-<summary>Video Streaming</summary>
-<ul><li>Low power community television</li>
-<li>User generated community IPTV channel on CATV</li>
-<li>Digital signage and visitor information</li></ul>
-</details>
-
-<details>
-<summary>Media Asset Management</summary>
-<ul><li>Media Asset Management</li>
-<li>Media library, versioning and archiving</li>
-<li>API Access and secure distribution</li></ul>
-</details>
-
 ## Installation
 
-To install OpenBroadcaster, you should have a basic understanding of the Linux shell terminal. Once installed, every aspect of your station is managed via OpenBroadcaster's web interface.
+To install OBPlayer, you should have a basic understanding of the Linux shell terminal. Once installed, every aspect of your station is managed via OBPlayer's web interface.
 
-Follow our [Install instructions](https://github.com/openbroadcaster/obplayer/blob/main/install.txt) and Post Installation [Troubleshooting guide](https://support.openbroadcaster.com/troubleshooting#post-installation-server-troubleshooting) for instructions on how to install OpenBroadcaster on your own server.
+Follow our [Install instructions](https://github.com/openbroadcaster/obplayer/blob/main/install.txt) and Post Installation [Troubleshooting guide](https://support.openbroadcaster.com/troubleshooting#post-installation-obplayer-troubleshooting) for instructions on how to setup on your own hardware.
 
 ## Support
 
