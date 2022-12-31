@@ -13,3 +13,5 @@ OpenBroadcaster - OBPlayer Installation Instructions
 5. Restart the player
 
 NOTE: User required to change login passwords on first login with the defaults.
+
+For advanced instructions see https://support.openbroadcaster.com/install
