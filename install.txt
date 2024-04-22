@@ -1,3 +1,5 @@
+OBPlayer Installation Instructions
+
 1. Check dependencies.txt for player dependencies on Debian 10/Ubuntu 20.04 & above.
 
 2. Run "bash obplayer_check" or "bash obplayer_loop" or "bash obplayer_check -h" for assistance.
