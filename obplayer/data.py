@@ -355,6 +355,8 @@ class ObConfigData (ObData):
         self.add_setting('images_width', '640', 'int')
         self.add_setting('images_height', '480', 'int')
         self.add_setting('images_framerate', '15', 'int')
+        self.add_setting('images_title_overlay', '1', 'int')
+        self.add_setting('images_overlay_time', '16', 'int')
 
         self.add_setting('overlay_enable', '0', 'bool')
 
