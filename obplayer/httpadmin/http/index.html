@@ -394,6 +394,14 @@
   	    <td data-t>Fixed Image Size &amp; Framerate</td>
   	    <td><%= str(obplayer.Config.setting('images_width')) + " x " + str(obplayer.Config.setting('images_height')) + " @ " + str(obplayer.Config.setting('images_framerate')) + "fps" %></td>
   	  </tr>
+      <tr>
+        <td data-t>images_title_overlay</td>
+        <td><%= str(obplayer.Config.setting('images_title_overlay')) %></td>
+      </tr>
+      <tr>
+        <td data-t>images_overlay_time</td>
+        <td><%= str(obplayer.Config.setting('images_overlay_time')) %></td>
+      </tr>
 
   	  <tr class="padding">
   	    <td data-t>testsignal_enable</td>
@@ -1332,6 +1340,14 @@
               <tr>
                 <td data-t>images_framerate</td>
                 <td><input type="text" name="images_framerate" value="<%= obplayer.Config.setting('images_framerate', True) %>"></td>
+              </tr>
+              <tr>
+                <td data-t>images_title_overlay</td>
+                <td><input type="checkbox" name="images_title_overlay" value="1"<%= obplayer.HTTPAdmin.form_item_checked('images_title_overlay') %>></td>
+              </tr>
+              <tr>
+                <td data-t>images_overlay_time</td>
+                <td><input type="range" name="images_overlay_time" value="<%= obplayer.Config.setting('images_overlay_time', True) %>"></td>
               </tr>
             </tbody>
           </table>

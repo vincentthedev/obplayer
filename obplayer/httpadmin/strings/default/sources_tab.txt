@@ -53,6 +53,8 @@ Sources Tab
   images_width: Fixed Width
   images_height: Fixed Height
   images_framerate: Fixed Framerate
+  images_title_overlay: Enable Title/Artist overlay
+  images_overlay_time: Time to display the Title/Artist info
 
 
   Test Signal Settings: Test Signal Settings
