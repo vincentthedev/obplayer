@@ -48,6 +48,8 @@ class ObImagePipeline (ObGstPipeline):
         self.images_width = obplayer.Config.setting('images_width')
         self.images_height = obplayer.Config.setting('images_height')
         self.images_framerate = obplayer.Config.setting('images_framerate')
+        self.images_title_overlay = obplayer.Config.setting('images_title_overlay')
+        self.images_overlay_time = obplayer.Config.setting('images_overlay_time')
 
         self.pipeline = Gst.Pipeline(name)
 
@@ -59,6 +61,9 @@ class ObImagePipeline (ObGstPipeline):
 
         self.elements = [ ]
         self.elements.append(Gst.ElementFactory.make('imagefreeze', name + '-freeze'))
+        if self.images_title_overlay:
+            self.elements.append(Gst.ElementFactory.make('textoverlay', name + '-textoverlay'))
+            # self.elements[-1].set_property('text', 'Test Message...')
 
         ## create basic filter elements
         self.elements.append(Gst.ElementFactory.make('videoscale', name + '-scale'))
@@ -105,6 +110,10 @@ class ObImagePipeline (ObGstPipeline):
 
         self.register_signals()
 
+    def set_title_text(self, text):
+        if self.images_title_overlay:
+            self.elements[1].set_property('text', text)
+
     def on_decoder_pad_added(self, element, pad):
         #caps = pad.get_current_caps()
         #if caps.to_string().startswith('video'):
@@ -113,6 +122,7 @@ class ObImagePipeline (ObGstPipeline):
         pad.link(sinkpad)
 
     def patch(self, mode):
+        # self.set_title_text('test')
         obplayer.Log.log(self.name + ": patching " + mode, 'debug')
 
         (change, state, pending) = self.pipeline.get_state(0)
