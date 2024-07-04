@@ -64,6 +64,7 @@ class ObImagePipeline (ObGstPipeline):
         if self.images_title_overlay:
             self.elements.append(Gst.ElementFactory.make('textoverlay', name + '-textoverlay'))
             # self.elements[-1].set_property('text', 'Test Message...')
+            self.set_title_text("")
 
         ## create basic filter elements
         self.elements.append(Gst.ElementFactory.make('videoscale', name + '-scale'))
@@ -112,7 +113,16 @@ class ObImagePipeline (ObGstPipeline):
 
     def set_title_text(self, text):
         if self.images_title_overlay:
+            requests = self.player.get_requests()
+            print(requests)
             self.elements[1].set_property('text', text)
+            import threading
+            t = threading.Timer(10, self.clear_title_text)
+            t.start()
+    
+    def clear_title_text(self):
+        if self.images_title_overlay:
+            self.elements[1].set_property('text', "")
 
     def on_decoder_pad_added(self, element, pad):
         #caps = pad.get_current_caps()
