@@ -113,8 +113,8 @@ class ObImagePipeline (ObGstPipeline):
 
     def set_title_text(self, text):
         if self.images_title_overlay:
-            requests = self.player.get_requests()
-            print(requests)
+            # requests = self.player.get_requests()
+            # print(requests)
             self.elements[1].set_property('text', text)
             import threading
             t = threading.Timer(10, self.clear_title_text)

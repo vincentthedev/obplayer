@@ -270,7 +270,7 @@ class ObPlayer (object):
 
         if outputs.Overlay and req['overlay_text']:
             outputs.Overlay.set_message(req['overlay_text'])
-        outputs.image.set_title_text(req['overlay_text'])
+            outputs.Image.set_title_text(req['overlay_text'])
 
         # record the currently playing requests in the requests table (only the minimum set, so that other requests can use those outputs)
         for output in min_list:
